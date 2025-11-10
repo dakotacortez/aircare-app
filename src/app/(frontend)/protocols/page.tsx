@@ -13,7 +13,7 @@ export default async function ProtocolsPage() {
     where: {
       _status: { equals: 'published' },
     },
-    sort: 'category',
+    sort: 'sortOrder',
     limit: 1,
   })
 

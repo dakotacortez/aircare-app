@@ -10,6 +10,8 @@ export const Protocols: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', 'subcategory', 'status', 'effectiveDate'],
     group: 'Clinical Content',
+    defaultSort: 'sortOrder',
+    listSearchableFields: ['title', 'protocolNumber', 'keywords'],
   },
 access: {
     read: () => true, // Public read for field crews
@@ -26,6 +28,16 @@ versions: {
   maxPerDoc: 25,
 },
   fields: [
+    {
+      name: 'sortOrder',
+      type: 'number',
+      label: 'Sort Order',
+      admin: {
+        position: 'sidebar',
+        description: 'Drag protocols in the list to reorder, or manually set order',
+      },
+      defaultValue: 10,
+    },
     {
       name: 'title',
       type: 'text',
