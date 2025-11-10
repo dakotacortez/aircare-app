@@ -14,6 +14,7 @@ export const Protocols: CollectionConfig = {
   },
   // orderable: true, // Disabled: causes blank admin page even in v3.63.0
   // The _order field is still used for frontend sorting
+  // TODO: Try re-enabling orderable on a clean database when setting up clinical tools
 access: {
     read: () => true, // Public read for field crews
     create: ({ req: { user } }) => !!user, // Only logged in users
