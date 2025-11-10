@@ -27,12 +27,7 @@ function getUserInitials(user: User | null): string {
     return (parts[0][0] + parts[1][0]).toUpperCase()
   }
 
-  // If only one word, take first two letters
-  if (parts.length === 1 && parts[0].length >= 2) {
-    return parts[0].substring(0, 2).toUpperCase()
-  }
-
-  // Fallback to first letter
+  // If only one word (no last name), take just first letter
   return parts[0]?.[0]?.toUpperCase() || 'U'
 }
 
