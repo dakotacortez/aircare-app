@@ -6,7 +6,7 @@
 
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, type ReactElement } from 'react'
 import { CERT_LEVELS, canViewContent, type CertLevelKey } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
 
@@ -23,7 +23,7 @@ export function RichTextContent({
   content,
   userCertLevel = 5, // Default: show all content (physician level)
   showBadges = true,
-}: RichTextContentProps): JSX.Element {
+}: RichTextContentProps): ReactElement {
   const filteredContent = useMemo(() => {
     if (!content || !content.root) return null
     return filterContentByLevel(content.root, userCertLevel)
