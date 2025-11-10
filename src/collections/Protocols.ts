@@ -11,7 +11,6 @@ export const Protocols: CollectionConfig = {
     defaultColumns: ['title', 'category', 'subcategory', 'status', 'effectiveDate'],
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
-    defaultSort: '_order',
   },
   orderable: true,
 access: {
