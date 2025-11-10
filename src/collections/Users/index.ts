@@ -16,10 +16,10 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   auth: {
-    tokenExpiration: 259200, // 72 hours (3 days) - grace period for offline access
+    tokenExpiration: 172800, // 48 hours (2 days) - grace period for offline access
     cookies: {
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'Lax',
     },
   },
   fields: [
