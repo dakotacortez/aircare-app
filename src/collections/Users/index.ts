@@ -16,13 +16,10 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   auth: {
-    tokenExpiration: 7200, // 2 hours in seconds (default is 2 hours)
-    // For longer offline access, you can extend this:
-    // tokenExpiration: 604800, // 7 days
-    // tokenExpiration: 2592000, // 30 days
+    tokenExpiration: 172800, // 48 hours (2 days) - grace period for offline access
     cookies: {
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'Lax',
     },
   },
   fields: [
