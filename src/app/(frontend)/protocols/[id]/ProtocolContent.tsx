@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Protocol } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
 import { ProtocolTools } from '@/components/ProtocolTools'
@@ -63,9 +64,9 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
         
         {/* Breadcrumb */}
         <div className="flex items-center gap-1 text-xs text-neutral-500">
-          <a href="/protocols" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+          <Link href="/protocols" className="hover:text-neutral-900 dark:hover:text-neutral-100">
             Protocols
-          </a>
+          </Link>
           <ChevronRight className="h-3 w-3" />
           {protocol.category && (
             <>
