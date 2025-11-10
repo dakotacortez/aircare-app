@@ -12,7 +12,7 @@ export const Protocols: CollectionConfig = {
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
   },
-  orderable: true,
+  // orderable: true, // TODO: Retry after running status enum migration
   access: {
     read: () => true, // Public read for field crews
     create: ({ req: { user } }) => !!user, // Only logged in users
