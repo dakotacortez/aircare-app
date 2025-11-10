@@ -11,6 +11,16 @@ type NavItem = {
   newTab?: boolean
 }
 
+const isNavItem = (link: unknown): link is NavItem => {
+  if (!link || typeof link !== 'object') return false
+  const candidate = link as Partial<NavItem>
+  return (
+    typeof candidate.href === 'string' &&
+    typeof candidate.label === 'string' &&
+    (typeof candidate.newTab === 'boolean' || typeof candidate.newTab === 'undefined')
+  )
+}
+
 interface HeaderClientProps {
   data?: HeaderData | null
 }
@@ -55,7 +65,7 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
 
         return null
       })
-      .filter((link): link is NavItem => Boolean(link && link.href && link.label)) ?? []
+      .filter(isNavItem) ?? []
 
   if (cmsNavItems.length === 0) {
     return fallbackNavItems
