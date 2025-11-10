@@ -12,7 +12,7 @@ export const Protocols: CollectionConfig = {
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
   },
-  // orderable: true, // Temporarily disabled due to Payload bug: https://github.com/payloadcms/payload/issues/12143
+  orderable: true,
 access: {
     read: () => true, // Public read for field crews
     create: ({ req: { user } }) => !!user, // Only logged in users
