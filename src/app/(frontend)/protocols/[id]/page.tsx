@@ -22,7 +22,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
     id: id,
   })
 
-  if (!protocol || protocol._status !== 'published') {
+  if (!protocol || protocol._status !== 'published' || protocol.status !== 'active') {
     notFound()
   }
 
@@ -30,7 +30,10 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
   const allProtocols = await payload.find({
     collection: 'protocols',
     where: {
-      _status: { equals: 'published' },
+      and: [
+        { _status: { equals: 'published' } },
+        { status: { equals: 'active' } },
+      ],
     },
     sort: '_order',
     limit: 1000,
