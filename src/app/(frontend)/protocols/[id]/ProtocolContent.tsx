@@ -4,6 +4,7 @@ import Link from 'next/link'
 import type { Protocol } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
 import { ProtocolTools } from '@/components/ProtocolTools'
+import { RichTextContent, useCertificationLevel } from '@/components/RichTextContent'
 import { ChevronRight, Menu } from 'lucide-react'
 
 interface ProtocolContentProps {
@@ -11,42 +12,11 @@ interface ProtocolContentProps {
   allProtocols: Protocol[]
 }
 
-// Type definitions for Lexical JSON structure
-interface LexicalNode {
-  text?: string
-  children?: LexicalNode[]
-  [key: string]: unknown
-}
-
-interface LexicalContent {
-  root?: {
-    children?: LexicalNode[]
-  }
-  [key: string]: unknown
-}
-
-// Simple function to render Lexical content as plain text
-function renderLexicalContent(content: LexicalContent | null | undefined): string {
-  if (!content?.root?.children) return ''
-
-  const extractText = (node: LexicalNode): string => {
-    if (node.text) return node.text
-    if (node.children?.length) {
-      return node.children.map(extractText).join('')
-    }
-    return ''
-  }
-
-  return content.root.children
-    .map((node: LexicalNode) => extractText(node))
-    .filter((text: string) => text.trim())
-    .join('\n\n')
-}
-
 export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const userCertLevel = useCertificationLevel()
 
   useEffect(() => {
     const checkViewport = () => {
@@ -131,34 +101,12 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
             <section className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-6 space-y-6">
               {/* Main Content */}
               {protocol.content && (
-                <div className="prose dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-line">
-                    {renderLexicalContent(protocol.content as LexicalContent)}
-                  </div>
-                </div>
-              )}
-
-              {/* Indications */}
-              {protocol.indications && (
-                <div className="rounded-xl border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-blue-900 dark:text-blue-100">
-                    Indications
-                  </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
-                    {renderLexicalContent(protocol.indications as LexicalContent)}
-                  </div>
-                </div>
-              )}
-
-              {/* Contraindications */}
-              {protocol.contraindications && (
-                <div className="rounded-xl border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-red-900 dark:text-red-100">
-                    Contraindications
-                  </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
-                    {renderLexicalContent(protocol.contraindications as LexicalContent)}
-                  </div>
+                <div className="prose dark:prose-invert max-w-none protocol-content">
+                  <RichTextContent
+                    content={protocol.content}
+                    userCertLevel={userCertLevel}
+                    showBadges={true}
+                  />
                 </div>
               )}
 
@@ -168,8 +116,28 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                   <h3 className="text-sm font-semibold mb-2 text-amber-900 dark:text-amber-100">
                     Special Considerations
                   </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
-                    {renderLexicalContent(protocol.considerations as LexicalContent)}
+                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
+                    <RichTextContent
+                      content={protocol.considerations}
+                      userCertLevel={userCertLevel}
+                      showBadges={true}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Medical Control Notes */}
+              {protocol.medicalControlNotes && (protocol.requiresMedicalControl || protocol.physicianOnly) && (
+                <div className="rounded-xl border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-red-900 dark:text-red-100">
+                    {protocol.physicianOnly ? 'Physician Only' : 'Medical Control Required'}
+                  </h3>
+                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
+                    <RichTextContent
+                      content={protocol.medicalControlNotes}
+                      userCertLevel={userCertLevel}
+                      showBadges={true}
+                    />
                   </div>
                 </div>
               )}

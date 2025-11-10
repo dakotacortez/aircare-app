@@ -1,6 +1,6 @@
 /**
- * ProtocolContent Component
- * Renders protocol content with certification level filtering
+ * RichTextContent Component
+ * Renders Lexical rich text with certification level filtering
  * Hierarchical: CCT sees all content, ALS sees ALS+Basic, etc.
  */
 
@@ -10,20 +10,20 @@ import React, { useMemo } from 'react'
 import { CERT_LEVELS, canViewContent, type CertLevelKey } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
 
-interface ProtocolContentProps {
+interface RichTextContentProps {
   content: any // Lexical JSON content
   userCertLevel?: number // User's certification level (0-5), defaults to showing all
   showBadges?: boolean // Whether to show cert level badges on frontend
 }
 
 /**
- * Main component for rendering filtered protocol content
+ * Main component for rendering filtered rich text content
  */
-export function ProtocolContent({
+export function RichTextContent({
   content,
   userCertLevel = 5, // Default: show all content (physician level)
   showBadges = true,
-}: ProtocolContentProps): JSX.Element {
+}: RichTextContentProps): JSX.Element {
   const filteredContent = useMemo(() => {
     if (!content || !content.root) return null
     return filterContentByLevel(content.root, userCertLevel)
@@ -33,11 +33,7 @@ export function ProtocolContent({
     return <div className="protocol-content-empty">No content available</div>
   }
 
-  return (
-    <div className="protocol-content">
-      {renderLexicalNode(filteredContent, userCertLevel, showBadges)}
-    </div>
-  )
+  return <>{renderLexicalNode(filteredContent, userCertLevel, showBadges)}</>
 }
 
 /**
@@ -253,39 +249,4 @@ export function useCertificationLevel(): number {
   // For now, return highest level (show all content)
   // In production, this should check user.certLevel from session
   return 5 // Physician level (sees all)
-}
-
-/**
- * Example usage component
- */
-export function ProtocolViewer({ protocol }: { protocol: any }): JSX.Element {
-  const userCertLevel = useCertificationLevel()
-
-  return (
-    <div className="protocol-viewer">
-      <h1>{protocol.title}</h1>
-      <div className="protocol-meta">
-        <span>Protocol: {protocol.protocolNumber}</span>
-        <span>Version: {protocol.versionNumber}</span>
-        <span>Effective: {new Date(protocol.effectiveDate).toLocaleDateString()}</span>
-      </div>
-
-      <ProtocolContent
-        content={protocol.content}
-        userCertLevel={userCertLevel}
-        showBadges={true}
-      />
-
-      {protocol.considerations && (
-        <div className="protocol-considerations">
-          <h2>Special Considerations</h2>
-          <ProtocolContent
-            content={protocol.considerations}
-            userCertLevel={userCertLevel}
-            showBadges={true}
-          />
-        </div>
-      )}
-    </div>
-  )
 }
