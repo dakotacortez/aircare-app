@@ -46,8 +46,23 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { id } = await paramsPromise
+  const payload = await getPayload({ config })
 
-  return {
-    title: `Protocol ${id}`,
+  try {
+    const protocol = await payload.findByID({
+      collection: 'protocol',
+      id: id,
+    })
+
+    if (!protocol) {
+      return { title: 'Protocol Not Found' }
+    }
+
+    return {
+      title: `${protocol.title} - AirCare Protocols`,
+      description: protocol.subcategory || `${protocol.category || 'Protocol'} - ${protocol.title}`,
+    }
+  } catch (_error) {
+    return { title: 'Protocol Not Found' }
   }
 }
