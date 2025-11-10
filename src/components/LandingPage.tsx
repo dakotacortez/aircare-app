@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import {
   HeartPulse, Syringe, Search, BookOpenText,
   CheckCircle2, Clock, Shield, Zap,
@@ -8,8 +9,6 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [serviceLine] = useState('CCT');
-
   return (
     <>
       {/* HERO */}
@@ -28,10 +27,10 @@ export default function LandingPage() {
             Designed for CCT and ALS/BLS teams with fast search, pediatric/OB pathways, and admin‑friendly updates. Access critical care protocols anywhere, anytime.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <a href="/protocols" className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-6 py-3 text-sm font-medium inline-flex items-center gap-2 transition-colors shadow-lg shadow-red-600/20">
+            <Link href="/protocols" className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-6 py-3 text-sm font-medium inline-flex items-center gap-2 transition-colors shadow-lg shadow-red-600/20">
               Open Protocols
               <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
             <button className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 px-6 py-3 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm">
               Download App
             </button>
@@ -89,10 +88,10 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready for your next transport?</h2>
           <p className="text-lg md:text-xl mb-8 opacity-90">Access protocols, calculators, and checklists — anywhere, anytime.</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <a href="/protocols" className="bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-neutral-100 transition-colors inline-flex items-center gap-2">
+            <Link href="/protocols" className="bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-neutral-100 transition-colors inline-flex items-center gap-2">
               Open Protocols
               <ArrowRight className="h-5 w-5" />
-            </a>
+            </Link>
             <button className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors">Download App</button>
           </div>
         </div>

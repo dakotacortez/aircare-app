@@ -1,5 +1,6 @@
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 import React from 'react'
+import Link from 'next/link'
 import { cookies } from 'next/headers'
 
 export async function Footer() {
@@ -19,7 +20,9 @@ export async function Footer() {
           {isLoggedIn && (
             <>
               <span>·</span>
-              <a href="/admin" className="hover:text-neutral-900 dark:hover:text-neutral-100">Admin</a>
+              <Link href="/admin" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+                Admin
+              </Link>
             </>
           )}
           <span>·</span>

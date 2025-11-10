@@ -8,11 +8,11 @@ import { notFound } from 'next/navigation'
 import { ProtocolContent } from './ProtocolContent'
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default async function ProtocolPage({ params }: PageProps) {
-  const { id } = await params
+  const { id } = params
   const payload = await getPayload({ config })
 
   // Get the current protocol
@@ -21,7 +21,7 @@ export default async function ProtocolPage({ params }: PageProps) {
     id: id,
   })
 
-  if (!protocol || protocol.status !== 'published') {
+  if (!protocol || protocol._status !== 'published') {
     notFound()
   }
 
@@ -29,7 +29,7 @@ export default async function ProtocolPage({ params }: PageProps) {
   const allProtocols = await payload.find({
     collection: 'protocols',
     where: {
-      status: { equals: 'published' },
+      _status: { equals: 'published' },
     },
     sort: 'category',
     limit: 1000,

@@ -11,12 +11,6 @@ interface ProtocolTreeProps {
   onClose: () => void
 }
 
-interface TreeNode {
-  label: string
-  children: TreeNode[]
-  protocols: Protocol[]
-}
-
 export function ProtocolTree({ protocols, currentProtocolId, isOpen, onClose }: ProtocolTreeProps) {
   // Group protocols by category and subcategory
   const tree: Record<string, Record<string, Protocol[]>> = {}
