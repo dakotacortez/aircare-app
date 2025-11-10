@@ -10,28 +10,18 @@ import { $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR } from 'lexic
 import * as React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { $createCertificationLevelNode } from '../nodes/CertificationLevelNode'
-import { CERT_LEVELS, getAllCertLevels, type CertLevelKey } from '@/lib/certificationLevels'
+import { getAllCertLevels, type CertLevelKey } from '@/lib/certificationLevels'
 
 /**
  * Plugin component that adds toolbar button for cert level tagging
  */
 export function CertificationLevelPlugin(): null {
   const [editor] = useLexicalComposerContext()
-  const [isTextSelected, setIsTextSelected] = useState(false)
 
-  // Track selection state
+  // This plugin doesn't track state - the toolbar button handles selection state
+  // It's registered here to ensure it's loaded with the editor
   useEffect(() => {
-    return editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const selection = $getSelection()
-        if ($isRangeSelection(selection)) {
-          const text = selection.getTextContent()
-          setIsTextSelected(text.length > 0)
-        } else {
-          setIsTextSelected(false)
-        }
-      })
-    })
+    // Plugin is registered, no-op for now
   }, [editor])
 
   return null // This plugin doesn't render anything directly
@@ -41,7 +31,7 @@ export function CertificationLevelPlugin(): null {
  * Toolbar button component for cert level tagging
  * This should be registered in the Lexical toolbar configuration
  */
-export function CertificationLevelToolbarButton(): JSX.Element {
+export function CertificationLevelToolbarButton(): React.JSX.Element {
   const [editor] = useLexicalComposerContext()
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isTextSelected, setIsTextSelected] = useState(false)

@@ -94,14 +94,15 @@ function renderLexicalNode(
 
   // Handle text nodes
   if (node.type === 'text') {
-    let text = node.text || ''
+    let text: React.ReactNode = node.text || ''
 
-    // Apply text formatting
+    // Apply text formatting - nest properly for multiple formats
     if (node.format) {
-      if (node.format & 1) text = <strong key={nodeKey}>{text}</strong> // Bold
-      if (node.format & 2) text = <em key={nodeKey}>{text}</em> // Italic
-      if (node.format & 8) text = <u key={nodeKey}>{text}</u> // Underline
-      if (node.format & 4) text = <s key={nodeKey}>{text}</s> // Strikethrough
+      // Apply in reverse order so outermost formatting is applied last
+      if (node.format & 4) text = <s key={`${nodeKey}-strike`}>{text}</s> // Strikethrough
+      if (node.format & 8) text = <u key={`${nodeKey}-underline`}>{text}</u> // Underline
+      if (node.format & 2) text = <em key={`${nodeKey}-italic`}>{text}</em> // Italic
+      if (node.format & 1) text = <strong key={`${nodeKey}-bold`}>{text}</strong> // Bold
     }
 
     return text

@@ -123,7 +123,7 @@ export const Protocol: CollectionConfig = {
             enabledCollections: ['protocol'],
           }),
           // Our custom certification level feature
-          CertificationLevelFeature,
+          CertificationLevelFeature(),
         ],
       }),
     },
@@ -144,7 +144,7 @@ export const Protocol: CollectionConfig = {
           ItalicFeature(),
           UnorderedListFeature(),
           OrderedListFeature(),
-          CertificationLevelFeature,
+          CertificationLevelFeature(),
         ],
       }),
     },

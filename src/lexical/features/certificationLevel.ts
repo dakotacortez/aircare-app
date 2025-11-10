@@ -8,41 +8,51 @@ import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
 /**
  * Feature configuration for certification level tagging
  * Use this in your collection's richText field configuration
+ *
+ * @example
+ * lexicalEditor({
+ *   features: [
+ *     // ... other features
+ *     CertificationLevelFeature(),
+ *   ],
+ * })
  */
-export const CertificationLevelFeature = {
-  feature: () => {
-    return {
-      nodes: [
-        {
-          node: CertificationLevelNode,
-          type: CertificationLevelNode.getType(),
-        },
-      ],
-      // Client-side plugin will be loaded via ClientFeature
-      clientFeature: {
-        plugins: [
+export const CertificationLevelFeature = () => {
+  return {
+    feature: () => {
+      return {
+        nodes: [
           {
-            Component: () =>
-              import('../plugins/CertificationLevelPlugin').then(
-                (m) => m.CertificationLevelPlugin,
-              ),
-            position: 'normal',
+            node: CertificationLevelNode,
+            type: CertificationLevelNode.getType(),
           },
         ],
-        toolbarInline: {
-          groups: [
+        // Client-side plugin will be loaded via ClientFeature
+        clientFeature: {
+          plugins: [
             {
-              type: 'dropdown',
-              ChildComponent: () =>
+              Component: () =>
                 import('../plugins/CertificationLevelPlugin').then(
-                  (m) => m.CertificationLevelToolbarButton,
+                  (m) => m.CertificationLevelPlugin,
                 ),
-              key: 'cert-level',
+              position: 'normal',
             },
           ],
+          toolbarInline: {
+            groups: [
+              {
+                type: 'dropdown',
+                ChildComponent: () =>
+                  import('../plugins/CertificationLevelPlugin').then(
+                    (m) => m.CertificationLevelToolbarButton,
+                  ),
+                key: 'cert-level',
+              },
+            ],
+          },
         },
-      },
-    }
-  },
-  key: 'certificationLevel',
+      }
+    },
+    key: 'certificationLevel',
+  }
 }
