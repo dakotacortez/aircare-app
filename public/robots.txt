@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Disallow: /admin/*
+
+# Host
+Host: https://ucair.care
+
+# Sitemaps
+Sitemap: https://ucair.care/sitemap.xml
+Sitemap: https://ucair.care/pages-sitemap.xml
+Sitemap: https://ucair.care/posts-sitemap.xml
