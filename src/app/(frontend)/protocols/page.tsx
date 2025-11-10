@@ -11,7 +11,10 @@ export default async function ProtocolsPage() {
   const protocols = await payload.find({
     collection: 'protocols',
     where: {
-      _status: { equals: 'published' },
+      and: [
+        { _status: { equals: 'published' } },
+        { status: { equals: 'active' } },
+      ],
     },
     sort: '_order',
     limit: 1,
