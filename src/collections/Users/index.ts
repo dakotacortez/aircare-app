@@ -15,7 +15,16 @@ export const Users: CollectionConfig = {
     defaultColumns: ['name', 'email'],
     useAsTitle: 'name',
   },
-  auth: true,
+  auth: {
+    tokenExpiration: 7200, // 2 hours in seconds (default is 2 hours)
+    // For longer offline access, you can extend this:
+    // tokenExpiration: 604800, // 7 days
+    // tokenExpiration: 2592000, // 30 days
+    cookies: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    },
+  },
   fields: [
     {
       name: 'name',
