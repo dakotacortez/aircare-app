@@ -22,18 +22,17 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
     id: id,
   })
 
-  if (!protocol || protocol._status !== 'published' || protocol.status !== 'active') {
+  if (!protocol || protocol._status !== 'published') {
     notFound()
   }
+  // TODO: Add status check after migration: || protocol.status !== 'active'
 
   // Get all protocols for sidebar navigation
   const allProtocols = await payload.find({
     collection: 'protocols',
     where: {
-      and: [
-        { _status: { equals: 'published' } },
-        { status: { equals: 'active' } },
-      ],
+      _status: { equals: 'published' },
+      // TODO: Add status filter after running migration: { status: { equals: 'active' } }
     },
     sort: '_order',
     limit: 1000,
