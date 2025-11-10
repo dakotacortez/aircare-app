@@ -120,7 +120,7 @@ function renderLexicalNode(
 
   // Handle headings
   if (node.type === 'heading') {
-    const Tag = `h${node.tag}` as keyof JSX.IntrinsicElements
+    const Tag = `h${node.tag}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
     return (
       <Tag key={nodeKey}>
         {node.children?.map((child: any, i: number) =>
