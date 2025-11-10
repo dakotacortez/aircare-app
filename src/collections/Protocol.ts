@@ -198,49 +198,6 @@ export const Protocol: CollectionConfig = {
       },
     },
 
-    // Medical Control Requirements
-    {
-      type: 'collapsible',
-      label: 'Medical Control Requirements',
-      fields: [
-        {
-          name: 'requiresMedicalControl',
-          type: 'checkbox',
-          label: 'Requires Medical Control Authorization',
-          defaultValue: false,
-          admin: {
-            description: 'Check if this protocol requires medical control contact',
-          },
-        },
-        {
-          name: 'physicianOnly',
-          type: 'checkbox',
-          label: 'Physician-Only Protocol',
-          defaultValue: false,
-          admin: {
-            description: 'Check if this protocol can only be performed by physicians',
-          },
-        },
-        {
-          name: 'medicalControlNotes',
-          type: 'richText',
-          label: 'Medical Control Notes',
-          admin: {
-            description: 'Instructions for medical control contact or physician oversight',
-            condition: (data) => data.requiresMedicalControl || data.physicianOnly,
-          },
-          editor: lexicalEditor({
-            features: [
-              ParagraphFeature(),
-              BoldFeature(),
-              ItalicFeature(),
-              UnorderedListFeature(),
-            ],
-          }),
-        },
-      ],
-    },
-
     // Related Tools (for future implementation)
     // Commented out until Tools collection is created
     // {

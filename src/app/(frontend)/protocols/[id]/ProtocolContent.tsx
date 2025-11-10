@@ -125,22 +125,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                   </div>
                 </div>
               )}
-
-              {/* Medical Control Notes */}
-              {protocol.medicalControlNotes && (protocol.requiresMedicalControl || protocol.physicianOnly) && (
-                <div className="rounded-xl border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-red-900 dark:text-red-100">
-                    {protocol.physicianOnly ? 'Physician Only' : 'Medical Control Required'}
-                  </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
-                    <RichTextContent
-                      content={protocol.medicalControlNotes}
-                      userCertLevel={userCertLevel}
-                      showBadges={true}
-                    />
-                  </div>
-                </div>
-              )}
             </section>
 
             {/* Version Info */}
