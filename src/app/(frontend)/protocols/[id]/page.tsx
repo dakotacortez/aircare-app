@@ -1,18 +1,19 @@
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+import type { Metadata } from 'next'
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { notFound } from 'next/navigation'
 import { ProtocolContent } from './ProtocolContent'
 
-interface PageProps {
+type Args = {
   params: Promise<{ id: string }>
 }
 
-export default async function ProtocolPage({ params }: PageProps) {
-  const { id } = await params
+export default async function ProtocolPage({ params: paramsPromise }: Args) {
+  const { id } = await paramsPromise
   const payload = await getPayload({ config })
 
   // Get the current protocol
@@ -21,7 +22,7 @@ export default async function ProtocolPage({ params }: PageProps) {
     id: id,
   })
 
-  if (!protocol || protocol.status !== 'published') {
+  if (!protocol || protocol._status !== 'published') {
     notFound()
   }
 
@@ -29,16 +30,24 @@ export default async function ProtocolPage({ params }: PageProps) {
   const allProtocols = await payload.find({
     collection: 'protocols',
     where: {
-      status: { equals: 'published' },
+      _status: { equals: 'published' },
     },
     sort: 'category',
     limit: 1000,
   })
 
   return (
-    <ProtocolContent 
-      protocol={protocol} 
+    <ProtocolContent
+      protocol={protocol}
       allProtocols={allProtocols.docs}
     />
   )
+}
+
+export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
+  const { id } = await paramsPromise
+
+  return {
+    title: `Protocol ${id}`,
+  }
 }
