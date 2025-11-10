@@ -104,6 +104,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [serviceLine, setServiceLine] = useState<'CCT' | 'ALS/BLS'>('CCT')
   const [user, setUser] = useState<User | null>(null)
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
 
   const navItems = resolveNavItems(data)
 
@@ -125,6 +126,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   }, [])
 
   useEffect(() => {
+    // Update effective theme when theme changes or on mount
+    const current = theme || getImplicitPreference() || 'light'
+    setEffectiveTheme(current)
+  }, [theme])
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -135,10 +142,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       <header className="h-16 border-b dark:border-neutral-700 bg-white dark:bg-neutral-800 sticky top-0 z-50 px-4">
         <div className="h-full flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-red-600 flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0">
               <HeartPulse className="h-5 w-5 text-white" />
             </div>
-            <div className="leading-tight">
+            <div className="leading-tight hidden sm:block">
               <div className="font-semibold">Air Care & Mobile Care</div>
               <div className="text-xs text-neutral-500 dark:text-neutral-400">UC Health Critical Care Transport</div>
             </div>
@@ -210,13 +217,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
             <button
               onClick={() => {
-                const currentTheme = theme || getImplicitPreference() || 'light'
-                setTheme(currentTheme === 'dark' ? 'light' : 'dark')
+                setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')
               }}
               className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               aria-label="Toggle theme"
             >
-              {(theme || getImplicitPreference()) === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {effectiveTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
           </div>
 

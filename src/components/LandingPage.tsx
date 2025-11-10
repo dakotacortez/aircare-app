@@ -39,7 +39,7 @@ export default function LandingPage() {
       </section>
 
       {/* Stats */}
-      <section className="px-4 md:px-8 py-12 bg-white dark:bg-neutral-800 border-y dark:border-neutral-700">
+      <section className="hidden md:block px-4 md:px-8 py-12 bg-white dark:bg-neutral-800 border-y dark:border-neutral-700">
         <div className="max-w-6xl mx-auto">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
             <Stat number="107+" label="Licensed Clinicians" />
@@ -51,7 +51,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section className="px-4 md:px-8 py-16">
+      <section className="hidden md:block px-4 md:px-8 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Everything you need in the field</h2>
@@ -71,7 +71,7 @@ export default function LandingPage() {
       </section>
 
       {/* Use Cases */}
-      <section className="px-4 md:px-8 py-16">
+      <section className="hidden md:block px-4 md:px-8 py-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Designed for real-world scenarios</h2>
           <div className="grid md:grid-cols-3 gap-6">
@@ -83,7 +83,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-4 md:px-8 py-16 bg-red-600 text-white">
+      <section className="hidden md:block px-4 md:px-8 py-16 bg-red-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready for your next transport?</h2>
           <p className="text-lg md:text-xl mb-8 opacity-90">Access protocols, calculators, and checklists — anywhere, anytime.</p>
