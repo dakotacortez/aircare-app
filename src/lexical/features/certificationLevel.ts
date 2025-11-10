@@ -3,14 +3,13 @@
  * Registers the custom node and plugin
  */
 
-import type { FeatureProviderServer } from '@payloadcms/richtext-lexical'
 import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
 
 /**
  * Feature configuration for certification level tagging
  * Use this in your collection's richText field configuration
  */
-export const CertificationLevelFeature: FeatureProviderServer<any, any, any> = {
+export const CertificationLevelFeature = {
   feature: () => {
     return {
       nodes: [
