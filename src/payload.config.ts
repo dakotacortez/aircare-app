@@ -14,7 +14,6 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 
-import { Protocols } from './collections/Protocols'
 import { Protocol } from './collections/Protocol'
 
 import { plugins } from './plugins'
@@ -69,7 +68,7 @@ export default buildConfig({
     },
   }),
 
-  collections: [Pages, Posts, Media, Categories, Users, Protocols, Protocol],
+  collections: [Pages, Posts, Media, Categories, Users, Protocol],
 
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

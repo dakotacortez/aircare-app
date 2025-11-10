@@ -29,7 +29,7 @@ export type SerializedCertificationLevelNode = Spread<
 /**
  * CertificationLevelNode - Inline node for cert level tagging
  */
-export class CertificationLevelNode extends DecoratorNode<JSX.Element> {
+export class CertificationLevelNode extends DecoratorNode<React.JSX.Element> {
   __certLevel: CertLevelKey
   __text: string
 
@@ -47,7 +47,7 @@ export class CertificationLevelNode extends DecoratorNode<JSX.Element> {
     this.__text = text
   }
 
-  createDOM(config: EditorConfig): HTMLElement {
+  createDOM(_config: EditorConfig): HTMLElement {
     const span = document.createElement('span')
     span.className = 'cert-level-node'
     span.setAttribute('data-cert-level', this.__certLevel)
@@ -112,7 +112,7 @@ export class CertificationLevelNode extends DecoratorNode<JSX.Element> {
     writable.__certLevel = certLevel
   }
 
-  decorate(): JSX.Element {
+  decorate(): React.JSX.Element {
     return <CertificationLevelComponent certLevel={this.__certLevel} text={this.__text} />
   }
 
@@ -130,7 +130,7 @@ function CertificationLevelComponent({
 }: {
   certLevel: CertLevelKey
   text: string
-}): JSX.Element {
+}): React.JSX.Element {
   const cert = CERT_LEVELS[certLevel]
 
   return (
