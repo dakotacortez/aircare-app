@@ -18,21 +18,19 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
 
   // Get the current protocol
   const protocol = await payload.findByID({
-    collection: 'protocols',
+    collection: 'protocol',
     id: id,
   })
 
   if (!protocol || protocol._status !== 'published') {
     notFound()
   }
-  // TODO: Add status check after migration: || protocol.status !== 'active'
 
   // Get all protocols for sidebar navigation
   const allProtocols = await payload.find({
-    collection: 'protocols',
+    collection: 'protocol',
     where: {
       _status: { equals: 'published' },
-      // TODO: Add status filter after running migration: { status: { equals: 'active' } }
     },
     sort: '_order',
     limit: 1000,

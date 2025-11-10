@@ -9,10 +9,9 @@ export default async function ProtocolsPage() {
   const payload = await getPayload({ config })
 
   const protocols = await payload.find({
-    collection: 'protocols',
+    collection: 'protocol',
     where: {
       _status: { equals: 'published' },
-      // TODO: Add status filter after running migration: { status: { equals: 'active' } }
     },
     sort: '_order',
     limit: 1,
