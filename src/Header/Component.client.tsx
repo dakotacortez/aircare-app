@@ -142,7 +142,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             </div>
             <div className="leading-tight hidden sm:block">
               <div className="font-semibold">Air Care & Mobile Care</div>
-              <div className="text-xs text-neutral-500 dark:text-neutral-400">UC Health Critical Care Transport</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">Critical Care Transport</div>
             </div>
           </Link>
 
