@@ -12,7 +12,8 @@ export const Protocols: CollectionConfig = {
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
   },
-  orderable: true,
+  // orderable: true, // Disabled: causes blank admin page even in v3.63.0
+  // The _order field is still used for frontend sorting
 access: {
     read: () => true, // Public read for field crews
     create: ({ req: { user } }) => !!user, // Only logged in users
