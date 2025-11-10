@@ -3,8 +3,78 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { HeartPulse, Menu, Sun, Moon, Users } from 'lucide-react'
 
+import type { Header as HeaderData, Page, Post } from '@/payload-types'
+
+type NavItem = {
+  href: string
+  label: string
+  newTab?: boolean
+}
+
 interface HeaderClientProps {
-  data?: any
+  data?: HeaderData | null
+}
+
+const fallbackNavItems: NavItem[] = [
+  { href: '/protocols', label: 'Protocols' },
+  { href: '#', label: 'References' },
+  { href: '#', label: 'Calculators' },
+  { href: '#', label: 'Checklists' },
+  { href: '#', label: 'Safety Concerns' },
+]
+
+function resolveNavItems(data?: HeaderData | null): NavItem[] {
+  const cmsNavItems =
+    data?.navItems
+      ?.map(({ link }) => {
+        if (!link) return null
+
+        const { label, newTab, type, reference, url } = link
+
+        if (type === 'reference' && reference && typeof reference.value === 'object') {
+          const referencedDoc = reference.value as Page | Post
+          const slug = referencedDoc?.slug
+
+          if (!slug) return null
+
+          const basePath = reference.relationTo === 'pages' ? '' : `/${reference.relationTo}`
+          return {
+            href: `${basePath}/${slug}`.replace('//', '/'),
+            label: label ?? referencedDoc.title ?? slug,
+            newTab: newTab ?? false,
+          }
+        }
+
+        if (url && label) {
+          return {
+            href: url,
+            label,
+            newTab: newTab ?? false,
+          }
+        }
+
+        return null
+      })
+      .filter((link): link is NavItem => Boolean(link && link.href && link.label)) ?? []
+
+  if (cmsNavItems.length === 0) {
+    return fallbackNavItems
+  }
+
+  const seen = new Set<string>()
+  const merged: NavItem[] = []
+
+  const addItem = (item: NavItem) => {
+    const key = `${item.href}|${item.label}`
+    if (seen.has(key)) return
+    seen.add(key)
+    merged.push(item)
+  }
+
+  fallbackNavItems.forEach(addItem)
+  cmsNavItems.forEach(addItem)
+
+  return merged
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
@@ -12,6 +82,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [serviceLine, setServiceLine] = useState('CCT')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  const navItems = resolveNavItems(data)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -68,13 +140,33 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
           <div className="flex-1 hidden lg:flex items-center justify-center">
             <nav aria-label="Primary" className="flex items-center gap-6">
-              <Link className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" href="/protocols">
-                Protocols
-              </Link>
-              <a className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" href="#">References</a>
-              <a className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" href="#">Calculators</a>
-              <a className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" href="#">Checklists</a>
-              <a className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700" href="#">Safety Concerns</a>
+              {navItems.map(({ href, label, newTab }) => {
+                const isInternalLink = href.startsWith('/') && !newTab
+
+                if (isInternalLink) {
+                  return (
+                    <Link
+                      key={label}
+                      className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                      href={href}
+                    >
+                      {label}
+                    </Link>
+                  )
+                }
+
+                return (
+                  <a
+                    key={label}
+                    className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    href={href}
+                    rel={newTab ? 'noreferrer noopener' : undefined}
+                    target={newTab ? '_blank' : undefined}
+                  >
+                    {label}
+                  </a>
+                )
+              })}
             </nav>
           </div>
 
@@ -137,33 +229,35 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             <div className="lg:hidden absolute left-0 right-0 top-16 z-50 px-4" id="mobile-menu" role="dialog" aria-modal="true">
               <div className="rounded-2xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl overflow-hidden">
                 <nav className="p-2">
-                  {[
-                    { label: 'Protocols', href: '/protocols' },
-                    { label: 'References', href: '#' },
-                    { label: 'Calculators', href: '#' },
-                    { label: 'Checklists', href: '#' },
-                    { label: 'Safety Concerns', href: '#' }
-                  ].map(({ label, href }) =>
-                    href.startsWith('/') ? (
-                      <Link
-                        key={label}
-                        className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                        href={href}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {label}
-                      </Link>
-                    ) : (
+                  {navItems.map(({ href, label, newTab }) => {
+                    const isInternalLink = href.startsWith('/') && !newTab
+
+                    if (isInternalLink) {
+                      return (
+                        <Link
+                          key={label}
+                          className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                          href={href}
+                          onClick={() => setMobileOpen(false)}
+                        >
+                          {label}
+                        </Link>
+                      )
+                    }
+
+                    return (
                       <a
                         key={label}
                         className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
                         href={href}
                         onClick={() => setMobileOpen(false)}
+                        rel={newTab ? 'noreferrer noopener' : undefined}
+                        target={newTab ? '_blank' : undefined}
                       >
                         {label}
                       </a>
                     )
-                  )}
+                  })}
                 </nav>
               </div>
             </div>

@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Protocol } from '@/payload-types'
+import type { Protocol } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
 import { ProtocolTools } from '@/components/ProtocolTools'
 import { ChevronRight, Menu } from 'lucide-react'
@@ -11,21 +11,32 @@ interface ProtocolContentProps {
   allProtocols: Protocol[]
 }
 
-// Simple function to render Lexical content as plain text
-function renderLexicalContent(content: any): string {
-  if (!content || !content.root) return ''
+type LexicalNode = {
+  children?: LexicalNode[]
+  text?: string
+}
 
-  const extractText = (node: any): string => {
+type LexicalContent = {
+  root?: {
+    children?: LexicalNode[]
+  }
+} | null
+
+// Simple function to render Lexical content as plain text
+function renderLexicalContent(content: LexicalContent): string {
+  if (!content?.root?.children) return ''
+
+  const extractText = (node: LexicalNode): string => {
     if (node.text) return node.text
-    if (node.children) {
-      return node.children.map((child: any) => extractText(child)).join('')
+    if (node.children?.length) {
+      return node.children.map(extractText).join('')
     }
     return ''
   }
 
   return content.root.children
-    .map((node: any) => extractText(node))
-    .filter((text: string) => text.trim())
+    .map((node) => extractText(node))
+    .filter((text) => text.trim())
     .join('\n\n')
 }
 

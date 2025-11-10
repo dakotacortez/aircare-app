@@ -34,4 +34,15 @@ const nextConfig = {
   redirects,
 }
 
-export default withPayload(nextConfig, { devBundleServerPackages: false })
+const payloadConfig = withPayload(nextConfig, { devBundleServerPackages: false })
+
+if ('turbopack' in payloadConfig) {
+  delete payloadConfig.turbopack
+}
+
+payloadConfig.experimental = {
+  ...(payloadConfig.experimental ?? {}),
+  allowedDevOrigins: ['https://ucair.care'],
+}
+
+export default payloadConfig

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import {
   HeartPulse, Syringe, Search, BookOpenText,
@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [serviceLine] = useState('CCT');
-
   return (
     <>
       {/* HERO */}
