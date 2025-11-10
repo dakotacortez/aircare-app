@@ -101,3 +101,155 @@ html[data-theme='dark'],
 html[data-theme='light'] {
   opacity: initial;
 }
+
+/* Certification Level Badge Styles */
+@layer components {
+  /* Editor badges (in PayloadCMS admin) */
+  .cert-level-node {
+    display: inline;
+  }
+
+  .cert-level-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.875em;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    cursor: default;
+    transition: opacity 0.2s;
+  }
+
+  .cert-level-badge:hover {
+    opacity: 0.9;
+  }
+
+  /* Frontend badges (on protocol pages) */
+  .cert-level-badge-frontend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.95em;
+    font-weight: 500;
+    margin: 0 2px;
+  }
+
+  /* Protocol content container */
+  .protocol-content {
+    line-height: 1.7;
+  }
+
+  .protocol-content p {
+    margin-bottom: 1rem;
+  }
+
+  .protocol-content h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .protocol-content h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .protocol-content h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .protocol-content ul,
+  .protocol-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .protocol-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  .protocol-content strong {
+    font-weight: 600;
+  }
+
+  .protocol-content em {
+    font-style: italic;
+  }
+
+  .protocol-content a {
+    color: #3b82f6;
+    text-decoration: underline;
+  }
+
+  .protocol-content a:hover {
+    color: #2563eb;
+  }
+
+  /* Toolbar button in Lexical editor */
+  .cert-level-toolbar-button .toolbar-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .cert-level-dropdown {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* Protocol viewer layout */
+  .protocol-viewer {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .protocol-viewer h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .protocol-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .protocol-considerations {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+  }
+
+  .protocol-considerations h2 {
+    margin-top: 0;
+    color: #92400e;
+  }
+
+  .protocol-content-empty {
+    padding: 2rem;
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+  }
+}
