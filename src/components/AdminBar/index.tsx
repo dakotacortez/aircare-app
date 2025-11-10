@@ -42,6 +42,24 @@ export const AdminBar: React.FC<{
   ) as keyof typeof collectionLabels
   const router = useRouter()
 
+  // Check auth status on mount
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${getClientSideURL()}/api/users/me`, {
+          credentials: 'include',
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setShow(Boolean(data?.user?.id))
+        }
+      } catch {
+        setShow(false)
+      }
+    }
+    checkAuth()
+  }, [])
+
   const onAuthChange = React.useCallback((user: PayloadMeUser) => {
     setShow(Boolean(user?.id))
   }, [])

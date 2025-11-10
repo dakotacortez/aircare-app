@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { HeartPulse, Menu, Sun, Moon, Users } from 'lucide-react'
 
-import type { Header as HeaderData, Page, Post } from '@/payload-types'
+import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
+import { useTheme } from '@/providers/Theme'
+import { getImplicitPreference } from '@/providers/Theme/shared'
 
 type NavItem = {
   href: string
@@ -12,6 +14,27 @@ type NavItem = {
 }
 
 const isNotNull = <T,>(v: T | null | undefined): v is T => v != null
+
+function getUserInitials(user: User | null): string {
+  if (!user) return ''
+
+  // Try to get name from user object
+  const name = user.name || user.email || ''
+
+  // Split by space and get first letter of first two words
+  const parts = name.trim().split(/\s+/)
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+
+  // If only one word, take first two letters
+  if (parts.length === 1 && parts[0].length >= 2) {
+    return parts[0].substring(0, 2).toUpperCase()
+  }
+
+  // Fallback to first letter
+  return parts[0]?.[0]?.toUpperCase() || 'U'
+}
 
 interface HeaderClientProps {
   data?: HeaderData | null
@@ -77,10 +100,10 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
-  const [dark, setDark] = useState(false)
+  const { theme, setTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [serviceLine, setServiceLine] = useState<'CCT' | 'ALS/BLS'>('CCT')
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
 
   const navItems = resolveNavItems(data)
 
@@ -88,28 +111,18 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     const checkAuth = async () => {
       try {
         const res = await fetch('/api/users/me')
-        setIsLoggedIn(res.ok)
+        if (res.ok) {
+          const userData = await res.json()
+          setUser(userData.user)
+        } else {
+          setUser(null)
+        }
       } catch {
-        setIsLoggedIn(false)
+        setUser(null)
       }
     }
     checkAuth()
   }, [])
-
-  useEffect(() => {
-    const theme = typeof window !== 'undefined' ? localStorage.getItem('acmc_theme') : null
-    if (theme === 'dark') {
-      setDark(true)
-      document.documentElement.classList.add('dark')
-    }
-  }, [])
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('acmc_theme', dark ? 'dark' : 'light')
-      document.documentElement.classList.toggle('dark', dark)
-    }
-  }, [dark])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false)
@@ -175,13 +188,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
               </button>
             </div>
 
-            {isLoggedIn ? (
+            {user ? (
               <Link
                 href="/admin"
                 className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                 aria-label="Admin dashboard"
               >
-                <span className="text-xs font-semibold">Admin</span>
+                <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
+                  {getUserInitials(user)}
+                </div>
               </Link>
             ) : (
               <Link
@@ -194,11 +209,14 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             )}
 
             <button
-              onClick={() => setDark(d => !d)}
+              onClick={() => {
+                const currentTheme = theme || getImplicitPreference() || 'light'
+                setTheme(currentTheme === 'dark' ? 'light' : 'dark')
+              }}
               className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               aria-label="Toggle theme"
             >
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {(theme || getImplicitPreference()) === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </button>
           </div>
 
