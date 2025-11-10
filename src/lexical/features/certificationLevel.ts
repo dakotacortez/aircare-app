@@ -1,6 +1,6 @@
 /**
  * Certification Level Feature for PayloadCMS Lexical Editor
- * Registers the custom node and plugin
+ * Registers the custom node and plugin for inline ALS/CCT/Physician tagging
  */
 
 import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
@@ -54,5 +54,6 @@ export const CertificationLevelFeature = () => {
       }
     },
     key: 'certificationLevel',
+    serverFeatureProps: undefined,
   }
 }
