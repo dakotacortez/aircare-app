@@ -15,6 +15,7 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 
 import { Protocols } from './collections/Protocols'
+import { Protocol } from './collections/Protocol'
 
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -68,7 +69,7 @@ export default buildConfig({
     },
   }),
 
-  collections: [Pages, Posts, Media, Categories, Users, Protocols],
+  collections: [Pages, Posts, Media, Categories, Users, Protocols, Protocol],
 
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

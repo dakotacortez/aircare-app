@@ -73,6 +73,7 @@ export interface Config {
     categories: Category;
     users: User;
     protocols: Protocol;
+    protocol: Protocol1;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -96,6 +97,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     protocols: ProtocolsSelect<false> | ProtocolsSelect<true>;
+    protocol: ProtocolSelect<false> | ProtocolSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -880,6 +882,106 @@ export interface Protocol {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Clinical protocols with inline certification level tagging
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "protocol".
+ */
+export interface Protocol1 {
+  id: number;
+  _order?: string | null;
+  title: string;
+  protocolNumber: string;
+  category:
+    | 'medical'
+    | 'trauma'
+    | 'pediatric'
+    | 'neonatal'
+    | 'obgyn'
+    | 'procedures'
+    | 'behavioral'
+    | 'environmental'
+    | 'special-ops';
+  subcategory: string;
+  /**
+   * Main protocol content - Select text and use "Cert Level" button to tag ALS/CCT/Physician-only content
+   */
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Special considerations, precautions, or warnings
+   */
+  considerations?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  effectiveDate: string;
+  lastReviewed: string;
+  nextReview: string;
+  versionNumber: string;
+  /**
+   * Check if this protocol requires medical control contact
+   */
+  requiresMedicalControl?: boolean | null;
+  /**
+   * Check if this protocol can only be performed by physicians
+   */
+  physicianOnly?: boolean | null;
+  /**
+   * Instructions for medical control contact or physician oversight
+   */
+  medicalControlNotes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Diagrams, flowcharts, reference images, or PDFs
+   */
+  attachments?: (number | Media)[] | null;
+  /**
+   * Comma-separated keywords for search (e.g., chest pain, STEMI, aspirin, nitroglycerin)
+   */
+  keywords: string;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1092,6 +1194,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'protocols';
         value: number | Protocol;
+      } | null)
+    | ({
+        relationTo: 'protocol';
+        value: number | Protocol1;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1476,6 +1582,31 @@ export interface ProtocolsSelect<T extends boolean = true> {
   nextReview?: T;
   versionNumber?: T;
   status?: T;
+  attachments?: T;
+  keywords?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "protocol_select".
+ */
+export interface ProtocolSelect<T extends boolean = true> {
+  _order?: T;
+  title?: T;
+  protocolNumber?: T;
+  category?: T;
+  subcategory?: T;
+  content?: T;
+  considerations?: T;
+  effectiveDate?: T;
+  lastReviewed?: T;
+  nextReview?: T;
+  versionNumber?: T;
+  requiresMedicalControl?: T;
+  physicianOnly?: T;
+  medicalControlNotes?: T;
   attachments?: T;
   keywords?: T;
   updatedAt?: T;
