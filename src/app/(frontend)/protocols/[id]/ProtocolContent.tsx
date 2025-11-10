@@ -11,22 +11,11 @@ interface ProtocolContentProps {
   allProtocols: Protocol[]
 }
 
-type LexicalNode = {
-  children?: LexicalNode[]
-  text?: string
-}
-
-type LexicalContent = {
-  root?: {
-    children?: LexicalNode[]
-  }
-} | null
-
 // Simple function to render Lexical content as plain text
-function renderLexicalContent(content: LexicalContent): string {
+function renderLexicalContent(content: any): string {
   if (!content?.root?.children) return ''
 
-  const extractText = (node: LexicalNode): string => {
+  const extractText = (node: any): string => {
     if (node.text) return node.text
     if (node.children?.length) {
       return node.children.map(extractText).join('')
@@ -35,8 +24,8 @@ function renderLexicalContent(content: LexicalContent): string {
   }
 
   return content.root.children
-    .map((node) => extractText(node))
-    .filter((text) => text.trim())
+    .map((node: any) => extractText(node))
+    .filter((text: string) => text.trim())
     .join('\n\n')
 }
 
@@ -130,7 +119,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
               {protocol.content && (
                 <div className="prose dark:prose-invert max-w-none">
                   <div className="whitespace-pre-line">
-                    {renderLexicalContent(protocol.content)}
+                    {renderLexicalContent(protocol.content as any)}
                   </div>
                 </div>
               )}
@@ -142,7 +131,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     Indications
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
-                    {renderLexicalContent(protocol.indications)}
+                    {renderLexicalContent(protocol.indications as any)}
                   </div>
                 </div>
               )}
@@ -154,7 +143,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     Contraindications
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
-                    {renderLexicalContent(protocol.contraindications)}
+                    {renderLexicalContent(protocol.contraindications as any)}
                   </div>
                 </div>
               )}
@@ -166,7 +155,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     Special Considerations
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-line">
-                    {renderLexicalContent(protocol.considerations)}
+                    {renderLexicalContent(protocol.considerations as any)}
                   </div>
                 </div>
               )}

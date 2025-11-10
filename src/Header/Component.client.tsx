@@ -8,29 +8,21 @@ import type { Header as HeaderData, Page, Post } from '@/payload-types'
 type NavItem = {
   href: string
   label: string
-  newTab?: boolean
+  newTab: boolean
 }
 
-const isNavItem = (link: unknown): link is NavItem => {
-  if (!link || typeof link !== 'object') return false
-  const candidate = link as Partial<NavItem>
-  return (
-    typeof candidate.href === 'string' &&
-    typeof candidate.label === 'string' &&
-    (typeof candidate.newTab === 'boolean' || typeof candidate.newTab === 'undefined')
-  )
-}
+const isNotNull = <T,>(v: T | null | undefined): v is T => v != null
 
 interface HeaderClientProps {
   data?: HeaderData | null
 }
 
 const fallbackNavItems: NavItem[] = [
-  { href: '/protocols', label: 'Protocols' },
-  { href: '#', label: 'References' },
-  { href: '#', label: 'Calculators' },
-  { href: '#', label: 'Checklists' },
-  { href: '#', label: 'Safety Concerns' },
+  { href: '/protocols', label: 'Protocols', newTab: false },
+  { href: '#', label: 'References', newTab: false },
+  { href: '#', label: 'Calculators', newTab: false },
+  { href: '#', label: 'Checklists', newTab: false },
+  { href: '#', label: 'Safety Concerns', newTab: false },
 ]
 
 function resolveNavItems(data?: HeaderData | null): NavItem[] {
@@ -41,44 +33,41 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
 
         const { label, newTab, type, reference, url } = link
 
+        // Reference to Page or Post
         if (type === 'reference' && reference && typeof reference.value === 'object') {
           const referencedDoc = reference.value as Page | Post
           const slug = referencedDoc?.slug
-
           if (!slug) return null
 
           const basePath = reference.relationTo === 'pages' ? '' : `/${reference.relationTo}`
           return {
             href: `${basePath}/${slug}`.replace('//', '/'),
             label: label ?? referencedDoc.title ?? slug,
-            newTab: newTab ?? false,
+            newTab: Boolean(newTab),
           }
         }
 
+        // External / custom URL
         if (url && label) {
-          return {
-            href: url,
-            label,
-            newTab: newTab ?? false,
-          }
+          return { href: url, label, newTab: Boolean(newTab) }
         }
 
         return null
       })
-      .filter(isNavItem) ?? []
+      .filter(isNotNull) ?? []
 
-  if (cmsNavItems.length === 0) {
-    return fallbackNavItems
-  }
+  if (cmsNavItems.length === 0) return fallbackNavItems
 
+  // Merge + de-dupe CMS over fallback
   const seen = new Set<string>()
   const merged: NavItem[] = []
 
   const addItem = (item: NavItem) => {
     const key = `${item.href}|${item.label}`
-    if (seen.has(key)) return
-    seen.add(key)
-    merged.push(item)
+    if (!seen.has(key)) {
+      seen.add(key)
+      merged.push(item)
+    }
   }
 
   fallbackNavItems.forEach(addItem)
@@ -90,7 +79,7 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const [dark, setDark] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [serviceLine, setServiceLine] = useState('CCT')
+  const [serviceLine, setServiceLine] = useState<'CCT' | 'ALS/BLS'>('CCT')
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const navItems = resolveNavItems(data)
@@ -98,8 +87,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/users/me')
-        setIsLoggedIn(response.ok)
+        const res = await fetch('/api/users/me')
+        setIsLoggedIn(res.ok)
       } catch {
         setIsLoggedIn(false)
       }
@@ -118,18 +107,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('acmc_theme', dark ? 'dark' : 'light')
-      if (dark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+      document.documentElement.classList.toggle('dark', dark)
     }
   }, [dark])
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { 
-      if (e.key === 'Escape') setMobileOpen(false) 
-    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -148,42 +131,26 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             </div>
           </Link>
 
-          <div className="flex-1 hidden lg:flex items-center justify-center">
+          <div className="flex-1 hidden xl:flex items-center justify-center">
             <nav aria-label="Primary" className="flex items-center gap-6">
-              {navItems.map(({ href, label, newTab }) => {
-                const isInternalLink = href.startsWith('/') && !newTab
-
-                if (isInternalLink) {
-                  return (
-                    <Link
-                      key={label}
-                      className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                      href={href}
-                    >
-                      {label}
-                    </Link>
-                  )
-                }
-
-                return (
-                  <a
-                    key={label}
-                    className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                    href={href}
-                    rel={newTab ? 'noreferrer noopener' : undefined}
-                    target={newTab ? '_blank' : undefined}
-                  >
-                    {label}
-                  </a>
-                )
-              })}
+              {navItems.map(({ href, label, newTab }) => (
+                <Link
+                  key={label}
+                  className="text-sm px-2 py-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                  href={href}
+                  target={newTab ? '_blank' : undefined}
+                  rel={newTab ? 'noreferrer noopener' : undefined}
+                >
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
 
           <div className="ml-auto flex items-center gap-2">
             <button
-              onClick={() => setMobileOpen((o) => !o)}
-              className="lg:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              onClick={() => setMobileOpen(o => !o)}
+              className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               aria-label="Open menu"
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
@@ -227,7 +194,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             )}
 
             <button
-              onClick={() => setDark((d) => !d)}
+              onClick={() => setDark(d => !d)}
               className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               aria-label="Toggle theme"
             >
@@ -236,38 +203,21 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           </div>
 
           {mobileOpen && (
-            <div className="lg:hidden absolute left-0 right-0 top-16 z-50 px-4" id="mobile-menu" role="dialog" aria-modal="true">
+            <div className="xl:hidden absolute left-0 right-0 top-16 z-50 px-4" id="mobile-menu" role="dialog" aria-modal="true">
               <div className="rounded-2xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl overflow-hidden">
                 <nav className="p-2">
-                  {navItems.map(({ href, label, newTab }) => {
-                    const isInternalLink = href.startsWith('/') && !newTab
-
-                    if (isInternalLink) {
-                      return (
-                        <Link
-                          key={label}
-                          className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                          href={href}
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          {label}
-                        </Link>
-                      )
-                    }
-
-                    return (
-                      <a
-                        key={label}
-                        className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                        href={href}
-                        onClick={() => setMobileOpen(false)}
-                        rel={newTab ? 'noreferrer noopener' : undefined}
-                        target={newTab ? '_blank' : undefined}
-                      >
-                        {label}
-                      </a>
-                    )
-                  })}
+                  {navItems.map(({ href, label, newTab }) => (
+                    <Link
+                      key={label}
+                      className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      target={newTab ? '_blank' : undefined}
+                      rel={newTab ? 'noreferrer noopener' : undefined}
+                    >
+                      {label}
+                    </Link>
+                  ))}
                 </nav>
               </div>
             </div>
@@ -276,7 +226,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       </header>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/40 xl:hidden" onClick={() => setMobileOpen(false)} />
       )}
     </>
   )
