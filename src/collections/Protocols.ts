@@ -11,8 +11,9 @@ export const Protocols: CollectionConfig = {
     defaultColumns: ['title', 'category', 'subcategory', 'status', 'effectiveDate'],
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
-    defaultSort: 'title',
+    defaultSort: '_order',
   },
+  orderable: true,
 access: {
     read: () => true, // Public read for field crews
     create: ({ req: { user } }) => !!user, // Only logged in users
