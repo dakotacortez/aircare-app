@@ -12,7 +12,7 @@ export default function LandingPage() {
   return (
     <>
       {/* HERO */}
-      <section className="px-4 md:px-8 pt-12 md:pt-16 pb-16 relative overflow-hidden">
+      <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center">
         <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 via-neutral-50 to-neutral-100 dark:from-red-600/10 dark:via-neutral-900 dark:to-neutral-800" />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
