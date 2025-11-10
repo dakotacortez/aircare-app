@@ -32,7 +32,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
     where: {
       _status: { equals: 'published' },
     },
-    sort: 'sortOrder',
+    sort: '_order',
     limit: 1000,
   })
 
