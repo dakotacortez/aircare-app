@@ -74,24 +74,8 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
       })
       .filter(isNotNull) ?? []
 
-  if (cmsNavItems.length === 0) return fallbackNavItems
-
-  // Merge + de-dupe CMS over fallback
-  const seen = new Set<string>()
-  const merged: NavItem[] = []
-
-  const addItem = (item: NavItem) => {
-    const key = `${item.href}|${item.label}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      merged.push(item)
-    }
-  }
-
-  fallbackNavItems.forEach(addItem)
-  cmsNavItems.forEach(addItem)
-
-  return merged
+  // Return CMS items if they exist, otherwise fallback
+  return cmsNavItems.length > 0 ? cmsNavItems : fallbackNavItems
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
