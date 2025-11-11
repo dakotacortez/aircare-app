@@ -12,6 +12,7 @@ import {
   UploadFeature,
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
+import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
 
 /**
  * Protocol Collection (singular)
@@ -119,6 +120,7 @@ export const Protocol: CollectionConfig = {
           LinkFeature({
             enabledCollections: ['protocol'],
           }),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),
@@ -144,6 +146,7 @@ export const Protocol: CollectionConfig = {
           LinkFeature({
             enabledCollections: ['protocol'],
           }),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),
@@ -169,6 +172,7 @@ export const Protocol: CollectionConfig = {
           LinkFeature({
             enabledCollections: ['protocol'],
           }),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),
@@ -194,6 +198,7 @@ export const Protocol: CollectionConfig = {
           LinkFeature({
             enabledCollections: ['protocol'],
           }),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),
@@ -215,6 +220,7 @@ export const Protocol: CollectionConfig = {
           ItalicFeature(),
           UnorderedListFeature(),
           OrderedListFeature(),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),
@@ -235,6 +241,7 @@ export const Protocol: CollectionConfig = {
           ItalicFeature(),
           UnorderedListFeature(),
           OrderedListFeature(),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),
@@ -267,6 +274,7 @@ export const Protocol: CollectionConfig = {
               },
             },
           }),
+          CalloutBlockFeature(),
           CertificationLevelFeature(),
         ],
       }),

@@ -322,4 +322,61 @@ html[data-theme='light'] {
   .dark .protocol-content img + p {
     color: #9ca3af;
   }
+
+  /* Callout blocks */
+  .callout-block {
+    transition: box-shadow 0.2s;
+  }
+
+  .callout-block:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .dark .callout-block:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .callout-content p:first-child {
+    margin-top: 0;
+  }
+
+  .callout-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Dark mode callout block backgrounds */
+  .dark .callout-block[data-preset-id='medicalControl'] {
+    background-color: rgba(120, 53, 15, 0.12);
+    border-left-color: #d97706;
+  }
+
+  .dark .callout-block[data-preset-id='physicianOnly'] {
+    background-color: rgba(88, 28, 135, 0.12);
+    border-left-color: #9333ea;
+  }
+
+  .dark .callout-block[data-preset-id='important'] {
+    background-color: rgba(127, 29, 29, 0.12);
+    border-left-color: #dc2626;
+  }
+
+  .dark .callout-block[data-preset-id='note'] {
+    background-color: rgba(30, 58, 138, 0.12);
+    border-left-color: #2563eb;
+  }
+
+  .dark .callout-block[data-preset-id='tip'] {
+    background-color: rgba(20, 83, 45, 0.12);
+    border-left-color: #16a34a;
+  }
+
+  .dark .callout-block[data-preset-id='dosing'] {
+    background-color: rgba(22, 78, 99, 0.12);
+    border-left-color: #0891b2;
+  }
+
+  .dark .callout-block[data-preset-id='warning'] {
+    background-color: rgba(124, 45, 18, 0.12);
+    border-left-color: #ea580c;
+  }
 }

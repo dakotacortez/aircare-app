@@ -9,6 +9,9 @@
 import React, { type ReactElement } from 'react'
 import { CERT_LEVELS } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
+import type { SerializedCalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
+import { getCalloutPreset } from '@/lib/calloutPresets'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface RichTextContentProps {
   content: any // Lexical JSON content
@@ -44,6 +47,11 @@ function renderLexicalNode(
   // Handle certification level nodes (authorization badges)
   if (node.type === 'certification-level') {
     return renderCertificationLevelNode(node as SerializedCertificationLevelNode, showBadges, nodeKey)
+  }
+
+  // Handle callout blocks
+  if (node.type === 'callout-block') {
+    return renderCalloutBlockNode(node as SerializedCalloutBlockNode, showBadges, nodeKey)
   }
 
   // Handle text nodes
@@ -193,5 +201,75 @@ function renderCertificationLevelNode(
       </span>
       <span>{node.text}</span>
     </span>
+  )
+}
+
+/**
+ * Render a callout block node
+ * Shows colored box with icon, label, and rich content
+ */
+function renderCalloutBlockNode(
+  node: SerializedCalloutBlockNode,
+  showBadges: boolean,
+  key: string,
+): React.ReactNode {
+  const preset = getCalloutPreset(node.presetId)
+
+  if (!preset) {
+    // Fallback if preset not found
+    return (
+      <div key={key} className="callout-block callout-fallback">
+        {node.children?.map((child: any, i: number) =>
+          renderLexicalNode(child, showBadges, `${key}-${i}`),
+        )}
+      </div>
+    )
+  }
+
+  const label = node.customLabel || preset.label
+
+  return (
+    <div
+      key={key}
+      className="callout-block"
+      style={{
+        backgroundColor: preset.bgColor,
+        borderLeft: `4px solid ${preset.borderColor}`,
+        borderRadius: '0.75rem',
+        padding: '1rem',
+        marginTop: '1rem',
+        marginBottom: '1rem',
+      }}
+    >
+      {/* Header with icon and label */}
+      <div
+        className="callout-header"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '0.75rem',
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          color: preset.color,
+        }}
+      >
+        <FontAwesomeIcon
+          icon={preset.icon}
+          style={{
+            width: '1.25rem',
+            height: '1.25rem',
+          }}
+        />
+        <span>{label}</span>
+      </div>
+
+      {/* Content */}
+      <div className="callout-content">
+        {node.children?.map((child: any, i: number) =>
+          renderLexicalNode(child, showBadges, `${key}-${i}`),
+        )}
+      </div>
+    </div>
   )
 }

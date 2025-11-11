@@ -13,6 +13,24 @@ interface ProtocolContentProps {
   allProtocols: Protocol[]
 }
 
+/**
+ * Check if Lexical content is empty
+ */
+function hasContent(content: any): boolean {
+  if (!content || !content.root) return false
+  if (!content.root.children || content.root.children.length === 0) return false
+
+  // Check if all children are empty paragraphs
+  const hasNonEmptyContent = content.root.children.some((child: any) => {
+    if (child.type === 'paragraph') {
+      return child.children && child.children.length > 0
+    }
+    return true // Non-paragraph nodes count as content
+  })
+
+  return hasNonEmptyContent
+}
+
 export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -140,8 +158,8 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 </div>
               )}
 
-              {/* Special Considerations (always shown) */}
-              {protocol.specialConsiderations && (
+              {/* Special Considerations (only shown if has content) */}
+              {hasContent(protocol.specialConsiderations) && (
                 <div className="rounded-xl border-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 p-4">
                   <h3 className="text-sm font-semibold mb-2 text-amber-900 dark:text-amber-100">
                     Special Considerations
@@ -152,8 +170,8 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 </div>
               )}
 
-              {/* Key Points (always shown) */}
-              {protocol.keyPoints && (
+              {/* Key Points (only shown if has content) */}
+              {hasContent(protocol.keyPoints) && (
                 <div className="rounded-xl border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4">
                   <h3 className="text-sm font-semibold mb-2 text-blue-900 dark:text-blue-100">
                     Key Points / Pearls
@@ -164,8 +182,8 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 </div>
               )}
 
-              {/* References & Graphics (always shown) */}
-              {protocol.references && (
+              {/* References & Graphics (only shown if has content) */}
+              {hasContent(protocol.references) && (
                 <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
                   <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100">
                     References & Graphics
