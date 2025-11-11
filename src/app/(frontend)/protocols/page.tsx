@@ -4,8 +4,26 @@ export const revalidate = 0
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { redirect } from 'next/navigation'
+import { getMeUser } from '@/utilities/getMeUser'
+import { checkProtocolAccess } from '@/utilities/checkProtocolAccess'
+import { ProtocolAccessDenied } from '@/components/ProtocolAccessDenied'
 
 export default async function ProtocolsPage() {
+  // Check authentication first
+  const { user } = await getMeUser()
+  const accessStatus = checkProtocolAccess(user)
+
+  // If access denied, show appropriate message
+  if (!accessStatus.allowed) {
+    return (
+      <ProtocolAccessDenied
+        reason={accessStatus.reason}
+        userName={accessStatus.reason !== 'not-logged-in' ? accessStatus.user.name : undefined}
+      />
+    )
+  }
+
+  // User has access, fetch protocols
   const payload = await getPayload({ config })
 
   const protocols = await payload.find({

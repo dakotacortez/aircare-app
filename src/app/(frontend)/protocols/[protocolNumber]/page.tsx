@@ -7,6 +7,9 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { notFound } from 'next/navigation'
 import { ProtocolContent } from './ProtocolContent'
+import { getMeUser } from '@/utilities/getMeUser'
+import { checkProtocolAccess } from '@/utilities/checkProtocolAccess'
+import { ProtocolAccessDenied } from '@/components/ProtocolAccessDenied'
 
 type Args = {
   params: Promise<{ protocolNumber: string }>
@@ -14,6 +17,22 @@ type Args = {
 
 export default async function ProtocolPage({ params: paramsPromise }: Args) {
   const { protocolNumber } = await paramsPromise
+
+  // Check authentication first
+  const { user } = await getMeUser()
+  const accessStatus = checkProtocolAccess(user)
+
+  // If access denied, show appropriate message
+  if (!accessStatus.allowed) {
+    return (
+      <ProtocolAccessDenied
+        reason={accessStatus.reason}
+        userName={accessStatus.reason !== 'not-logged-in' ? accessStatus.user.name : undefined}
+      />
+    )
+  }
+
+  // User has access, fetch protocols
   const payload = await getPayload({ config })
 
   // Get the current protocol by protocol number
@@ -42,12 +61,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
     limit: 1000,
   })
 
-  return (
-    <ProtocolContent
-      protocol={protocol}
-      allProtocols={allProtocols.docs}
-    />
-  )
+  return <ProtocolContent protocol={protocol} allProtocols={allProtocols.docs} />
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {

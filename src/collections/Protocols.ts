@@ -24,6 +24,8 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
+import { isContentTeamOrAdmin } from '../access/isContentTeamOrAdmin'
+import { isAdmin } from '../access/isAdmin'
 
 /**
  * Shared Lexical Editor Features
@@ -116,10 +118,41 @@ export const Protocols: CollectionConfig = {
   // Enable orderable from DAY ONE (before any data exists)
   orderable: true,
   access: {
-    read: () => true, // Public read for field crews
-    create: ({ req: { user } }) => !!user, // Only logged in users
-    update: ({ req: { user } }) => !!user,
-    delete: ({ req: { user } }) => !!user,
+    // Read access:
+    // - Unauthenticated (guest): No access - must login
+    // - Pending users (not approved): No access - awaiting approval
+    // - Approved users: Can only see published protocols
+    // - Content Team/Admin: Can see all protocols (for editing in admin panel)
+    read: ({ req: { user } }) => {
+      // No user = no access
+      if (!user) return false
+
+      // User must be active
+      if (user.status !== 'active') return false
+
+      // Content Team and Admin can see everything (for editing in admin panel)
+      if (user.role === 'content-team' || user.role === 'admin-team') {
+        return true
+      }
+
+      // Regular users must be approved AND can only see published protocols
+      if (user.role === 'user' && user.approved) {
+        return {
+          _status: {
+            equals: 'published',
+          },
+        }
+      }
+
+      // Not approved or inactive = no access
+      return false
+    },
+    // Create: Content Team and Admin only
+    create: isContentTeamOrAdmin,
+    // Update: Content Team and Admin only
+    update: isContentTeamOrAdmin,
+    // Delete: Admin only
+    delete: isAdmin,
   },
   // Use built-in drafts system with autosave
   versions: {
