@@ -119,19 +119,33 @@ export const Protocols: CollectionConfig = {
   orderable: true,
   access: {
     // Read access:
-    // - Unauthenticated (guest): Can only see published protocols
-    // - Approved users: Can see all protocols (published + drafts)
+    // - Unauthenticated (guest): No access - must login
+    // - Pending users (not approved): No access - awaiting approval
+    // - Approved users: Can only see published protocols
+    // - Content Team/Admin: Can see all protocols (for editing in admin panel)
     read: ({ req: { user } }) => {
-      // If user is approved, they can see everything
-      if (user && user.approved && user.status === 'active') {
+      // No user = no access
+      if (!user) return false
+
+      // User must be active
+      if (user.status !== 'active') return false
+
+      // Content Team and Admin can see everything (for editing in admin panel)
+      if (user.role === 'content-team' || user.role === 'admin-team') {
         return true
       }
-      // Unauthenticated users can only see published protocols
-      return {
-        _status: {
-          equals: 'published',
-        },
+
+      // Regular users must be approved AND can only see published protocols
+      if (user.role === 'user' && user.approved) {
+        return {
+          _status: {
+            equals: 'published',
+          },
+        }
       }
+
+      // Not approved or inactive = no access
+      return false
     },
     // Create: Content Team and Admin only
     create: isContentTeamOrAdmin,
