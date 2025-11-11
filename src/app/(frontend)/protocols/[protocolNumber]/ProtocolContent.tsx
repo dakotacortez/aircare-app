@@ -86,9 +86,9 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
       {/* 3-Column Layout */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Sidebar - Protocol Tree */}
-        <ProtocolTree 
+        <ProtocolTree
           protocols={allProtocols}
-          currentProtocolId={protocol.id}
+          currentProtocolNumber={protocol.protocolNumber}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />

@@ -64,9 +64,19 @@ export const Protocol: CollectionConfig = {
       name: 'protocolNumber',
       type: 'text',
       required: true,
+      unique: true,
       label: 'Protocol Number',
       admin: {
         placeholder: 'e.g., MED-CARD-001',
+      },
+      // Validate that it's URL-safe
+      validate: (value: string) => {
+        if (!value) return 'Protocol number is required'
+        // Allow letters, numbers, hyphens, underscores
+        if (!/^[A-Za-z0-9_-]+$/.test(value)) {
+          return 'Protocol number can only contain letters, numbers, hyphens, and underscores'
+        }
+        return true
       },
     },
     {

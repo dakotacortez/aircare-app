@@ -9,20 +9,26 @@ import { notFound } from 'next/navigation'
 import { ProtocolContent } from './ProtocolContent'
 
 type Args = {
-  params: Promise<{ id: string }>
+  params: Promise<{ protocolNumber: string }>
 }
 
 export default async function ProtocolPage({ params: paramsPromise }: Args) {
-  const { id } = await paramsPromise
+  const { protocolNumber } = await paramsPromise
   const payload = await getPayload({ config })
 
-  // Get the current protocol
-  const protocol = await payload.findByID({
+  // Get the current protocol by protocol number
+  const result = await payload.find({
     collection: 'protocols',
-    id: id,
+    where: {
+      protocolNumber: { equals: protocolNumber },
+      _status: { equals: 'published' },
+    },
+    limit: 1,
   })
 
-  if (!protocol || protocol._status !== 'published') {
+  const protocol = result.docs[0]
+
+  if (!protocol) {
     notFound()
   }
 
@@ -45,14 +51,19 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { id } = await paramsPromise
+  const { protocolNumber } = await paramsPromise
   const payload = await getPayload({ config })
 
   try {
-    const protocol = await payload.findByID({
+    const result = await payload.find({
       collection: 'protocols',
-      id: id,
+      where: {
+        protocolNumber: { equals: protocolNumber },
+      },
+      limit: 1,
     })
+
+    const protocol = result.docs[0]
 
     if (!protocol) {
       return { title: 'Protocol Not Found' }
