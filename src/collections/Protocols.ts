@@ -22,6 +22,7 @@ import {
   FixedToolbarFeature,
   InlineToolbarFeature,
   TextStateFeature,
+  defaultColors,
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
@@ -43,8 +44,7 @@ const getBaseFeatures = () => [
   SubscriptFeature(),
   TextStateFeature({
     state: {
-      color: true,
-      backgroundColor: true,
+      color: defaultColors.text,
     },
   }),
   AlignFeature(),
