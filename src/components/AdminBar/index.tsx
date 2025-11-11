@@ -89,10 +89,11 @@ export const AdminBar: React.FC<{
       })}
     >
       <div className="container">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {/* Left section: Dashboard and User email */}
           <PayloadAdminBar
             {...adminBarProps}
-            className="py-2 text-white"
+            className="flex-1"
             classNames={{
               controls: 'font-medium text-white',
               logo: 'text-white',
@@ -112,6 +113,10 @@ export const AdminBar: React.FC<{
                 router.refresh()
               })
             }}
+            // Hide the "Create/New Page" button
+            createProps={{
+              style: { display: 'none' },
+            }}
             style={{
               backgroundColor: 'transparent',
               padding: 0,
@@ -119,8 +124,9 @@ export const AdminBar: React.FC<{
               zIndex: 'unset',
             }}
           />
+          {/* Right section: User role badge */}
           {user && (
-            <div className="text-sm font-medium text-white/80 px-4">
+            <div className="text-sm font-medium text-white/80 whitespace-nowrap">
               {formatRole(user.role)}
             </div>
           )}

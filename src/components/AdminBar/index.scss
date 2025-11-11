@@ -4,9 +4,4 @@
   @include small-break {
     display: none;
   }
-
-  // Hide the "Create" button (New Page)
-  :global(.payload-admin-bar__create) {
-    display: none !important;
-  }
 }
