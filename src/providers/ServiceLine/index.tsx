@@ -15,31 +15,42 @@ const SERVICE_LINE_STORAGE_KEY = 'aircare-service-line'
 
 /**
  * Provider for managing service line selection (BLS/ALS/CCT)
- * Persists selection to localStorage
+ * Persists selection to localStorage with cross-tab sync
  */
 export function ServiceLineProvider({ children }: { children: ReactNode }) {
-  const [serviceLine, setServiceLineState] = useState<ServiceLineType>('ALS')
-  const [hydrated, setHydrated] = useState(false)
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
-    if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
-      setServiceLineState(stored)
+  // Lazy initialization: read localStorage immediately on first render
+  // This prevents flash and ensures correct value from the start
+  const [serviceLine, setServiceLineState] = useState<ServiceLineType>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
+      if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
+        return stored
+      }
     }
-    setHydrated(true)
-  }, [])
+    return 'ALS' // Default to ALS
+  })
 
   // Save to localStorage when changed
   const setServiceLine = (line: ServiceLineType) => {
     setServiceLineState(line)
-    localStorage.setItem(SERVICE_LINE_STORAGE_KEY, line)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SERVICE_LINE_STORAGE_KEY, line)
+    }
   }
 
-  // Don't render until hydrated to avoid SSR mismatch
-  if (!hydrated) {
-    return <>{children}</>
-  }
+  // Cross-tab sync: update when localStorage changes in other tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === SERVICE_LINE_STORAGE_KEY && e.newValue) {
+        if (e.newValue === 'BLS' || e.newValue === 'ALS' || e.newValue === 'CCT') {
+          setServiceLineState(e.newValue)
+        }
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   return (
     <ServiceLineContext.Provider value={{ serviceLine, setServiceLine }}>
