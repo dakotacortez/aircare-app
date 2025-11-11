@@ -183,7 +183,7 @@ export default function SignupPage() {
             <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <p className="text-xs text-blue-800 dark:text-blue-200">
                 <strong>Note:</strong> Your account will require approval from the content team before
-                you can access clinical protocols. You'll be notified once approved.
+                you can access clinical protocols. You&apos;ll be notified once approved.
               </p>
             </div>
 
