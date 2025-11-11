@@ -23,8 +23,13 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
   const [serviceLine, setServiceLineState] = useState<ServiceLineType>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
+      // Validate and sanitize the stored value
       if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
         return stored
+      }
+      // If invalid value exists, clear it
+      if (stored) {
+        localStorage.removeItem(SERVICE_LINE_STORAGE_KEY)
       }
     }
     return 'ALS' // Default to ALS

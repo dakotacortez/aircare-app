@@ -160,26 +160,41 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
             <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'BLS' ? 'bg-green-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
+                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                  serviceLine === 'BLS'
+                    ? 'bg-green-600 text-white shadow-sm'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                }`}
                 onClick={() => setServiceLine('BLS')}
                 aria-pressed={serviceLine === 'BLS'}
                 title="Basic Life Support"
+                data-service-line="BLS"
               >
                 BLS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'ALS' ? 'bg-purple-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
+                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                  serviceLine === 'ALS'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                }`}
                 onClick={() => setServiceLine('ALS')}
                 aria-pressed={serviceLine === 'ALS'}
                 title="Advanced Life Support"
+                data-service-line="ALS"
               >
                 ALS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'CCT' ? 'bg-red-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
+                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                  serviceLine === 'CCT'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                }`}
                 onClick={() => setServiceLine('CCT')}
                 aria-pressed={serviceLine === 'CCT'}
                 title="Critical Care Transport"
+                data-service-line="CCT"
               >
                 CCT
               </button>
