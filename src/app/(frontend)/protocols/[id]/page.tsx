@@ -18,7 +18,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
 
   // Get the current protocol
   const protocol = await payload.findByID({
-    collection: 'protocol',
+    collection: 'protocols',
     id: id,
   })
 
@@ -28,7 +28,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
 
   // Get all protocols for sidebar navigation
   const allProtocols = await payload.find({
-    collection: 'protocol',
+    collection: 'protocols',
     where: {
       _status: { equals: 'published' },
     },
@@ -50,7 +50,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
   try {
     const protocol = await payload.findByID({
-      collection: 'protocol',
+      collection: 'protocols',
       id: id,
     })
 

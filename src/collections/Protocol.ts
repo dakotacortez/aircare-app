@@ -20,7 +20,7 @@ import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
  * Uses built-in _status (draft/published) instead of custom status enum
  */
 export const Protocol: CollectionConfig = {
-  slug: 'protocol',
+  slug: 'protocols',
   labels: {
     singular: 'Protocol',
     plural: 'Protocols',
@@ -118,7 +118,7 @@ export const Protocol: CollectionConfig = {
           OrderedListFeature(),
           UnorderedListFeature(),
           LinkFeature({
-            enabledCollections: ['protocol'],
+            enabledCollections: ['protocols'],
           }),
           CalloutBlockFeature(),
           CertificationLevelFeature(),
@@ -144,7 +144,7 @@ export const Protocol: CollectionConfig = {
           OrderedListFeature(),
           UnorderedListFeature(),
           LinkFeature({
-            enabledCollections: ['protocol'],
+            enabledCollections: ['protocols'],
           }),
           CalloutBlockFeature(),
           CertificationLevelFeature(),
@@ -170,7 +170,7 @@ export const Protocol: CollectionConfig = {
           OrderedListFeature(),
           UnorderedListFeature(),
           LinkFeature({
-            enabledCollections: ['protocol'],
+            enabledCollections: ['protocols'],
           }),
           CalloutBlockFeature(),
           CertificationLevelFeature(),
@@ -196,7 +196,7 @@ export const Protocol: CollectionConfig = {
           OrderedListFeature(),
           UnorderedListFeature(),
           LinkFeature({
-            enabledCollections: ['protocol'],
+            enabledCollections: ['protocols'],
           }),
           CalloutBlockFeature(),
           CertificationLevelFeature(),

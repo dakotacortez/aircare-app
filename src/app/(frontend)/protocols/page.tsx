@@ -9,7 +9,7 @@ export default async function ProtocolsPage() {
   const payload = await getPayload({ config })
 
   const protocols = await payload.find({
-    collection: 'protocol',
+    collection: 'protocols',
     where: {
       _status: { equals: 'published' },
     },
