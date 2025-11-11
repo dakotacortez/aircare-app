@@ -1,77 +1,35 @@
 /**
  * RichTextContent Component
- * Renders Lexical rich text with certification level filtering
- * Hierarchical: CCT sees all content, ALS sees ALS+Basic, etc.
+ * Renders Lexical rich text with authorization badges (Medical Control, Physician Only)
+ * No filtering - content visibility is controlled by service line zones
  */
 
 'use client'
 
-import React, { useMemo, type ReactElement } from 'react'
-import { CERT_LEVELS, canViewContent, type CertLevelKey } from '@/lib/certificationLevels'
+import React, { type ReactElement } from 'react'
+import { CERT_LEVELS } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
+import type { SerializedCalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
+import { getCalloutPreset } from '@/lib/calloutPresets'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface RichTextContentProps {
   content: any // Lexical JSON content
-  userCertLevel?: number // User's certification level (0-5), defaults to showing all
-  showBadges?: boolean // Whether to show cert level badges on frontend
+  showBadges?: boolean // Whether to show authorization badges
 }
 
 /**
- * Main component for rendering filtered rich text content
+ * Main component for rendering rich text content
  */
 export function RichTextContent({
   content,
-  userCertLevel = 5, // Default: show all content (physician level)
   showBadges = true,
 }: RichTextContentProps): ReactElement {
-  const filteredContent = useMemo(() => {
-    if (!content || !content.root) return null
-    return filterContentByLevel(content.root, userCertLevel)
-  }, [content, userCertLevel])
-
-  if (!filteredContent) {
+  if (!content || !content.root) {
     return <div className="protocol-content-empty">No content available</div>
   }
 
-  return <>{renderLexicalNode(filteredContent, userCertLevel, showBadges)}</>
-}
-
-/**
- * Recursively filter Lexical JSON tree based on user cert level
- */
-function filterContentByLevel(node: any, userLevel: number): any {
-  // If this is a certification-level node, check if user can see it
-  if (node.type === 'certification-level') {
-    const contentLevel = CERT_LEVELS[node.certLevel as CertLevelKey]?.level ?? 0
-    const canView = canViewContent(userLevel, contentLevel)
-
-    // If user can't view, return null to hide this node
-    if (!canView) {
-      return null
-    }
-
-    // User can view - return the node as-is
-    return node
-  }
-
-  // For other nodes, recursively filter children
-  if (node.children && Array.isArray(node.children)) {
-    const filteredChildren = node.children
-      .map((child: any) => filterContentByLevel(child, userLevel))
-      .filter((child: any) => child !== null)
-
-    // If all children were filtered out, hide the parent node too
-    if (filteredChildren.length === 0 && node.children.length > 0) {
-      return null
-    }
-
-    return {
-      ...node,
-      children: filteredChildren,
-    }
-  }
-
-  return node
+  return <>{renderLexicalNode(content.root, showBadges)}</>
 }
 
 /**
@@ -79,7 +37,6 @@ function filterContentByLevel(node: any, userLevel: number): any {
  */
 function renderLexicalNode(
   node: any,
-  userLevel: number,
   showBadges: boolean,
   key?: string,
 ): React.ReactNode {
@@ -87,9 +44,14 @@ function renderLexicalNode(
 
   const nodeKey = key || `node-${Math.random()}`
 
-  // Handle certification level nodes
+  // Handle certification level nodes (authorization badges)
   if (node.type === 'certification-level') {
     return renderCertificationLevelNode(node as SerializedCertificationLevelNode, showBadges, nodeKey)
+  }
+
+  // Handle callout blocks
+  if (node.type === 'callout-block') {
+    return renderCalloutBlockNode(node as SerializedCalloutBlockNode, showBadges, nodeKey)
   }
 
   // Handle text nodes
@@ -113,7 +75,7 @@ function renderLexicalNode(
     return (
       <p key={nodeKey}>
         {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `${nodeKey}-${i}`),
+          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
         )}
       </p>
     )
@@ -125,7 +87,7 @@ function renderLexicalNode(
     return (
       <Tag key={nodeKey}>
         {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `${nodeKey}-${i}`),
+          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
         )}
       </Tag>
     )
@@ -137,7 +99,7 @@ function renderLexicalNode(
     return (
       <Tag key={nodeKey}>
         {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `${nodeKey}-${i}`),
+          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
         )}
       </Tag>
     )
@@ -147,7 +109,7 @@ function renderLexicalNode(
     return (
       <li key={nodeKey}>
         {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `${nodeKey}-${i}`),
+          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
         )}
       </li>
     )
@@ -158,7 +120,7 @@ function renderLexicalNode(
     return (
       <a key={nodeKey} href={node.url} target={node.newTab ? '_blank' : undefined} rel="noopener noreferrer">
         {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `${nodeKey}-${i}`),
+          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
         )}
       </a>
     )
@@ -169,7 +131,7 @@ function renderLexicalNode(
     return (
       <>
         {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `root-${i}`),
+          renderLexicalNode(child, showBadges, `root-${i}`),
         )}
       </>
     )
@@ -180,7 +142,7 @@ function renderLexicalNode(
     return (
       <>
         {node.children.map((child: any, i: number) =>
-          renderLexicalNode(child, userLevel, showBadges, `${nodeKey}-${i}`),
+          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
         )}
       </>
     )
@@ -191,6 +153,7 @@ function renderLexicalNode(
 
 /**
  * Render a certification level node with badge
+ * Shows Medical Control / Physician Only authorization badges
  */
 function renderCertificationLevelNode(
   node: SerializedCertificationLevelNode,
@@ -219,7 +182,7 @@ function renderCertificationLevelNode(
         fontSize: '0.95em',
         fontWeight: 500,
       }}
-      title={`${cert.label}: ${cert.description}`}
+      title={cert.label}
     >
       <span
         style={{
@@ -242,12 +205,71 @@ function renderCertificationLevelNode(
 }
 
 /**
- * Hook to get current user's certification level
- * TODO: Integrate with your auth system
+ * Render a callout block node
+ * Shows colored box with icon, label, and rich content
  */
-export function useCertificationLevel(): number {
-  // TODO: Get from user session/auth context
-  // For now, return highest level (show all content)
-  // In production, this should check user.certLevel from session
-  return 5 // Physician level (sees all)
+function renderCalloutBlockNode(
+  node: SerializedCalloutBlockNode,
+  showBadges: boolean,
+  key: string,
+): React.ReactNode {
+  const preset = getCalloutPreset(node.presetId)
+
+  if (!preset) {
+    // Fallback if preset not found
+    return (
+      <div key={key} className="callout-block callout-fallback">
+        {node.children?.map((child: any, i: number) =>
+          renderLexicalNode(child, showBadges, `${key}-${i}`),
+        )}
+      </div>
+    )
+  }
+
+  const label = node.customLabel || preset.label
+
+  return (
+    <div
+      key={key}
+      className="callout-block"
+      style={{
+        backgroundColor: preset.bgColor,
+        borderLeft: `4px solid ${preset.borderColor}`,
+        borderRadius: '0.75rem',
+        padding: '1rem',
+        marginTop: '1rem',
+        marginBottom: '1rem',
+      }}
+    >
+      {/* Header with icon and label */}
+      <div
+        className="callout-header"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '0.75rem',
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          color: preset.color,
+        }}
+      >
+        <FontAwesomeIcon
+          icon={preset.icon}
+          style={{
+            width: '1.25rem',
+            height: '1.25rem',
+          }}
+        />
+        <span>{label}</span>
+      </div>
+
+      {/* Content */}
+      <div className="callout-content">
+        {node.children?.map((child: any, i: number) =>
+          renderLexicalNode(child, showBadges, `${key}-${i}`),
+        )}
+      </div>
+    </div>
+  )
 }

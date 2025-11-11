@@ -4,7 +4,8 @@ import Link from 'next/link'
 import type { Protocol } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
 import { ProtocolTools } from '@/components/ProtocolTools'
-import { RichTextContent, useCertificationLevel } from '@/components/RichTextContent'
+import { RichTextContent } from '@/components/RichTextContent'
+import { useServiceLine } from '@/providers/ServiceLine'
 import { ChevronRight, Menu } from 'lucide-react'
 
 interface ProtocolContentProps {
@@ -12,11 +13,29 @@ interface ProtocolContentProps {
   allProtocols: Protocol[]
 }
 
+/**
+ * Check if Lexical content is empty
+ */
+function hasContent(content: any): boolean {
+  if (!content || !content.root) return false
+  if (!content.root.children || content.root.children.length === 0) return false
+
+  // Check if all children are empty paragraphs
+  const hasNonEmptyContent = content.root.children.some((child: any) => {
+    if (child.type === 'paragraph') {
+      return child.children && child.children.length > 0
+    }
+    return true // Non-paragraph nodes count as content
+  })
+
+  return hasNonEmptyContent
+}
+
 export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const userCertLevel = useCertificationLevel()
+  const { serviceLine } = useServiceLine()
 
   useEffect(() => {
     const checkViewport = () => {
@@ -99,45 +118,78 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
             {/* Protocol Content */}
             <section className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-6 space-y-6">
-              {/* Main Content */}
-              {protocol.content && (
+              {/* Universal Content (always shown) */}
+              {protocol.contentUniversal && (
                 <div className="prose dark:prose-invert max-w-none protocol-content">
-                  <RichTextContent
-                    content={protocol.content}
-                    userCertLevel={userCertLevel}
-                    showBadges={true}
-                  />
+                  <RichTextContent content={protocol.contentUniversal} showBadges={true} />
                 </div>
               )}
 
-              {/* Considerations */}
-              {protocol.considerations && (
+              {/* BLS Zone */}
+              {serviceLine === 'BLS' && protocol.contentBLS && (
+                <div className="prose dark:prose-invert max-w-none protocol-content">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium mb-4">
+                    <span className="h-2 w-2 rounded-full bg-green-600"></span>
+                    BLS Protocol
+                  </div>
+                  <RichTextContent content={protocol.contentBLS} showBadges={true} />
+                </div>
+              )}
+
+              {/* ALS Zone */}
+              {serviceLine === 'ALS' && protocol.contentALS && (
+                <div className="prose dark:prose-invert max-w-none protocol-content">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 text-sm font-medium mb-4">
+                    <span className="h-2 w-2 rounded-full bg-purple-600"></span>
+                    ALS Protocol
+                  </div>
+                  <RichTextContent content={protocol.contentALS} showBadges={true} />
+                </div>
+              )}
+
+              {/* CCT Zone */}
+              {serviceLine === 'CCT' && protocol.contentCCT && (
+                <div className="prose dark:prose-invert max-w-none protocol-content">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 text-sm font-medium mb-4">
+                    <span className="h-2 w-2 rounded-full bg-red-600"></span>
+                    CCT Protocol
+                  </div>
+                  <RichTextContent content={protocol.contentCCT} showBadges={true} />
+                </div>
+              )}
+
+              {/* Special Considerations (only shown if has content) */}
+              {hasContent(protocol.specialConsiderations) && (
                 <div className="rounded-xl border-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 p-4">
                   <h3 className="text-sm font-semibold mb-2 text-amber-900 dark:text-amber-100">
                     Special Considerations
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
-                    <RichTextContent
-                      content={protocol.considerations}
-                      userCertLevel={userCertLevel}
-                      showBadges={true}
-                    />
+                    <RichTextContent content={protocol.specialConsiderations} showBadges={true} />
                   </div>
                 </div>
               )}
 
-              {/* Medical Control Notes */}
-              {protocol.medicalControlNotes && (protocol.requiresMedicalControl || protocol.physicianOnly) && (
-                <div className="rounded-xl border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-950/30 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-red-900 dark:text-red-100">
-                    {protocol.physicianOnly ? 'Physician Only' : 'Medical Control Required'}
+              {/* Key Points (only shown if has content) */}
+              {hasContent(protocol.keyPoints) && (
+                <div className="rounded-xl border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-blue-900 dark:text-blue-100">
+                    Key Points / Pearls
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
-                    <RichTextContent
-                      content={protocol.medicalControlNotes}
-                      userCertLevel={userCertLevel}
-                      showBadges={true}
-                    />
+                    <RichTextContent content={protocol.keyPoints} showBadges={true} />
+                  </div>
+                </div>
+              )}
+
+              {/* References & Graphics (only shown if has content) */}
+              {hasContent(protocol.references) && (
+                <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100">
+                    References & Graphics
+                  </h3>
+                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
+                    <RichTextContent content={protocol.references} showBadges={true} />
                   </div>
                 </div>
               )}

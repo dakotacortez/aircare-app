@@ -1,6 +1,9 @@
 /**
- * Certification level hierarchy for protocol content visibility
- * Higher levels can see all content from lower levels
+ * Certification level hierarchy and inline callouts for protocol content
+ *
+ * Two types of tags:
+ * 1. Hierarchical cert levels (Basic → EMT → AEMT → ALS → CCT) - content filtered by user level
+ * 2. Callouts (Medical Control, Physician Only) - always visible, just highlighted
  */
 
 export const CERT_LEVELS = {
@@ -10,6 +13,7 @@ export const CERT_LEVELS = {
     level: 0,
     color: '#6b7280', // gray
     description: 'Basic life support content',
+    isCallout: false,
   },
   emt: {
     value: 'emt',
@@ -17,6 +21,7 @@ export const CERT_LEVELS = {
     level: 1,
     color: '#10b981', // green
     description: 'Emergency Medical Technician',
+    isCallout: false,
   },
   aemt: {
     value: 'aemt',
@@ -24,6 +29,7 @@ export const CERT_LEVELS = {
     level: 2,
     color: '#3b82f6', // blue
     description: 'Advanced Emergency Medical Technician',
+    isCallout: false,
   },
   als: {
     value: 'als',
@@ -31,6 +37,7 @@ export const CERT_LEVELS = {
     level: 3,
     color: '#8b5cf6', // purple
     description: 'Advanced Life Support / Paramedic',
+    isCallout: false,
   },
   cct: {
     value: 'cct',
@@ -38,13 +45,23 @@ export const CERT_LEVELS = {
     level: 4,
     color: '#ef4444', // red
     description: 'Critical Care Transport',
+    isCallout: false,
   },
-  physician: {
-    value: 'physician',
+  medicalControl: {
+    value: 'medicalControl',
+    label: 'Medical Control',
+    level: 999, // Always visible (not filtered)
+    color: '#dc2626', // red-600
+    description: 'Requires medical control authorization',
+    isCallout: true,
+  },
+  physicianOnly: {
+    value: 'physicianOnly',
     label: 'Physician Only',
-    level: 5,
+    level: 999, // Always visible (not filtered)
     color: '#f59e0b', // amber
-    description: 'Physician-level interventions',
+    description: 'Physician-only procedures',
+    isCallout: true,
   },
 } as const
 
@@ -55,15 +72,22 @@ export type CertLevel = (typeof CERT_LEVELS)[CertLevelKey]
  * Determines if a user with a given certification level can view content
  * tagged with a specific certification level.
  *
- * @param userLevel - The user's certification level (0-5)
- * @param contentLevel - The content's required certification level (0-5)
+ * Callouts (Medical Control, Physician Only) are always visible.
+ *
+ * @param userLevel - The user's certification level (0-4)
+ * @param contentLevel - The content's required certification level (0-4 or 999 for callouts)
  * @returns true if user can view the content
  *
  * @example
  * canViewContent(4, 3) // true - CCT can see ALS content
  * canViewContent(2, 4) // false - AEMT cannot see CCT content
+ * canViewContent(0, 999) // true - Everyone sees callouts (Medical Control, Physician Only)
  */
 export function canViewContent(userLevel: number, contentLevel: number): boolean {
+  // Callouts (level 999) are always visible
+  if (contentLevel === 999) return true
+
+  // Hierarchical filtering for cert levels
   return userLevel >= contentLevel
 }
 
@@ -82,9 +106,28 @@ export function getAllCertLevels(): CertLevel[] {
 }
 
 /**
+ * Gets only hierarchical cert levels (excludes callouts)
+ */
+export function getCertLevelsOnly(): CertLevel[] {
+  return Object.values(CERT_LEVELS)
+    .filter((cert) => !cert.isCallout)
+    .sort((a, b) => a.level - b.level)
+}
+
+/**
+ * Gets only callout tags (Medical Control, Physician Only)
+ */
+export function getCallouts(): CertLevel[] {
+  return Object.values(CERT_LEVELS).filter((cert) => cert.isCallout)
+}
+
+/**
  * Filters content levels that a user can edit/create
  * Users can only tag content at or below their level
+ * But all users can add callouts
  */
 export function getAvailableCertLevelsForUser(userLevel: number): CertLevel[] {
-  return getAllCertLevels().filter((cert) => cert.level <= userLevel)
+  return Object.values(CERT_LEVELS).filter(
+    (cert) => cert.isCallout || cert.level <= userLevel
+  )
 }
