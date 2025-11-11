@@ -25,6 +25,75 @@ import { CertificationLevelFeature } from '../lexical/features/certificationLeve
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
 
 /**
+ * Shared Lexical Editor Features
+ * Base feature set for all protocol rich text fields
+ */
+const getBaseFeatures = () => [
+  FixedToolbarFeature(),
+  ParagraphFeature(),
+  BoldFeature(),
+  ItalicFeature(),
+  UnderlineFeature(),
+  StrikethroughFeature(),
+  InlineCodeFeature(),
+  SuperscriptFeature(),
+  SubscriptFeature(),
+  AlignFeature(),
+  IndentFeature(),
+  OrderedListFeature(),
+  UnorderedListFeature(),
+  ChecklistFeature(),
+  BlockquoteFeature(),
+  CalloutBlockFeature(),
+  CertificationLevelFeature(),
+]
+
+/**
+ * Full protocol editor (with headings, links, and horizontal rules)
+ */
+const getFullProtocolEditor = () => lexicalEditor({
+  features: [
+    ...getBaseFeatures(),
+    HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+    HorizontalRuleFeature(),
+    LinkFeature({ enabledCollections: ['protocols'] }),
+  ],
+})
+
+/**
+ * Simple protocol editor (no horizontal rules, limited headings)
+ */
+const getSimpleProtocolEditor = () => lexicalEditor({
+  features: [
+    ...getBaseFeatures(),
+    HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
+  ],
+})
+
+/**
+ * References editor (includes upload for images/diagrams)
+ */
+const getReferencesEditor = () => lexicalEditor({
+  features: [
+    ...getBaseFeatures(),
+    HorizontalRuleFeature(),
+    LinkFeature({ enabledCollections: ['protocols'] }),
+    UploadFeature({
+      collections: {
+        media: {
+          fields: [
+            {
+              name: 'caption',
+              type: 'text',
+            },
+          ],
+        },
+      },
+    }),
+  ],
+})
+
+/**
  * Protocols Collection
  * Fresh collection with orderable enabled from the start
  * Uses built-in _status (draft/published) instead of custom status enum
@@ -128,32 +197,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'Intro and universal guidelines for all service lines',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          SuperscriptFeature(),
-          SubscriptFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          HorizontalRuleFeature(),
-          LinkFeature({
-            enabledCollections: ['protocols'],
-          }),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getFullProtocolEditor(),
     },
 
     // BLS-Specific Content
@@ -164,32 +208,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'BLS-specific procedures and protocols',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          SuperscriptFeature(),
-          SubscriptFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          HorizontalRuleFeature(),
-          LinkFeature({
-            enabledCollections: ['protocols'],
-          }),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getFullProtocolEditor(),
     },
 
     // ALS-Specific Content
@@ -200,32 +219,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'ALS-specific procedures and protocols',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          SuperscriptFeature(),
-          SubscriptFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          HorizontalRuleFeature(),
-          LinkFeature({
-            enabledCollections: ['protocols'],
-          }),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getFullProtocolEditor(),
     },
 
     // CCT-Specific Content
@@ -236,32 +230,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'CCT-specific procedures and protocols',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          SuperscriptFeature(),
-          SubscriptFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          HorizontalRuleFeature(),
-          LinkFeature({
-            enabledCollections: ['protocols'],
-          }),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getFullProtocolEditor(),
     },
 
     // Special Considerations (shared across all levels)
@@ -272,26 +241,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'Level-specific callouts and uncommon adjustments',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getSimpleProtocolEditor(),
     },
 
     // Key Points / Pearls
@@ -302,25 +252,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'Quick-reference items by level',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getSimpleProtocolEditor(),
     },
 
     // References & Graphics
@@ -331,41 +263,7 @@ export const Protocols: CollectionConfig = {
       admin: {
         description: 'Tables, diagrams, assessment reminders',
       },
-      editor: lexicalEditor({
-        features: [
-          FixedToolbarFeature(),
-          ParagraphFeature(),
-          BoldFeature(),
-          ItalicFeature(),
-          UnderlineFeature(),
-          StrikethroughFeature(),
-          InlineCodeFeature(),
-          AlignFeature(),
-          IndentFeature(),
-          OrderedListFeature(),
-          UnorderedListFeature(),
-          ChecklistFeature(),
-          BlockquoteFeature(),
-          HorizontalRuleFeature(),
-          LinkFeature({
-            enabledCollections: ['protocols'],
-          }),
-          UploadFeature({
-            collections: {
-              media: {
-                fields: [
-                  {
-                    name: 'caption',
-                    type: 'text',
-                  },
-                ],
-              },
-            },
-          }),
-          CalloutBlockFeature(),
-          CertificationLevelFeature(),
-        ],
-      }),
+      editor: getReferencesEditor(),
     },
 
     // Version & Review Information
