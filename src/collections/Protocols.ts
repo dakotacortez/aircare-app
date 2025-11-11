@@ -20,6 +20,7 @@ import {
   IndentFeature,
   UploadFeature,
   FixedToolbarFeature,
+  InlineToolbarFeature,
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
@@ -30,6 +31,7 @@ import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
  */
 const getBaseFeatures = () => [
   FixedToolbarFeature(),
+  InlineToolbarFeature(),
   ParagraphFeature(),
   BoldFeature(),
   ItalicFeature(),
