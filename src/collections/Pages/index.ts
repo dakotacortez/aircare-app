@@ -53,6 +53,17 @@ export const Pages: CollectionConfig<'pages'> = {
         req,
       }),
     useAsTitle: 'title',
+    // Customize collection actions
+    pagination: {
+      defaultLimit: 25,
+    },
+    components: {
+      views: {
+        list: {
+          actions: [], // Hide default actions including "Create New" button
+        },
+      },
+    },
   },
   fields: [
     {

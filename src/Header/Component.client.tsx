@@ -165,10 +165,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                     ? 'bg-green-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
-                onClick={() => setServiceLine('BLS')}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setServiceLine('BLS')
+                }}
                 aria-pressed={serviceLine === 'BLS'}
                 title="Basic Life Support"
                 data-service-line="BLS"
+                type="button"
               >
                 BLS
               </button>
@@ -178,10 +183,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                     ? 'bg-purple-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
-                onClick={() => setServiceLine('ALS')}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setServiceLine('ALS')
+                }}
                 aria-pressed={serviceLine === 'ALS'}
                 title="Advanced Life Support"
                 data-service-line="ALS"
+                type="button"
               >
                 ALS
               </button>
@@ -191,10 +201,15 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                     ? 'bg-red-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                 }`}
-                onClick={() => setServiceLine('CCT')}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setServiceLine('CCT')
+                }}
                 aria-pressed={serviceLine === 'CCT'}
                 title="Critical Care Transport"
                 data-service-line="CCT"
+                type="button"
               >
                 CCT
               </button>
