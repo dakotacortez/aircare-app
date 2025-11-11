@@ -10,6 +10,7 @@ import {
   LinkFeature,
   ParagraphFeature,
   UploadFeature,
+  FixedToolbarFeature,
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
@@ -120,6 +121,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
           BoldFeature(),
@@ -146,6 +148,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
           BoldFeature(),
@@ -172,6 +175,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
           BoldFeature(),
@@ -198,6 +202,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
           BoldFeature(),
@@ -224,6 +229,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
           BoldFeature(),
@@ -246,6 +252,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           BoldFeature(),
           ItalicFeature(),
@@ -267,6 +274,7 @@ export const Protocols: CollectionConfig = {
       },
       editor: lexicalEditor({
         features: [
+          FixedToolbarFeature(),
           ParagraphFeature(),
           BoldFeature(),
           ItalicFeature(),
