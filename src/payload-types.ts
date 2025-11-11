@@ -113,10 +113,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'site-settings': SiteSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1844,6 +1846,10 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: number;
+  /**
+   * Header logo (recommended: SVG or PNG with transparent background)
+   */
+  logo?: (number | null) | Media;
   navItems?:
     | {
         link: {
@@ -1898,9 +1904,98 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * The name of your organization
+   */
+  siteName: string;
+  /**
+   * Site logo displayed in header (recommended: SVG or PNG with transparent background)
+   */
+  logo?: (number | null) | Media;
+  /**
+   * Browser tab icon (recommended: 32x32 PNG or ICO)
+   */
+  favicon?: (number | null) | Media;
+  /**
+   * Optional background image for the hero section
+   */
+  heroBackgroundImage?: (number | null) | Media;
+  /**
+   * Small badge text above the main headline
+   */
+  heroBadgeText?: string | null;
+  /**
+   * Main headline on the homepage
+   */
+  heroTitle: string;
+  /**
+   * Word or phrase to highlight in red (must appear in hero title)
+   */
+  heroHighlight?: string | null;
+  /**
+   * Subtitle text below the headline
+   */
+  heroSubtitle: string;
+  heroPrimaryButtonText?: string | null;
+  heroPrimaryButtonLink?: string | null;
+  heroSecondaryButtonText?: string | null;
+  /**
+   * Optional link for secondary button
+   */
+  heroSecondaryButtonLink?: string | null;
+  stats?:
+    | {
+        number: string;
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  featuresTitle?: string | null;
+  featuresSubtitle?: string | null;
+  ctaTitle?: string | null;
+  ctaSubtitle?: string | null;
+  ctaPrimaryButtonText?: string | null;
+  ctaSecondaryButtonText?: string | null;
+  /**
+   * General contact email address
+   */
+  contactEmail?: string | null;
+  /**
+   * Contact phone number
+   */
+  contactPhone?: string | null;
+  socialLinks?:
+    | {
+        platform: 'facebook' | 'twitter' | 'instagram' | 'linkedin' | 'youtube' | 'github';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Default title for pages without a specific meta title
+   */
+  metaTitle?: string | null;
+  /**
+   * Default description for search engines (160 characters max)
+   */
+  metaDescription?: string | null;
+  /**
+   * Default image for social media shares (recommended: 1200x630px)
+   */
+  metaImage?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
+  logo?: T;
   navItems?:
     | T
     | {
@@ -1938,6 +2033,52 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteName?: T;
+  logo?: T;
+  favicon?: T;
+  heroBackgroundImage?: T;
+  heroBadgeText?: T;
+  heroTitle?: T;
+  heroHighlight?: T;
+  heroSubtitle?: T;
+  heroPrimaryButtonText?: T;
+  heroPrimaryButtonLink?: T;
+  heroSecondaryButtonText?: T;
+  heroSecondaryButtonLink?: T;
+  stats?:
+    | T
+    | {
+        number?: T;
+        label?: T;
+        id?: T;
+      };
+  featuresTitle?: T;
+  featuresSubtitle?: T;
+  ctaTitle?: T;
+  ctaSubtitle?: T;
+  ctaPrimaryButtonText?: T;
+  ctaSecondaryButtonText?: T;
+  contactEmail?: T;
+  contactPhone?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  metaTitle?: T;
+  metaDescription?: T;
+  metaImage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

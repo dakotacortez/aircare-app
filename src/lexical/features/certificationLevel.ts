@@ -7,7 +7,7 @@ import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
 
 const createToolbarGroups = () => [
   {
-    type: 'buttons' as const,
+    type: 'dropdown' as const,
     key: 'cert-level',
     items: [
       {
