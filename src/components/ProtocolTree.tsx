@@ -25,7 +25,7 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
   })
 
   return (
-    <aside className={`fixed md:relative z-40 w-80 md:w-[320px] h-full bg-white dark:bg-neutral-800 border-r dark:border-neutral-700 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-auto`}>
+    <aside className={`fixed md:relative z-40 w-80 md:w-[320px] h-full bg-white dark:bg-neutral-800 border-r dark:border-neutral-700 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full md:hidden'} overflow-auto`}>
       <div className="px-4 py-3 flex items-center gap-2 sticky top-0 bg-white dark:bg-neutral-800 border-b dark:border-neutral-700 z-10">
         <FolderTree className="h-4 w-4" />
         <div className="text-sm font-medium flex-1">Browse Protocols</div>
