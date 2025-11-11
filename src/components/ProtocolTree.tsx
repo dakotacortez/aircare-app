@@ -116,7 +116,7 @@ function TreeSubcategory({
             return (
               <Link
                 key={protocol.id}
-                href={`/protocols/${protocol.id}`}
+                href={`/protocol/${protocol.id}`}
                 className={`flex items-center gap-2 px-8 py-1.5 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
                   isActive ? 'bg-neutral-100 dark:bg-neutral-700 border-l-4 border-neutral-900 dark:border-neutral-100' : ''
                 }`}
