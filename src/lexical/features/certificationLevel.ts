@@ -5,6 +5,23 @@
 
 import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
 
+const createToolbarGroups = () => [
+  {
+    type: 'buttons' as const,
+    key: 'cert-level',
+    items: [
+      {
+        key: 'cert-level',
+        Component: () =>
+          import('../plugins/CertificationLevelPlugin').then(
+            (m) => m.CertificationLevelToolbarDropdown,
+          ),
+        order: 65,
+      },
+    ],
+  },
+]
+
 /**
  * Feature configuration for certification level tagging
  * Use this in your collection's richText field configuration
@@ -38,17 +55,11 @@ export const CertificationLevelFeature = () => {
               position: 'normal',
             },
           ],
+          toolbarFixed: {
+            groups: createToolbarGroups(),
+          },
           toolbarInline: {
-            groups: [
-              {
-                type: 'dropdown',
-                ChildComponent: () =>
-                  import('../plugins/CertificationLevelPlugin').then(
-                    (m) => m.CertificationLevelToolbarButton,
-                  ),
-                key: 'cert-level',
-              },
-            ],
+            groups: createToolbarGroups(),
           },
         },
       }

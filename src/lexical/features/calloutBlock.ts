@@ -6,6 +6,23 @@
 import type { FeatureProviderServer } from '@payloadcms/richtext-lexical'
 import { CalloutBlockNode } from '../nodes/CalloutBlockNode'
 
+const createToolbarGroups = () => [
+  {
+    type: 'buttons' as const,
+    key: 'callout-block',
+    items: [
+      {
+        key: 'callout-block',
+        Component: () =>
+          import('../plugins/CalloutBlockPlugin').then(
+            (m) => m.CalloutBlockToolbarDropdown,
+          ),
+        order: 60,
+      },
+    ],
+  },
+]
+
 export const CalloutBlockFeature = (): FeatureProviderServer<any, any, any> => {
   return {
     feature: () => {
@@ -24,17 +41,11 @@ export const CalloutBlockFeature = (): FeatureProviderServer<any, any, any> => {
               position: 'normal',
             },
           ],
+          toolbarFixed: {
+            groups: createToolbarGroups(),
+          },
           toolbarInline: {
-            groups: [
-              {
-                type: 'dropdown',
-                ChildComponent: () =>
-                  import('../plugins/CalloutBlockPlugin').then(
-                    (m) => m.CalloutBlockToolbarButton,
-                  ),
-                key: 'callout-block',
-              },
-            ],
+            groups: createToolbarGroups(),
           },
         },
       }
