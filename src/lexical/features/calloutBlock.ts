@@ -8,16 +8,16 @@ import { CalloutBlockNode } from '../nodes/CalloutBlockNode'
 
 const createToolbarGroups = () => [
   {
-    type: 'dropdown' as const,
+    type: 'buttons' as const,
     key: 'callout-block',
     items: [
       {
         key: 'callout-block',
-        label: 'Insert callout',
         Component: () =>
           import('../plugins/CalloutBlockPlugin').then(
             (m) => m.CalloutBlockToolbarDropdown,
           ),
+        order: 60,
       },
     ],
   },

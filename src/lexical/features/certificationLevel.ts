@@ -7,16 +7,16 @@ import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
 
 const createToolbarGroups = () => [
   {
-    type: 'dropdown' as const,
+    type: 'buttons' as const,
     key: 'cert-level',
     items: [
       {
         key: 'cert-level',
-        label: 'Certification level',
         Component: () =>
           import('../plugins/CertificationLevelPlugin').then(
             (m) => m.CertificationLevelToolbarDropdown,
           ),
+        order: 65,
       },
     ],
   },
