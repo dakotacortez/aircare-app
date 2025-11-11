@@ -31,6 +31,8 @@ export const Protocol: CollectionConfig = {
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
     description: 'Clinical protocols with inline certification level tagging',
+    // Enable duplicate button in list and document views
+    enableDuplicate: true,
   },
   // Enable orderable from DAY ONE (before any data exists)
   orderable: true,
@@ -309,18 +311,7 @@ export const Protocol: CollectionConfig = {
           name: 'lastReviewed',
           type: 'date',
           label: 'Last Reviewed',
-          required: true,
-          admin: {
-            date: {
-              pickerAppearance: 'dayOnly',
-            },
-          },
-        },
-        {
-          name: 'nextReview',
-          type: 'date',
-          label: 'Next Review Due',
-          required: true,
+          required: false,
           admin: {
             date: {
               pickerAppearance: 'dayOnly',
