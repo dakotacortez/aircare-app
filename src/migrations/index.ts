@@ -2,7 +2,7 @@ import * as migration_20251109_190453_init from './20251109_190453_init';
 import * as migration_20251109_213402 from './20251109_213402';
 import * as migration_20251110_041722 from './20251110_041722';
 import * as migration_20251110_042242 from './20251110_042242';
-import * as migration_20251110_080719_fix_protocols_status_enum from './20251110_080719_fix_protocols_status_enum';
+import * as migration_20251111_022047 from './20251111_022047';
 
 export const migrations = [
   {
@@ -23,11 +23,11 @@ export const migrations = [
   {
     up: migration_20251110_042242.up,
     down: migration_20251110_042242.down,
-    name: '20251110_042242'
+    name: '20251110_042242',
   },
   {
-    up: migration_20251110_080719_fix_protocols_status_enum.up,
-    down: migration_20251110_080719_fix_protocols_status_enum.down,
-    name: '20251110_080719_fix_protocols_status_enum'
+    up: migration_20251111_022047.up,
+    down: migration_20251111_022047.down,
+    name: '20251111_022047'
   },
 ];
