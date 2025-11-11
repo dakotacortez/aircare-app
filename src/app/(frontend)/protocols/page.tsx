@@ -19,7 +19,7 @@ export default async function ProtocolsPage() {
 
   // Redirect to the first protocol in the notebook view
   if (protocols.docs.length > 0) {
-    redirect(`/protocol/${protocols.docs[0].id}`)
+    redirect(`/protocols/${protocols.docs[0].id}`)
   }
 
   // If no protocols exist, show a message

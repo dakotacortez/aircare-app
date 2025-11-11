@@ -37,7 +37,7 @@ interface HeaderClientProps {
 }
 
 const fallbackNavItems: NavItem[] = [
-  { href: '/protocol', label: 'Protocols', newTab: false },
+  { href: '/protocols', label: 'Protocols', newTab: false },
   { href: '#', label: 'References', newTab: false },
   { href: '#', label: 'Calculators', newTab: false },
   { href: '#', label: 'Checklists', newTab: false },

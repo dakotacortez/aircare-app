@@ -67,7 +67,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
         
         {/* Breadcrumb */}
         <div className="flex items-center gap-1 text-xs text-neutral-500">
-          <Link href="/protocol" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+          <Link href="/protocols" className="hover:text-neutral-900 dark:hover:text-neutral-100">
             Protocols
           </Link>
           <ChevronRight className="h-3 w-3" />
