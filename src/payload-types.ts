@@ -419,7 +419,19 @@ export interface Category {
  */
 export interface User {
   id: number;
-  name?: string | null;
+  name: string;
+  /**
+   * User role determines access level
+   */
+  role: 'user' | 'content-team' | 'admin-team';
+  /**
+   * Content Team or Admin must approve new user signups
+   */
+  approved?: boolean | null;
+  /**
+   * User account status
+   */
+  status: 'pending' | 'active' | 'inactive';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1505,6 +1517,9 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
+  approved?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;

@@ -5,14 +5,22 @@ import { authenticated } from '../../access/authenticated'
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    admin: authenticated,
-    create: authenticated,
+    // Only Content Team and Admin Team can access the admin panel
+    admin: ({ req: { user } }) => {
+      if (!user) return false
+      return (
+        (user.role === 'content-team' || user.role === 'admin-team') &&
+        user.status === 'active'
+      )
+    },
+    // Allow anyone to create an account (they'll start as pending user)
+    create: () => true,
     delete: authenticated,
     read: authenticated,
     update: authenticated,
   },
   admin: {
-    defaultColumns: ['name', 'email'],
+    defaultColumns: ['name', 'email', 'role', 'status'],
     useAsTitle: 'name',
   },
   auth: {
@@ -26,6 +34,68 @@ export const Users: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
+      required: true,
+    },
+    {
+      name: 'role',
+      type: 'select',
+      required: true,
+      defaultValue: 'user',
+      options: [
+        { label: 'User (Clinical Team Member)', value: 'user' },
+        { label: 'Content Team', value: 'content-team' },
+        { label: 'Admin Team', value: 'admin-team' },
+      ],
+      admin: {
+        description: 'User role determines access level',
+        position: 'sidebar',
+      },
+      // Only admins can change roles
+      access: {
+        create: () => true, // Allow during signup (defaults to 'user')
+        update: ({ req: { user } }) => {
+          // Only admin-team can promote/demote users
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'approved',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Content Team or Admin must approve new user signups',
+        position: 'sidebar',
+      },
+      // Only content-team and admin-team can approve users
+      access: {
+        create: () => true, // Allow during signup (defaults to false)
+        update: ({ req: { user } }) => {
+          return user?.role === 'content-team' || user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      defaultValue: 'pending',
+      options: [
+        { label: 'Pending Approval', value: 'pending' },
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' },
+      ],
+      admin: {
+        description: 'User account status',
+        position: 'sidebar',
+      },
+      // Only content-team and admin-team can change status
+      access: {
+        create: () => true, // Allow during signup (defaults to 'pending')
+        update: ({ req: { user } }) => {
+          return user?.role === 'content-team' || user?.role === 'admin-team'
+        },
+      },
     },
   ],
   timestamps: true,

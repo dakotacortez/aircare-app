@@ -24,6 +24,8 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
+import { isContentTeamOrAdmin } from '../access/isContentTeamOrAdmin'
+import { isAdmin } from '../access/isAdmin'
 
 /**
  * Shared Lexical Editor Features
@@ -116,10 +118,27 @@ export const Protocols: CollectionConfig = {
   // Enable orderable from DAY ONE (before any data exists)
   orderable: true,
   access: {
-    read: () => true, // Public read for field crews
-    create: ({ req: { user } }) => !!user, // Only logged in users
-    update: ({ req: { user } }) => !!user,
-    delete: ({ req: { user } }) => !!user,
+    // Read access:
+    // - Unauthenticated (guest): Can only see published protocols
+    // - Approved users: Can see all protocols (published + drafts)
+    read: ({ req: { user } }) => {
+      // If user is approved, they can see everything
+      if (user && user.approved && user.status === 'active') {
+        return true
+      }
+      // Unauthenticated users can only see published protocols
+      return {
+        _status: {
+          equals: 'published',
+        },
+      }
+    },
+    // Create: Content Team and Admin only
+    create: isContentTeamOrAdmin,
+    // Update: Content Team and Admin only
+    update: isContentTeamOrAdmin,
+    // Delete: Admin only
+    delete: isAdmin,
   },
   // Use built-in drafts system with autosave
   versions: {
