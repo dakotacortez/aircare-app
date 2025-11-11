@@ -8,7 +8,7 @@ import { CalloutBlockNode } from '../nodes/CalloutBlockNode'
 
 const createToolbarGroups = () => [
   {
-    type: 'buttons' as const,
+    type: 'dropdown' as const,
     key: 'callout-block',
     items: [
       {

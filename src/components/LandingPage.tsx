@@ -2,61 +2,115 @@
 
 import React from 'react';
 import Link from 'next/link';
+import type { SiteSetting, Media } from '@/payload-types';
 import {
   HeartPulse, Syringe, Search, BookOpenText,
   CheckCircle2, Clock, Shield, Zap,
   MapPin, ArrowRight
 } from 'lucide-react';
 
-export default function LandingPage() {
+interface LandingPageProps {
+  data: SiteSetting;
+}
+
+export default function LandingPage({ data }: LandingPageProps) {
+  // Helper to get media URL
+  const getMediaUrl = (media?: number | Media | null): string | null => {
+    if (!media) return null;
+    if (typeof media === 'object' && 'url' in media) {
+      return media.url || null;
+    }
+    return null;
+  };
+
+  // Helper to highlight text in hero title
+  const renderHeroTitle = () => {
+    const { heroTitle, heroHighlight } = data;
+    if (!heroHighlight || !heroTitle.includes(heroHighlight)) {
+      return heroTitle;
+    }
+    const parts = heroTitle.split(heroHighlight);
+    return (
+      <>
+        {parts[0]}
+        <span className="text-red-600">{heroHighlight}</span>
+        {parts[1]}
+      </>
+    );
+  };
+
+  const heroBackgroundUrl = getMediaUrl(data.heroBackgroundImage);
+  const backgroundStyle = heroBackgroundUrl
+    ? { backgroundImage: `url(${heroBackgroundUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : {};
+
   return (
     <>
       {/* HERO */}
-      <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center">
+      <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center" style={backgroundStyle}>
         <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 via-neutral-50 to-neutral-100 dark:from-red-600/10 dark:via-neutral-900 dark:to-neutral-800" />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/10 text-red-600 dark:bg-red-600/20 text-sm font-medium mb-4">
-            <Shield className="h-4 w-4" />
-            Trusted by 107+ Licensed Clinicians
-          </div>
+          {data.heroBadgeText && (
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/10 text-red-600 dark:bg-red-600/20 text-sm font-medium mb-4">
+              <Shield className="h-4 w-4" />
+              {data.heroBadgeText}
+            </div>
+          )}
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-            One hub for protocols, checklists, and calculators — <span className="text-red-600">offline‑ready</span>
+            {renderHeroTitle()}
           </h1>
           <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
-            Designed for CCT and ALS/BLS teams with fast search, pediatric/OB pathways, and admin‑friendly updates. Access critical care protocols anywhere, anytime.
+            {data.heroSubtitle}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/protocols" className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-6 py-3 text-sm font-medium inline-flex items-center gap-2 transition-colors shadow-lg shadow-red-600/20">
-              Open Protocols
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <button className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 px-6 py-3 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm">
-              Download App
-            </button>
+            {data.heroPrimaryButtonText && (
+              <Link
+                href={data.heroPrimaryButtonLink || '/protocols'}
+                className="rounded-xl bg-red-600 hover:bg-red-700 text-white px-6 py-3 text-sm font-medium inline-flex items-center gap-2 transition-colors shadow-lg shadow-red-600/20"
+              >
+                {data.heroPrimaryButtonText}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+            {data.heroSecondaryButtonText && (
+              <Link
+                href={data.heroSecondaryButtonLink || '#'}
+                className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 px-6 py-3 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
+              >
+                {data.heroSecondaryButtonText}
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="hidden md:block px-4 md:px-8 py-12 bg-white dark:bg-neutral-800 border-y dark:border-neutral-700">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-            <Stat number="107+" label="Licensed Clinicians" />
-            <Stat number="44+" label="Certification Types" />
-            <Stat number="3-State" label="Coverage Area" />
-            <Stat number="24/7" label="Critical Care Ready" />
+      {data.stats && data.stats.length > 0 && (
+        <section className="hidden md:block px-4 md:px-8 py-12 bg-white dark:bg-neutral-800 border-y dark:border-neutral-700">
+          <div className="max-w-6xl mx-auto">
+            <div className={`grid gap-8 text-center ${
+              data.stats.length === 2 ? 'sm:grid-cols-2' :
+              data.stats.length === 3 ? 'sm:grid-cols-3' :
+              'sm:grid-cols-2 lg:grid-cols-4'
+            }`}>
+              {data.stats.map((stat, index) => (
+                <Stat key={stat.id || index} number={stat.number} label={stat.label} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Features */}
       <section className="hidden md:block px-4 md:px-8 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Everything you need in the field</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              {data.featuresTitle || 'Everything you need in the field'}
+            </h2>
             <p className="text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto">
-              Built specifically for critical care transport teams. Fast, reliable, and works offline.
+              {data.featuresSubtitle || 'Built specifically for critical care transport teams. Fast, reliable, and works offline.'}
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -85,14 +139,30 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="hidden md:block px-4 md:px-8 py-16 bg-red-600 text-white">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready for your next transport?</h2>
-          <p className="text-lg md:text-xl mb-8 opacity-90">Access protocols, calculators, and checklists — anywhere, anytime.</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            {data.ctaTitle || 'Ready for your next transport?'}
+          </h2>
+          <p className="text-lg md:text-xl mb-8 opacity-90">
+            {data.ctaSubtitle || 'Access protocols, calculators, and checklists — anywhere, anytime.'}
+          </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/protocols" className="bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-neutral-100 transition-colors inline-flex items-center gap-2">
-              Open Protocols
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors">Download App</button>
+            {data.ctaPrimaryButtonText && (
+              <Link
+                href={data.heroPrimaryButtonLink || '/protocols'}
+                className="bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-neutral-100 transition-colors inline-flex items-center gap-2"
+              >
+                {data.ctaPrimaryButtonText}
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            )}
+            {data.ctaSecondaryButtonText && (
+              <Link
+                href={data.heroSecondaryButtonLink || '#'}
+                className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors"
+              >
+                {data.ctaSecondaryButtonText}
+              </Link>
+            )}
           </div>
         </div>
       </section>

@@ -21,6 +21,7 @@ import {
   UploadFeature,
   FixedToolbarFeature,
   InlineToolbarFeature,
+  TextStateFeature,
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
@@ -40,6 +41,12 @@ const getBaseFeatures = () => [
   InlineCodeFeature(),
   SuperscriptFeature(),
   SubscriptFeature(),
+  TextStateFeature({
+    state: {
+      color: true,
+      backgroundColor: true,
+    },
+  }),
   AlignFeature(),
   IndentFeature(),
   OrderedListFeature(),
