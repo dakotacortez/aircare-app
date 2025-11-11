@@ -1,14 +1,11 @@
-/**
- * Lexical plugin that adds certification level toolbar button
- * Allows users to wrap selected text with cert level tags
- */
-
 'use client'
 
+import type { LexicalEditor } from 'lexical'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR } from 'lexical'
 import * as React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
 import { $createCertificationLevelNode } from '../nodes/CertificationLevelNode'
 import { getAllCertLevels, type CertLevelKey } from '@/lib/certificationLevels'
 
@@ -18,25 +15,68 @@ import { getAllCertLevels, type CertLevelKey } from '@/lib/certificationLevels'
 export function CertificationLevelPlugin(): null {
   const [editor] = useLexicalComposerContext()
 
-  // This plugin doesn't track state - the toolbar button handles selection state
-  // It's registered here to ensure it's loaded with the editor
   useEffect(() => {
     // Plugin is registered, no-op for now
+    return () => undefined
   }, [editor])
 
-  return null // This plugin doesn't render anything directly
+  return null
+}
+
+type ToolbarItemComponentProps = {
+  active?: boolean
+  anchorElem: HTMLElement
+  editor: LexicalEditor
+  enabled?: boolean
+  item: ToolbarGroupItem
+}
+
+const dropdownStyles: React.CSSProperties = {
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  zIndex: 1000,
+  backgroundColor: 'white',
+  border: '1px solid #d1d5db',
+  borderRadius: '6px',
+  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+  minWidth: '220px',
+  padding: '4px',
+}
+
+const buttonStyles: React.CSSProperties = {
+  padding: '6px 12px',
+  border: '1px solid #d1d5db',
+  borderRadius: '4px',
+  fontSize: '14px',
+  fontWeight: 500,
+}
+
+const dropdownButtonStyles: React.CSSProperties = {
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  padding: '8px 12px',
+  border: 'none',
+  backgroundColor: 'transparent',
+  cursor: 'pointer',
+  fontSize: '14px',
+  textAlign: 'left',
+  borderRadius: '4px',
+  transition: 'background-color 0.15s',
 }
 
 /**
- * Toolbar button component for cert level tagging
- * This should be registered in the Lexical toolbar configuration
+ * Toolbar dropdown component for cert level tagging
  */
-export function CertificationLevelToolbarButton(): React.JSX.Element {
-  const [editor] = useLexicalComposerContext()
+export function CertificationLevelToolbarDropdown({ editor }: ToolbarItemComponentProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isTextSelected, setIsTextSelected] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const certLevels = useMemo(() => getAllCertLevels(), [])
 
-  // Track selection state
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
@@ -68,24 +108,37 @@ export function CertificationLevelToolbarButton(): React.JSX.Element {
     [editor],
   )
 
-  const certLevels = getAllCertLevels()
+  useEffect(() => {
+    if (!isDropdownOpen) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+
+      if (dropdownRef.current?.contains(target) || buttonRef.current?.contains(target)) {
+        return
+      }
+
+      setIsDropdownOpen(false)
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [isDropdownOpen])
 
   return (
     <div className="cert-level-toolbar-button" style={{ position: 'relative', display: 'inline-block' }}>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onClick={() => setIsDropdownOpen((prev) => !prev)}
         disabled={!isTextSelected}
-        className="toolbar-button"
+        className="toolbar-item"
         title="Tag certification level"
         style={{
-          padding: '6px 12px',
-          border: '1px solid #d1d5db',
-          borderRadius: '4px',
+          ...buttonStyles,
           backgroundColor: isTextSelected ? '#ffffff' : '#f3f4f6',
           cursor: isTextSelected ? 'pointer' : 'not-allowed',
-          fontSize: '14px',
-          fontWeight: 500,
           opacity: isTextSelected ? 1 : 0.5,
         }}
       >
@@ -93,45 +146,18 @@ export function CertificationLevelToolbarButton(): React.JSX.Element {
       </button>
 
       {isDropdownOpen && isTextSelected && (
-        <div
-          className="cert-level-dropdown"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 4px)',
-            left: 0,
-            zIndex: 1000,
-            backgroundColor: 'white',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            minWidth: '220px',
-            padding: '4px',
-          }}
-        >
+        <div ref={dropdownRef} className="cert-level-dropdown" style={dropdownStyles}>
           {certLevels.map((cert) => (
             <button
               key={cert.value}
               type="button"
               onClick={() => handleWrapSelection(cert.value as CertLevelKey)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
-                border: 'none',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
-                fontSize: '14px',
-                textAlign: 'left',
-                borderRadius: '4px',
-                transition: 'background-color 0.15s',
+              style={dropdownButtonStyles}
+              onMouseEnter={(event) => {
+                event.currentTarget.style.backgroundColor = '#f3f4f6'
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f3f4f6'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
+              onMouseLeave={(event) => {
+                event.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
               <span
@@ -148,21 +174,6 @@ export function CertificationLevelToolbarButton(): React.JSX.Element {
             </button>
           ))}
         </div>
-      )}
-
-      {/* Click outside to close dropdown */}
-      {isDropdownOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999,
-          }}
-          onClick={() => setIsDropdownOpen(false)}
-        />
       )}
     </div>
   )
