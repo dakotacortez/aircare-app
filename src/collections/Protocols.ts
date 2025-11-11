@@ -32,8 +32,6 @@ import { isAdmin } from '../access/isAdmin'
  * Base feature set for all protocol rich text fields
  */
 const getBaseFeatures = () => [
-  FixedToolbarFeature(),
-  InlineToolbarFeature(),
   ParagraphFeature(),
   BoldFeature(),
   ItalicFeature(),
@@ -50,6 +48,8 @@ const getBaseFeatures = () => [
   BlockquoteFeature(),
   CalloutBlockFeature(),
   CertificationLevelFeature(),
+  FixedToolbarFeature(),
+  InlineToolbarFeature(),
 ]
 
 /**
@@ -65,12 +65,13 @@ const getFullProtocolEditor = () => lexicalEditor({
 })
 
 /**
- * Simple protocol editor (no horizontal rules, limited headings)
+ * Simple protocol editor (limited headings, includes links)
  */
 const getSimpleProtocolEditor = () => lexicalEditor({
   features: [
     ...getBaseFeatures(),
     HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
+    LinkFeature({ enabledCollections: ['protocols'] }),
   ],
 })
 
