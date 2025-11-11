@@ -6,12 +6,12 @@ import { Protocol } from '@/payload-types'
 
 interface ProtocolTreeProps {
   protocols: Protocol[]
-  currentProtocolId?: string | number
+  currentProtocolNumber?: string
   isOpen: boolean
   onClose: () => void
 }
 
-export function ProtocolTree({ protocols, currentProtocolId, isOpen, onClose }: ProtocolTreeProps) {
+export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose }: ProtocolTreeProps) {
   // Group protocols by category and subcategory
   const tree: Record<string, Record<string, Protocol[]>> = {}
   
@@ -39,11 +39,11 @@ export function ProtocolTree({ protocols, currentProtocolId, isOpen, onClose }: 
       
       <nav className="p-2 text-sm">
         {Object.entries(tree).sort().map(([category, subcategories]) => (
-          <TreeCategory 
-            key={category} 
+          <TreeCategory
+            key={category}
             label={category.replace(/-/g, ' ')}
             subcategories={subcategories}
-            currentProtocolId={currentProtocolId}
+            currentProtocolNumber={currentProtocolNumber}
           />
         ))}
       </nav>
@@ -51,27 +51,31 @@ export function ProtocolTree({ protocols, currentProtocolId, isOpen, onClose }: 
   )
 }
 
-function TreeCategory({ 
-  label, 
-  subcategories, 
-  currentProtocolId 
-}: { 
+function TreeCategory({
+  label,
+  subcategories,
+  currentProtocolNumber
+}: {
   label: string
   subcategories: Record<string, Protocol[]>
-  currentProtocolId?: string | number
+  currentProtocolNumber?: string
 }) {
-  const [open, setOpen] = useState(true)
-  
+  // Check if this category contains the active protocol in any subcategory
+  const containsActiveProtocol = Object.values(subcategories).some((protocols) =>
+    protocols.some((protocol) => protocol.protocolNumber === currentProtocolNumber)
+  )
+  const [open, setOpen] = useState(containsActiveProtocol || !currentProtocolNumber)
+
   return (
     <div>
-      <button 
-        onClick={() => setOpen(!open)} 
+      <button
+        onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800"
       >
         <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-90' : ''}`} />
         <span className="font-medium capitalize">{label}</span>
       </button>
-      
+
       {open && (
         <div className="pl-5 space-y-0.5">
           {Object.entries(subcategories).sort().map(([subcategory, protocols]) => (
@@ -79,7 +83,7 @@ function TreeCategory({
               key={subcategory}
               label={subcategory}
               protocols={protocols}
-              currentProtocolId={currentProtocolId}
+              currentProtocolNumber={currentProtocolNumber}
             />
           ))}
         </div>
@@ -88,35 +92,39 @@ function TreeCategory({
   )
 }
 
-function TreeSubcategory({ 
-  label, 
+function TreeSubcategory({
+  label,
   protocols,
-  currentProtocolId 
-}: { 
+  currentProtocolNumber
+}: {
   label: string
   protocols: Protocol[]
-  currentProtocolId?: string | number
+  currentProtocolNumber?: string
 }) {
-  const [open, setOpen] = useState(false)
-  
+  // Check if this subcategory contains the active protocol
+  const containsActiveProtocol = protocols.some(
+    (protocol) => protocol.protocolNumber === currentProtocolNumber
+  )
+  const [open, setOpen] = useState(containsActiveProtocol)
+
   return (
     <div>
-      <button 
-        onClick={() => setOpen(!open)} 
+      <button
+        onClick={() => setOpen(!open)}
         className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800"
       >
         <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-90' : ''}`} />
         <span className="text-sm">{label}</span>
       </button>
-      
+
       {open && (
         <div className="pl-5 space-y-0.5">
           {protocols.map((protocol) => {
-            const isActive = protocol.id === currentProtocolId
+            const isActive = protocol.protocolNumber === currentProtocolNumber
             return (
               <Link
                 key={protocol.id}
-                href={`/protocols/${protocol.id}`}
+                href={`/protocols/${protocol.protocolNumber}`}
                 className={`flex items-center gap-2 px-8 py-1.5 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
                   isActive ? 'bg-neutral-100 dark:bg-neutral-700 border-l-4 border-neutral-900 dark:border-neutral-100' : ''
                 }`}
