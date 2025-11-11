@@ -13,6 +13,7 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { SiteSettings } from './globals/SiteSettings/config'
 
 import { Protocols } from './collections/Protocols'
 
@@ -71,7 +72,7 @@ export default buildConfig({
   collections: [Pages, Posts, Media, Categories, Users, Protocols],
 
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, SiteSettings],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
