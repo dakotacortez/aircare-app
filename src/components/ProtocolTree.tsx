@@ -60,7 +60,11 @@ function TreeCategory({
   subcategories: Record<string, Protocol[]>
   currentProtocolNumber?: string
 }) {
-  const [open, setOpen] = useState(true)
+  // Check if this category contains the active protocol in any subcategory
+  const containsActiveProtocol = Object.values(subcategories).some((protocols) =>
+    protocols.some((protocol) => protocol.protocolNumber === currentProtocolNumber)
+  )
+  const [open, setOpen] = useState(containsActiveProtocol || !currentProtocolNumber)
 
   return (
     <div>
@@ -97,7 +101,11 @@ function TreeSubcategory({
   protocols: Protocol[]
   currentProtocolNumber?: string
 }) {
-  const [open, setOpen] = useState(false)
+  // Check if this subcategory contains the active protocol
+  const containsActiveProtocol = protocols.some(
+    (protocol) => protocol.protocolNumber === currentProtocolNumber
+  )
+  const [open, setOpen] = useState(containsActiveProtocol)
 
   return (
     <div>
