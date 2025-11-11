@@ -803,9 +803,9 @@ export interface Protocol {
     | 'special-ops';
   subcategory: string;
   /**
-   * Main protocol content - Select text and use "Cert Level" button to tag ALS/CCT/Physician-only content
+   * Intro and universal guidelines for all service lines
    */
-  content: {
+  contentUniversal?: {
     root: {
       type: string;
       children: {
@@ -819,11 +819,101 @@ export interface Protocol {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   /**
-   * Special considerations, precautions, or warnings
+   * BLS-specific procedures and protocols
    */
-  considerations?: {
+  contentBLS?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * ALS-specific procedures and protocols
+   */
+  contentALS?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * CCT-specific procedures and protocols
+   */
+  contentCCT?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Level-specific callouts and uncommon adjustments
+   */
+  specialConsiderations?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Quick-reference items by level
+   */
+  keyPoints?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Tables, diagrams, assessment reminders
+   */
+  references?: {
     root: {
       type: string;
       children: {
@@ -1443,8 +1533,13 @@ export interface ProtocolSelect<T extends boolean = true> {
   protocolNumber?: T;
   category?: T;
   subcategory?: T;
-  content?: T;
-  considerations?: T;
+  contentUniversal?: T;
+  contentBLS?: T;
+  contentALS?: T;
+  contentCCT?: T;
+  specialConsiderations?: T;
+  keyPoints?: T;
+  references?: T;
   effectiveDate?: T;
   lastReviewed?: T;
   nextReview?: T;

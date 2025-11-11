@@ -6,6 +6,7 @@ import { HeartPulse, Menu, Sun, Moon, Users } from 'lucide-react'
 import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
 import { useTheme } from '@/providers/Theme'
 import { getImplicitPreference } from '@/providers/Theme/shared'
+import { useServiceLine } from '@/providers/ServiceLine'
 
 type NavItem = {
   href: string
@@ -80,8 +81,8 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const { theme, setTheme } = useTheme()
+  const { serviceLine, setServiceLine } = useServiceLine()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [serviceLine, setServiceLine] = useState<'CCT' | 'ALS/BLS'>('CCT')
   const [user, setUser] = useState<User | null>(null)
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
 
@@ -159,18 +160,28 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
             <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'CCT' ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
-                onClick={() => setServiceLine('CCT')}
-                aria-pressed={serviceLine === 'CCT'}
+                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'BLS' ? 'bg-green-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
+                onClick={() => setServiceLine('BLS')}
+                aria-pressed={serviceLine === 'BLS'}
+                title="Basic Life Support"
               >
-                CCT
+                BLS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'ALS/BLS' ? 'bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
-                onClick={() => setServiceLine('ALS/BLS')}
-                aria-pressed={serviceLine === 'ALS/BLS'}
+                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'ALS' ? 'bg-purple-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
+                onClick={() => setServiceLine('ALS')}
+                aria-pressed={serviceLine === 'ALS'}
+                title="Advanced Life Support"
               >
-                ALS/BLS
+                ALS
+              </button>
+              <button
+                className={`px-2.5 py-1 text-xs rounded-lg transition-colors ${serviceLine === 'CCT' ? 'bg-red-600 text-white' : 'hover:bg-neutral-100 dark:hover:bg-neutral-700'}`}
+                onClick={() => setServiceLine('CCT')}
+                aria-pressed={serviceLine === 'CCT'}
+                title="Critical Care Transport"
+              >
+                CCT
               </button>
             </div>
 

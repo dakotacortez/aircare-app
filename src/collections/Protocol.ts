@@ -4,12 +4,12 @@ import {
   BoldFeature,
   ItalicFeature,
   UnderlineFeature,
-  StrikethroughFeature,
   HeadingFeature,
   OrderedListFeature,
   UnorderedListFeature,
   LinkFeature,
   ParagraphFeature,
+  UploadFeature,
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 
@@ -99,15 +99,13 @@ export const Protocol: CollectionConfig = {
       ],
     },
 
-    // Main Protocol Content with Certification Level Feature
+    // Universal Content (shown to all service lines)
     {
-      name: 'content',
+      name: 'contentUniversal',
       type: 'richText',
-      label: 'Protocol Content',
-      required: true,
+      label: 'Protocol (Universal)',
       admin: {
-        description:
-          'Main protocol content - Select text and use "Cert Level" button to tag ALS/CCT/Physician-only content',
+        description: 'Intro and universal guidelines for all service lines',
       },
       editor: lexicalEditor({
         features: [
@@ -116,25 +114,98 @@ export const Protocol: CollectionConfig = {
           BoldFeature(),
           ItalicFeature(),
           UnderlineFeature(),
-          StrikethroughFeature(),
           OrderedListFeature(),
           UnorderedListFeature(),
           LinkFeature({
             enabledCollections: ['protocol'],
           }),
-          // Our custom certification level feature
           CertificationLevelFeature(),
         ],
       }),
     },
 
-    // Special Considerations
+    // BLS-Specific Content
     {
-      name: 'considerations',
+      name: 'contentBLS',
+      type: 'richText',
+      label: 'Protocol (BLS)',
+      admin: {
+        description: 'BLS-specific procedures and protocols',
+      },
+      editor: lexicalEditor({
+        features: [
+          ParagraphFeature(),
+          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+          BoldFeature(),
+          ItalicFeature(),
+          UnderlineFeature(),
+          OrderedListFeature(),
+          UnorderedListFeature(),
+          LinkFeature({
+            enabledCollections: ['protocol'],
+          }),
+          CertificationLevelFeature(),
+        ],
+      }),
+    },
+
+    // ALS-Specific Content
+    {
+      name: 'contentALS',
+      type: 'richText',
+      label: 'Protocol (ALS)',
+      admin: {
+        description: 'ALS-specific procedures and protocols',
+      },
+      editor: lexicalEditor({
+        features: [
+          ParagraphFeature(),
+          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+          BoldFeature(),
+          ItalicFeature(),
+          UnderlineFeature(),
+          OrderedListFeature(),
+          UnorderedListFeature(),
+          LinkFeature({
+            enabledCollections: ['protocol'],
+          }),
+          CertificationLevelFeature(),
+        ],
+      }),
+    },
+
+    // CCT-Specific Content
+    {
+      name: 'contentCCT',
+      type: 'richText',
+      label: 'Protocol (CCT)',
+      admin: {
+        description: 'CCT-specific procedures and protocols',
+      },
+      editor: lexicalEditor({
+        features: [
+          ParagraphFeature(),
+          HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+          BoldFeature(),
+          ItalicFeature(),
+          UnderlineFeature(),
+          OrderedListFeature(),
+          UnorderedListFeature(),
+          LinkFeature({
+            enabledCollections: ['protocol'],
+          }),
+          CertificationLevelFeature(),
+        ],
+      }),
+    },
+
+    // Special Considerations (shared across all levels)
+    {
+      name: 'specialConsiderations',
       type: 'richText',
       label: 'Special Considerations',
       admin: {
-        description: 'Special considerations, precautions, or warnings',
+        description: 'Level-specific callouts and uncommon adjustments',
       },
       editor: lexicalEditor({
         features: [
@@ -144,6 +215,58 @@ export const Protocol: CollectionConfig = {
           ItalicFeature(),
           UnorderedListFeature(),
           OrderedListFeature(),
+          CertificationLevelFeature(),
+        ],
+      }),
+    },
+
+    // Key Points / Pearls
+    {
+      name: 'keyPoints',
+      type: 'richText',
+      label: 'Key Points / Pearls',
+      admin: {
+        description: 'Quick-reference items by level',
+      },
+      editor: lexicalEditor({
+        features: [
+          ParagraphFeature(),
+          BoldFeature(),
+          ItalicFeature(),
+          UnorderedListFeature(),
+          OrderedListFeature(),
+          CertificationLevelFeature(),
+        ],
+      }),
+    },
+
+    // References & Graphics
+    {
+      name: 'references',
+      type: 'richText',
+      label: 'References & Graphics',
+      admin: {
+        description: 'Tables, diagrams, assessment reminders',
+      },
+      editor: lexicalEditor({
+        features: [
+          ParagraphFeature(),
+          BoldFeature(),
+          ItalicFeature(),
+          UnorderedListFeature(),
+          OrderedListFeature(),
+          UploadFeature({
+            collections: {
+              media: {
+                fields: [
+                  {
+                    name: 'caption',
+                    type: 'text',
+                  },
+                ],
+              },
+            },
+          }),
           CertificationLevelFeature(),
         ],
       }),

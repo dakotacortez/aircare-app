@@ -252,4 +252,74 @@ html[data-theme='light'] {
     color: #9ca3af;
     font-style: italic;
   }
+
+  /* Mobile-responsive tables */
+  .protocol-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    overflow-x: auto;
+    display: block;
+  }
+
+  .protocol-content table thead {
+    background-color: #f3f4f6;
+  }
+
+  .dark .protocol-content table thead {
+    background-color: #374151;
+  }
+
+  .protocol-content table th,
+  .protocol-content table td {
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+  }
+
+  .dark .protocol-content table th,
+  .dark .protocol-content table td {
+    border-color: #4b5563;
+  }
+
+  /* Horizontal scroll for tables on mobile */
+  @media (max-width: 768px) {
+    .protocol-content table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+
+    .protocol-content table thead,
+    .protocol-content table tbody,
+    .protocol-content table th,
+    .protocol-content table td,
+    .protocol-content table tr {
+      display: table-cell;
+    }
+  }
+
+  /* Responsive images */
+  .protocol-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+  }
+
+  /* Image captions */
+  .protocol-content img + p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-style: italic;
+    margin-top: -0.5rem;
+  }
+
+  .dark .protocol-content img + p {
+    color: #9ca3af;
+  }
 }
