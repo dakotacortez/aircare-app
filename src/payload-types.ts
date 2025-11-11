@@ -929,8 +929,7 @@ export interface Protocol {
     [k: string]: unknown;
   } | null;
   effectiveDate: string;
-  lastReviewed: string;
-  nextReview: string;
+  lastReviewed?: string | null;
   versionNumber: string;
   /**
    * Diagrams, flowcharts, reference images, or PDFs
@@ -1542,7 +1541,6 @@ export interface ProtocolsSelect<T extends boolean = true> {
   references?: T;
   effectiveDate?: T;
   lastReviewed?: T;
-  nextReview?: T;
   versionNumber?: T;
   attachments?: T;
   keywords?: T;
