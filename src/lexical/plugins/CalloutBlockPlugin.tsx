@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
+import type { LexicalEditor } from 'lexical'
 import { $createParagraphNode, $createTextNode } from 'lexical'
 import { $insertNodeToNearestRoot } from '@lexical/utils'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons'
+import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
 import { $createCalloutBlockNode, CalloutBlockNode } from '../nodes/CalloutBlockNode'
 import { CALLOUT_PRESETS, type CalloutPresetId } from '@/lib/calloutPresets'
 
@@ -24,25 +26,47 @@ export function CalloutBlockPlugin(): null {
   return null
 }
 
+type ToolbarItemComponentProps = {
+  active?: boolean
+  anchorElem: HTMLElement
+  editor: LexicalEditor
+  enabled?: boolean
+  item: ToolbarGroupItem
+}
+
+const dropdownContainerStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  marginTop: '4px',
+  backgroundColor: 'white',
+  border: '1px solid #ccc',
+  borderRadius: '8px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  zIndex: 1000,
+  minWidth: '220px',
+  maxHeight: '400px',
+  overflowY: 'auto',
+}
+
 /**
- * Toolbar button component for inserting callout blocks
+ * Toolbar dropdown component for inserting callout blocks
  */
-export function CalloutBlockToolbarButton(): React.JSX.Element {
-  const [editor] = useLexicalComposerContext()
+export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const dropdownRef = useRef<HTMLDivElement | null>(null)
 
   const insertCalloutBlock = useCallback(
     (presetId: CalloutPresetId) => {
       editor.update(() => {
         const calloutBlock = $createCalloutBlockNode(presetId)
 
-        // Create a paragraph with placeholder text
         const paragraph = $createParagraphNode()
         const text = $createTextNode('Add your content here...')
         paragraph.append(text)
         calloutBlock.append(paragraph)
 
-        // Insert the callout block
         $insertNodeToNearestRoot(calloutBlock)
       })
 
@@ -51,20 +75,30 @@ export function CalloutBlockToolbarButton(): React.JSX.Element {
     [editor],
   )
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     if (!isDropdownOpen) return
 
-    const handleClickOutside = () => setIsDropdownOpen(false)
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+
+      if (dropdownRef.current?.contains(target) || buttonRef.current?.contains(target)) {
+        return
+      }
+
+      setIsDropdownOpen(false)
+    }
+
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isDropdownOpen])
 
   return (
-    <div className="relative" onClick={(e) => e.stopPropagation()}>
+    <div className="relative" onClick={(event) => event.stopPropagation()}>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onClick={() => setIsDropdownOpen((prev) => !prev)}
         className="toolbar-item"
         aria-label="Insert callout"
         title="Insert callout block"
@@ -77,23 +111,7 @@ export function CalloutBlockToolbarButton(): React.JSX.Element {
       </button>
 
       {isDropdownOpen && (
-        <div
-          className="dropdown"
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            marginTop: '4px',
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            zIndex: 1000,
-            minWidth: '220px',
-            maxHeight: '400px',
-            overflowY: 'auto',
-          }}
-        >
+        <div className="dropdown" ref={dropdownRef} style={dropdownContainerStyle}>
           {Object.values(CALLOUT_PRESETS).map((preset) => (
             <button
               key={preset.id}
@@ -113,11 +131,11 @@ export function CalloutBlockToolbarButton(): React.JSX.Element {
                 fontSize: '14px',
                 transition: 'background-color 0.2s',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f3f4f6'
+              onMouseEnter={(event) => {
+                event.currentTarget.style.backgroundColor = '#f3f4f6'
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
+              onMouseLeave={(event) => {
+                event.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
               <FontAwesomeIcon
