@@ -12,6 +12,15 @@ export const Header: GlobalConfig = {
   },
   fields: [
     {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Logo',
+      admin: {
+        description: 'Header logo (recommended: SVG or PNG with transparent background)',
+      },
+    },
+    {
       name: 'navItems',
       type: 'array',
       fields: [

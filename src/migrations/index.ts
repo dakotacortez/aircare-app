@@ -3,6 +3,7 @@ import * as migration_20251111_035941 from './20251111_035941';
 import * as migration_20251111_043054 from './20251111_043054';
 import * as migration_20251111_043434 from './20251111_043434';
 import * as migration_20251111_142444_add_user_roles_and_approval from './20251111_142444_add_user_roles_and_approval';
+import * as migration_20251111_210353_add_logo_and_site_settings from './20251111_210353_add_logo_and_site_settings';
 
 export const migrations = [
   {
@@ -28,5 +29,10 @@ export const migrations = [
     up: migration_20251111_142444_add_user_roles_and_approval.up,
     down: migration_20251111_142444_add_user_roles_and_approval.down,
     name: '20251111_142444_add_user_roles_and_approval'
+  },
+  {
+    up: migration_20251111_210353_add_logo_and_site_settings.up,
+    down: migration_20251111_210353_add_logo_and_site_settings.down,
+    name: '20251111_210353_add_logo_and_site_settings'
   },
 ];
