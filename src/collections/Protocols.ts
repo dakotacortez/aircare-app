@@ -15,11 +15,11 @@ import { CertificationLevelFeature } from '../lexical/features/certificationLeve
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
 
 /**
- * Protocol Collection (singular)
+ * Protocols Collection
  * Fresh collection with orderable enabled from the start
  * Uses built-in _status (draft/published) instead of custom status enum
  */
-export const Protocol: CollectionConfig = {
+export const Protocols: CollectionConfig = {
   slug: 'protocols',
   labels: {
     singular: 'Protocol',
