@@ -31,8 +31,6 @@ export const Protocols: CollectionConfig = {
     group: 'Clinical Content',
     listSearchableFields: ['title', 'protocolNumber', 'keywords'],
     description: 'Clinical protocols with inline certification level tagging',
-    // Enable duplicate button in list and document views
-    enableDuplicate: true,
   },
   // Enable orderable from DAY ONE (before any data exists)
   orderable: true,
@@ -72,7 +70,7 @@ export const Protocols: CollectionConfig = {
         placeholder: 'e.g., MED-CARD-001',
       },
       // Validate that it's URL-safe
-      validate: (value: string) => {
+      validate: (value: string | null | undefined) => {
         if (!value) return 'Protocol number is required'
         // Allow letters, numbers, hyphens, underscores
         if (!/^[A-Za-z0-9_-]+$/.test(value)) {
