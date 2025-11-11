@@ -12,6 +12,7 @@ const createToolbarGroups = () => [
     items: [
       {
         key: 'cert-level',
+        label: 'Certification level',
         Component: () =>
           import('../plugins/CertificationLevelPlugin').then(
             (m) => m.CertificationLevelToolbarDropdown,

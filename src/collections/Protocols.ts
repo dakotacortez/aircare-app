@@ -72,12 +72,13 @@ const getFullProtocolEditor = () => lexicalEditor({
 })
 
 /**
- * Simple protocol editor (limited headings, includes links)
+ * Simple protocol editor (limited headings, includes links and horizontal rules)
  */
 const getSimpleProtocolEditor = () => lexicalEditor({
   features: [
     ...getBaseFeatures(),
     HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
+    HorizontalRuleFeature(),
     LinkFeature({ enabledCollections: ['protocols'] }),
   ],
 })
