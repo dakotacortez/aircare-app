@@ -1,19 +1,67 @@
 'use client'
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import './CalloutBlockPlugin.css'
+
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { createPortal } from 'react-dom'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import type { LexicalEditor } from 'lexical'
-import { $createParagraphNode, $createTextNode } from 'lexical'
+import {
+  $createParagraphNode,
+  $getNodeByKey,
+  $getSelection,
+  $isRangeSelection,
+  SELECTION_CHANGE_COMMAND,
+  COMMAND_PRIORITY_LOW,
+  LexicalEditor,
+} from 'lexical'
 import { $insertNodeToNearestRoot } from '@lexical/utils'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSquarePlus } from '@fortawesome/free-solid-svg-icons'
 import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
-import { $createCalloutBlockNode, CalloutBlockNode } from '../nodes/CalloutBlockNode'
-import { CALLOUT_PRESETS, type CalloutPresetId } from '@/lib/calloutPresets'
+import {
+  CALL_OUT_ICON_OPTIONS,
+  CALLOUT_PRESETS,
+  type CalloutIconId,
+  type CalloutPresetId,
+  getCalloutPreset,
+} from '@/lib/calloutPresets'
+import {
+  $createCalloutBlockNode,
+  $isCalloutBlockNode,
+  CalloutBlockNode,
+} from '../nodes/CalloutBlockNode'
 
-/**
- * Plugin component (registers with Lexical)
- */
+type CalloutSettings = {
+  presetId?: CalloutPresetId
+  label: string
+  icon: CalloutIconId
+  color: string
+}
+
+type ModalContext =
+  | {
+      mode: 'create'
+    }
+  | {
+      mode: 'edit'
+      nodeKey: string
+    }
+  | null
+
+type ToolbarItemComponentProps = {
+  active?: boolean
+  anchorElem: HTMLElement
+  editor: LexicalEditor
+  enabled?: boolean
+  item: ToolbarGroupItem
+}
+
 export function CalloutBlockPlugin(): null {
   const [editor] = useLexicalComposerContext()
 
@@ -26,53 +74,72 @@ export function CalloutBlockPlugin(): null {
   return null
 }
 
-type ToolbarItemComponentProps = {
-  active?: boolean
-  anchorElem: HTMLElement
-  editor: LexicalEditor
-  enabled?: boolean
-  item: ToolbarGroupItem
-}
-
 const dropdownContainerStyle: React.CSSProperties = {
   position: 'absolute',
   top: '100%',
   left: 0,
   marginTop: '4px',
-  backgroundColor: 'white',
-  border: '1px solid #ccc',
+  backgroundColor: 'var(--theme-elevation-50, #fff)',
+  border: '1px solid var(--theme-elevation-150, #d1d5db)',
   borderRadius: '8px',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
   zIndex: 1000,
-  minWidth: '220px',
-  maxHeight: '400px',
+  minWidth: '240px',
+  maxHeight: '420px',
   overflowY: 'auto',
 }
 
-/**
- * Toolbar dropdown component for inserting callout blocks
- */
+const dropdownItemStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '12px',
+  width: '100%',
+  padding: '10px 16px',
+  border: 'none',
+  background: 'transparent',
+  textAlign: 'left',
+  cursor: 'pointer',
+  fontSize: '14px',
+  transition: 'background-color 0.15s ease',
+}
+
+const calloutPreviewStyle: React.CSSProperties = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+}
+
 export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProps): React.JSX.Element {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalContext, setModalContext] = useState<ModalContext>(null)
+  const [modalInitialSettings, setModalInitialSettings] = useState<CalloutSettings | null>(null)
+  const [selectedCalloutKey, setSelectedCalloutKey] = useState<string | null>(null)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
   const insertCalloutBlock = useCallback(
-    (presetId: CalloutPresetId) => {
+    (settings: CalloutSettings) => {
       editor.update(() => {
-        const calloutBlock = $createCalloutBlockNode(presetId)
-
+        const calloutBlock = $createCalloutBlockNode(settings)
         const paragraph = $createParagraphNode()
-        const text = $createTextNode('Add your content here...')
-        paragraph.append(text)
         calloutBlock.append(paragraph)
-
         $insertNodeToNearestRoot(calloutBlock)
+        paragraph.select()
       })
-
-      setIsDropdownOpen(false)
     },
     [editor],
+  )
+
+  const openModal = useCallback(
+    (context: ModalContext, settings: CalloutSettings) => {
+      setModalContext(context)
+      setModalInitialSettings(settings)
+      setIsModalOpen(true)
+      setIsDropdownOpen(false)
+    },
+    [],
   )
 
   useEffect(() => {
@@ -93,6 +160,116 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isDropdownOpen])
 
+  useEffect(() => {
+    return editor.registerCommand(
+      SELECTION_CHANGE_COMMAND,
+      () => {
+        editor.getEditorState().read(() => {
+          const selection = $getSelection()
+          if ($isRangeSelection(selection)) {
+            const anchorNode = selection.anchor.getNode()
+            const topLevel = anchorNode.getTopLevelElementOrThrow()
+            if ($isCalloutBlockNode(topLevel)) {
+              setSelectedCalloutKey(topLevel.getKey())
+              return
+            }
+          }
+          setSelectedCalloutKey(null)
+        })
+        return false
+      },
+      COMMAND_PRIORITY_LOW,
+    )
+  }, [editor])
+
+  const handlePresetInsert = useCallback(
+    (presetId: CalloutPresetId) => {
+      const preset = CALLOUT_PRESETS[presetId]
+      if (!preset) return
+      insertCalloutBlock({
+        presetId,
+        label: preset.label,
+        icon: preset.icon,
+        color: preset.color,
+      })
+      setIsDropdownOpen(false)
+    },
+    [insertCalloutBlock],
+  )
+
+  const handleOpenCustom = useCallback(() => {
+    const defaultPreset = CALLOUT_PRESETS.medicalControl
+    openModal(
+      { mode: 'create' },
+      {
+        presetId: defaultPreset.id as CalloutPresetId,
+        label: defaultPreset.label,
+        icon: defaultPreset.icon,
+        color: defaultPreset.color,
+      },
+    )
+  }, [openModal])
+
+  const handleOpenEdit = useCallback(() => {
+    if (!selectedCalloutKey) return
+
+    editor.getEditorState().read(() => {
+      const node = $getNodeByKey(selectedCalloutKey)
+      if (!$isCalloutBlockNode(node)) return
+
+      const presetId = node.getPresetId()
+      openModal(
+        { mode: 'edit', nodeKey: selectedCalloutKey },
+        {
+          presetId,
+          label: node.getLabel(),
+          icon: node.getIcon(),
+          color: node.getColor(),
+        },
+      )
+    })
+  }, [editor, openModal, selectedCalloutKey])
+
+  const handleModalSave = useCallback(
+    (settings: CalloutSettings) => {
+      if (!modalContext) return
+
+      if (modalContext.mode === 'create') {
+        insertCalloutBlock(settings)
+      }
+
+      if (modalContext.mode === 'edit') {
+        editor.update(() => {
+          const node = $getNodeByKey(modalContext.nodeKey)
+          if ($isCalloutBlockNode(node)) {
+            node.setPreset(settings.presetId)
+            node.setLabel(settings.label)
+            node.setIcon(settings.icon)
+            node.setColor(settings.color)
+          }
+        })
+      }
+
+      setIsModalOpen(false)
+      setModalContext(null)
+      setModalInitialSettings(null)
+    },
+    [editor, insertCalloutBlock, modalContext],
+  )
+
+  const dropdownSections = useMemo(() => {
+    const presets = [
+      CALLOUT_PRESETS.medicalControl,
+      CALLOUT_PRESETS.physicianOnly,
+      CALLOUT_PRESETS.highRisk,
+      CALLOUT_PRESETS.medication,
+      CALLOUT_PRESETS.tip,
+      CALLOUT_PRESETS.information,
+    ]
+
+    return presets
+  }, [])
+
   return (
     <div className="relative" onClick={(event) => event.stopPropagation()}>
       <button
@@ -101,7 +278,7 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
         onClick={() => setIsDropdownOpen((prev) => !prev)}
         className="toolbar-item"
         aria-label="Insert callout"
-        title="Insert callout block"
+        title="Insert callout"
       >
         <FontAwesomeIcon icon={faSquarePlus} />
         <span className="text">Callout</span>
@@ -112,45 +289,215 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
 
       {isDropdownOpen && (
         <div className="dropdown" ref={dropdownRef} style={dropdownContainerStyle}>
-          {Object.values(CALLOUT_PRESETS).map((preset) => (
+          <div
+            style={{
+              padding: '8px 16px',
+              fontSize: '12px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--theme-elevation-500, #6b7280)',
+            }}
+          >
+            Presets
+          </div>
+          {dropdownSections.map((preset) => (
             <button
               key={preset.id}
               type="button"
-              onClick={() => insertCalloutBlock(preset.id as CalloutPresetId)}
-              className="dropdown-item"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                width: '100%',
-                padding: '10px 16px',
-                border: 'none',
-                background: 'transparent',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '14px',
-                transition: 'background-color 0.2s',
-              }}
+              onClick={() => handlePresetInsert(preset.id as CalloutPresetId)}
+              style={dropdownItemStyle}
               onMouseEnter={(event) => {
-                event.currentTarget.style.backgroundColor = '#f3f4f6'
+                event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
               }}
               onMouseLeave={(event) => {
                 event.currentTarget.style.backgroundColor = 'transparent'
               }}
             >
-              <FontAwesomeIcon
-                icon={preset.icon}
+              <span
                 style={{
-                  color: preset.color,
-                  width: '16px',
-                  height: '16px',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '6px',
+                  backgroundColor: preset.color,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '12px',
+                  fontWeight: 700,
                 }}
-              />
-              <span style={{ flex: 1 }}>{preset.label}</span>
+              >
+                {preset.label.slice(0, 1)}
+              </span>
+              <span style={calloutPreviewStyle}>
+                <span style={{ fontWeight: 600 }}>{preset.label}</span>
+                {preset.description && (
+                  <span style={{ fontSize: '12px', color: 'var(--theme-elevation-600, #4b5563)' }}>
+                    {preset.description}
+                  </span>
+                )}
+              </span>
             </button>
           ))}
+
+          <div style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }} />
+
+          <button
+            type="button"
+            style={dropdownItemStyle}
+            onClick={handleOpenCustom}
+            onMouseEnter={(event) => {
+              event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+            }}
+            onMouseLeave={(event) => {
+              event.currentTarget.style.backgroundColor = 'transparent'
+            }}
+          >
+            <span style={{ fontWeight: 600 }}>Custom callout…</span>
+          </button>
+
+          <button
+            type="button"
+            style={{
+              ...dropdownItemStyle,
+              opacity: selectedCalloutKey ? 1 : 0.45,
+              cursor: selectedCalloutKey ? 'pointer' : 'not-allowed',
+            }}
+            disabled={!selectedCalloutKey}
+            onClick={handleOpenEdit}
+            onMouseEnter={(event) => {
+              if (!event.currentTarget.disabled) {
+                event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+              }
+            }}
+            onMouseLeave={(event) => {
+              event.currentTarget.style.backgroundColor = 'transparent'
+            }}
+          >
+            <span style={{ fontWeight: 600 }}>Edit selected callout…</span>
+          </button>
         </div>
+      )}
+
+      {isModalOpen && modalInitialSettings && (
+        <CalloutSettingsModal
+          initialSettings={modalInitialSettings}
+          onClose={() => {
+            setIsModalOpen(false)
+            setModalContext(null)
+            setModalInitialSettings(null)
+          }}
+          onSave={handleModalSave}
+        />
       )}
     </div>
   )
 }
+
+type CalloutSettingsModalProps = {
+  initialSettings: CalloutSettings
+  onClose: () => void
+  onSave: (settings: CalloutSettings) => void
+}
+
+function CalloutSettingsModal({ initialSettings, onClose, onSave }: CalloutSettingsModalProps) {
+  const [presetId, setPresetId] = useState<string>(initialSettings.presetId ?? '')
+  const [label, setLabel] = useState(initialSettings.label)
+  const [iconId, setIconId] = useState<CalloutIconId>(initialSettings.icon)
+  const [color, setColor] = useState(initialSettings.color)
+
+  const modalRoot = typeof document !== 'undefined' ? document.body : null
+
+  const handlePresetChange = (value: string) => {
+    setPresetId(value)
+    if (value) {
+      const preset = getCalloutPreset(value)
+      if (preset) {
+        setLabel(preset.label)
+        setIconId(preset.icon)
+        setColor(preset.color)
+      }
+    }
+  }
+
+  const handleSave = () => {
+    const safeLabel = label.trim() || 'Callout'
+    const safeColor = color.startsWith('#') ? color : `#${color}`
+    onSave({
+      presetId: presetId ? (presetId as CalloutPresetId) : undefined,
+      label: safeLabel,
+      icon: iconId,
+      color: safeColor,
+    })
+  }
+
+  if (!modalRoot) return null
+
+  return createPortal(
+    <div className="callout-modal-backdrop">
+      <div className="callout-modal">
+        <div className="callout-modal__header">
+          <h3>Configure callout</h3>
+          <button type="button" onClick={onClose} aria-label="Close callout settings">
+            ×
+          </button>
+        </div>
+
+        <div className="callout-modal__body">
+          <label className="callout-modal__field">
+            <span>Preset</span>
+            <select value={presetId} onChange={(event) => handlePresetChange(event.target.value)}>
+              <option value="">Custom</option>
+              {Object.values(CALLOUT_PRESETS).map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="callout-modal__field">
+            <span>Label</span>
+            <input
+              type="text"
+              value={label}
+              placeholder="Callout title"
+              onChange={(event) => setLabel(event.target.value)}
+            />
+          </label>
+
+          <label className="callout-modal__field">
+            <span>Primary color</span>
+            <input type="color" value={color} onChange={(event) => setColor(event.target.value)} />
+          </label>
+
+          <label className="callout-modal__field">
+            <span>Icon</span>
+            <select
+              value={iconId}
+              onChange={(event) => setIconId(event.target.value as CalloutIconId)}
+            >
+              {CALL_OUT_ICON_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="callout-modal__footer">
+          <button type="button" onClick={onClose} className="callout-modal__button callout-modal__button--ghost">
+            Cancel
+          </button>
+          <button type="button" onClick={handleSave} className="callout-modal__button callout-modal__button--primary">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>,
+    modalRoot,
+  )
+}
+
