@@ -215,7 +215,7 @@ function renderCalloutBlockNode(
 ): React.ReactNode {
   const preset = node.presetId ? getCalloutPreset(node.presetId) : undefined
 
-  const label = node.label || preset?.label || 'Callout'
+  const label = node.label || node.customLabel || preset?.label || 'Callout'
   const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
   const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
   const hasBodyContent = hasMeaningfulContent(node.children || [])

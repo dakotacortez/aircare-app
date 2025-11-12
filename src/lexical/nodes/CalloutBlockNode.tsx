@@ -238,22 +238,22 @@ export class CalloutBlockNode extends ElementNode {
   }
 
   setLabel(label: string): void {
-    const writable = this.getWritable<CalloutBlockNode>()
+    const writable = this.getWritable()
     writable.__label = label
   }
 
   setIcon(icon: CalloutIconId): void {
-    const writable = this.getWritable<CalloutBlockNode>()
+    const writable = this.getWritable()
     writable.__icon = icon
   }
 
   setColor(color: string): void {
-    const writable = this.getWritable<CalloutBlockNode>()
+    const writable = this.getWritable()
     writable.__color = color
   }
 
   setPreset(presetId?: CalloutPresetId): void {
-    const writable = this.getWritable<CalloutBlockNode>()
+    const writable = this.getWritable()
     writable.__presetId = presetId
   }
 
