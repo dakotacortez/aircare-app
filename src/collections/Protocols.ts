@@ -29,6 +29,7 @@ import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
 import { ListBaseFeature } from '../lexical/features/listBase'
 import { isContentTeamOrAdmin } from '../access/isContentTeamOrAdmin'
 import { isAdmin } from '../access/isAdmin'
+import { createLexicalSanitizeHook } from '../utilities/sanitizeLexical'
 
 /**
  * Shared Lexical Editor Features
@@ -107,6 +108,14 @@ const getReferencesEditor = () => lexicalEditor({
     }),
   ],
 })
+
+const sanitizeContentUniversal = createLexicalSanitizeHook('protocols.contentUniversal')
+const sanitizeContentBLS = createLexicalSanitizeHook('protocols.contentBLS')
+const sanitizeContentALS = createLexicalSanitizeHook('protocols.contentALS')
+const sanitizeContentCCT = createLexicalSanitizeHook('protocols.contentCCT')
+const sanitizeSpecialConsiderations = createLexicalSanitizeHook('protocols.specialConsiderations')
+const sanitizeKeyPoints = createLexicalSanitizeHook('protocols.keyPoints')
+const sanitizeReferences = createLexicalSanitizeHook('protocols.references')
 
 /**
  * Protocols Collection
@@ -236,81 +245,109 @@ export const Protocols: CollectionConfig = {
     },
 
     // Universal Content (shown to all service lines)
-    {
-      name: 'contentUniversal',
-      type: 'richText',
-      label: 'Protocol (Universal)',
-      admin: {
-        description: 'Intro and universal guidelines for all service lines',
+      {
+        name: 'contentUniversal',
+        type: 'richText',
+        label: 'Protocol (Universal)',
+        hooks: {
+          afterRead: [sanitizeContentUniversal],
+          beforeChange: [sanitizeContentUniversal],
+        },
+        admin: {
+          description: 'Intro and universal guidelines for all service lines',
+        },
+        editor: getFullProtocolEditor(),
       },
-      editor: getFullProtocolEditor(),
-    },
 
     // BLS-Specific Content
-    {
-      name: 'contentBLS',
-      type: 'richText',
-      label: 'Protocol (BLS)',
-      admin: {
-        description: 'BLS-specific procedures and protocols',
+      {
+        name: 'contentBLS',
+        type: 'richText',
+        label: 'Protocol (BLS)',
+        hooks: {
+          afterRead: [sanitizeContentBLS],
+          beforeChange: [sanitizeContentBLS],
+        },
+        admin: {
+          description: 'BLS-specific procedures and protocols',
+        },
+        editor: getFullProtocolEditor(),
       },
-      editor: getFullProtocolEditor(),
-    },
 
     // ALS-Specific Content
-    {
-      name: 'contentALS',
-      type: 'richText',
-      label: 'Protocol (ALS)',
-      admin: {
-        description: 'ALS-specific procedures and protocols',
+      {
+        name: 'contentALS',
+        type: 'richText',
+        label: 'Protocol (ALS)',
+        hooks: {
+          afterRead: [sanitizeContentALS],
+          beforeChange: [sanitizeContentALS],
+        },
+        admin: {
+          description: 'ALS-specific procedures and protocols',
+        },
+        editor: getFullProtocolEditor(),
       },
-      editor: getFullProtocolEditor(),
-    },
 
     // CCT-Specific Content
-    {
-      name: 'contentCCT',
-      type: 'richText',
-      label: 'Protocol (CCT)',
-      admin: {
-        description: 'CCT-specific procedures and protocols',
+      {
+        name: 'contentCCT',
+        type: 'richText',
+        label: 'Protocol (CCT)',
+        hooks: {
+          afterRead: [sanitizeContentCCT],
+          beforeChange: [sanitizeContentCCT],
+        },
+        admin: {
+          description: 'CCT-specific procedures and protocols',
+        },
+        editor: getFullProtocolEditor(),
       },
-      editor: getFullProtocolEditor(),
-    },
 
     // Special Considerations (shared across all levels)
-    {
-      name: 'specialConsiderations',
-      type: 'richText',
-      label: 'Special Considerations',
-      admin: {
-        description: 'Level-specific callouts and uncommon adjustments',
+      {
+        name: 'specialConsiderations',
+        type: 'richText',
+        label: 'Special Considerations',
+        hooks: {
+          afterRead: [sanitizeSpecialConsiderations],
+          beforeChange: [sanitizeSpecialConsiderations],
+        },
+        admin: {
+          description: 'Level-specific callouts and uncommon adjustments',
+        },
+        editor: getSimpleProtocolEditor(),
       },
-      editor: getSimpleProtocolEditor(),
-    },
 
     // Key Points / Pearls
-    {
-      name: 'keyPoints',
-      type: 'richText',
-      label: 'Key Points / Pearls',
-      admin: {
-        description: 'Quick-reference items by level',
+      {
+        name: 'keyPoints',
+        type: 'richText',
+        label: 'Key Points / Pearls',
+        hooks: {
+          afterRead: [sanitizeKeyPoints],
+          beforeChange: [sanitizeKeyPoints],
+        },
+        admin: {
+          description: 'Quick-reference items by level',
+        },
+        editor: getSimpleProtocolEditor(),
       },
-      editor: getSimpleProtocolEditor(),
-    },
 
     // References & Graphics
-    {
-      name: 'references',
-      type: 'richText',
-      label: 'References & Graphics',
-      admin: {
-        description: 'Tables, diagrams, assessment reminders',
+      {
+        name: 'references',
+        type: 'richText',
+        label: 'References & Graphics',
+        hooks: {
+          afterRead: [sanitizeReferences],
+          beforeChange: [sanitizeReferences],
+        },
+        admin: {
+          description: 'Tables, diagrams, assessment reminders',
+        },
+        editor: getReferencesEditor(),
       },
-      editor: getReferencesEditor(),
-    },
 
     // Version & Review Information
     {
