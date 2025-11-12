@@ -3,6 +3,7 @@
  * Registers the custom node and plugin for inline ALS/CCT/Physician tagging
  */
 
+import { createServerFeature } from '@payloadcms/richtext-lexical'
 import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
 
 /**
@@ -17,69 +18,19 @@ import { CertificationLevelNode } from '../nodes/CertificationLevelNode'
  *   ],
  * })
  */
-export const CertificationLevelFeature = () => {
-  return {
-    feature: () => {
-      return {
-        nodes: [
-          {
-            node: CertificationLevelNode,
-            type: CertificationLevelNode.getType(),
-          },
-        ],
-        // Client-side plugin will be loaded via ClientFeature
-        clientFeature: {
-          plugins: [
-            {
-              Component: () =>
-                import('../plugins/CertificationLevelPlugin').then(
-                  (m) => m.CertificationLevelPlugin,
-                ),
-              position: 'normal',
-            },
-          ],
-          toolbarFixed: {
-            groups: [
-              {
-                type: 'dropdown',
-                key: 'cert-level',
-                order: 65,
-                items: [
-                  {
-                    key: 'cert-level',
-                    label: 'Certification level',
-                    Component: () =>
-                      import('../plugins/CertificationLevelPlugin').then(
-                        (m) => m.CertificationLevelToolbarDropdown,
-                      ),
-                  },
-                ],
-              },
-            ],
-          },
-          toolbarInline: {
-            groups: [
-              {
-                type: 'dropdown',
-                key: 'cert-level',
-                order: 65,
-                items: [
-                  {
-                    key: 'cert-level',
-                    label: 'Certification level',
-                    Component: () =>
-                      import('../plugins/CertificationLevelPlugin').then(
-                        (m) => m.CertificationLevelToolbarDropdown,
-                      ),
-                  },
-                ],
-              },
-            ],
-          },
+export const CertificationLevelFeature = createServerFeature({
+  feature: () => {
+    return {
+      ClientFeature:
+        '@/lexical/features/certificationLevel/client#CertificationLevelFeatureClient',
+      clientFeatureProps: {},
+      nodes: [
+        {
+          node: CertificationLevelNode,
+          type: CertificationLevelNode.getType(),
         },
-      }
-    },
-    key: 'certificationLevel',
-    serverFeatureProps: undefined,
-  }
-}
+      ],
+    }
+  },
+  key: 'certificationLevel',
+})
