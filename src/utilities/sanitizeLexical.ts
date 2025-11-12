@@ -206,6 +206,18 @@ function sanitizeNode(node: unknown, parentType: string, unknownTypes: Set<strin
     return { node: sanitizedText, changed }
   }
 
+  if (type === 'listitem' && parentType !== 'list') {
+    const inlineChildren = buildInlineChildren(sanitizedChildren, version)
+    if (inlineChildren.length === 0) {
+      return { node: null, changed: true }
+    }
+
+    return {
+      node: createParagraphNode(inlineChildren, version, typedNode),
+      changed: true,
+    }
+  }
+
   if (ALLOWED_NODE_TYPES.has(type)) {
     const sanitizedNode: LexicalNodeJSON = { ...typedNode } as LexicalNodeJSON
 
