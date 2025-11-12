@@ -98,6 +98,13 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
 
 export type CalloutPresetId = keyof typeof CALLOUT_PRESETS
 
+const LEGACY_PRESET_ALIASES: Record<string, CalloutPresetId> = {
+  important: 'highRisk',
+  note: 'information',
+  dosing: 'medication',
+  warning: 'notification',
+}
+
 export const CALL_OUT_ICON_OPTIONS: Array<{
   id: CalloutIconId
   label: string
@@ -123,7 +130,15 @@ export function getCalloutIcon(id: CalloutIconId): IconDefinition {
  * Retrieve a preset by id.
  */
 export function getCalloutPreset(id: string): CalloutPreset | undefined {
-  return CALLOUT_PRESETS[id as CalloutPresetId]
+  const resolvedId = (CALLOUT_PRESETS[id as CalloutPresetId]
+    ? (id as CalloutPresetId)
+    : LEGACY_PRESET_ALIASES[id]) as CalloutPresetId | undefined
+
+  if (!resolvedId) {
+    return undefined
+  }
+
+  return CALLOUT_PRESETS[resolvedId]
 }
 
 /**
