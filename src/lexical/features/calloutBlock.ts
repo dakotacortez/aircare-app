@@ -25,28 +25,40 @@ export const CalloutBlockFeature = (): FeatureProviderServer<any, any, any> => {
             },
           ],
           toolbarFixed: {
-            items: [
+            groups: [
               {
+                type: 'dropdown',
                 key: 'callout-block',
-                label: 'Insert callout',
-                Component: () =>
-                  import('../plugins/CalloutBlockPlugin').then(
-                    (m) => m.CalloutBlockToolbarDropdown,
-                  ),
                 order: 60,
+                items: [
+                  {
+                    key: 'callout-block',
+                    label: 'Insert callout',
+                    Component: () =>
+                      import('../plugins/CalloutBlockPlugin').then(
+                        (m) => m.CalloutBlockToolbarDropdown,
+                      ),
+                  },
+                ],
               },
             ],
           },
           toolbarInline: {
-            items: [
+            groups: [
               {
+                type: 'dropdown',
                 key: 'callout-block',
-                label: 'Insert callout',
-                Component: () =>
-                  import('../plugins/CalloutBlockPlugin').then(
-                    (m) => m.CalloutBlockToolbarDropdown,
-                  ),
                 order: 60,
+                items: [
+                  {
+                    key: 'callout-block',
+                    label: 'Insert callout',
+                    Component: () =>
+                      import('../plugins/CalloutBlockPlugin').then(
+                        (m) => m.CalloutBlockToolbarDropdown,
+                      ),
+                  },
+                ],
               },
             ],
           },

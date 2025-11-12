@@ -39,28 +39,40 @@ export const CertificationLevelFeature = () => {
             },
           ],
           toolbarFixed: {
-            items: [
+            groups: [
               {
+                type: 'dropdown',
                 key: 'cert-level',
-                label: 'Certification level',
-                Component: () =>
-                  import('../plugins/CertificationLevelPlugin').then(
-                    (m) => m.CertificationLevelToolbarDropdown,
-                  ),
                 order: 65,
+                items: [
+                  {
+                    key: 'cert-level',
+                    label: 'Certification level',
+                    Component: () =>
+                      import('../plugins/CertificationLevelPlugin').then(
+                        (m) => m.CertificationLevelToolbarDropdown,
+                      ),
+                  },
+                ],
               },
             ],
           },
           toolbarInline: {
-            items: [
+            groups: [
               {
+                type: 'dropdown',
                 key: 'cert-level',
-                label: 'Certification level',
-                Component: () =>
-                  import('../plugins/CertificationLevelPlugin').then(
-                    (m) => m.CertificationLevelToolbarDropdown,
-                  ),
                 order: 65,
+                items: [
+                  {
+                    key: 'cert-level',
+                    label: 'Certification level',
+                    Component: () =>
+                      import('../plugins/CertificationLevelPlugin').then(
+                        (m) => m.CertificationLevelToolbarDropdown,
+                      ),
+                  },
+                ],
               },
             ],
           },
