@@ -67,12 +67,31 @@ export default function LandingPage({ data }: LandingPageProps) {
     ? { backgroundImage: `url(${heroBackgroundUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : {};
 
+  // Build gradient style from CMS settings
+  const gradientColor = data.heroGradientColor || 'black';
+  const topOpacity = (data.heroGradientTopOpacity ?? 60) / 100;
+  const midOpacity = (data.heroGradientMidOpacity ?? 80) / 100;
+  const bottomOpacity = (data.heroGradientBottomOpacity ?? 100) / 100;
+
+  // Map color names to RGB values
+  const colorMap: Record<string, string> = {
+    black: '0, 0, 0',
+    navy: '0, 0, 128',
+    darkblue: '0, 0, 139',
+    darkgray: '169, 169, 169',
+  };
+  const rgbColor = colorMap[gradientColor] || colorMap.black;
+
+  const gradientStyle = {
+    background: `linear-gradient(to bottom, rgba(${rgbColor}, ${topOpacity}) 0%, rgba(${rgbColor}, ${midOpacity}) 50%, rgba(${rgbColor}, ${bottomOpacity}) 100%)`,
+  };
+
   return (
     <>
       {/* HERO */}
       <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center" style={backgroundStyle}>
-        {/* Gradient overlay - darker vertical gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/75 to-black/100" />
+        {/* Gradient overlay - configurable via CMS */}
+        <div className="absolute inset-0" style={gradientStyle} />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/20 text-sm font-medium mb-4">

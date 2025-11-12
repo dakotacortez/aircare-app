@@ -130,6 +130,54 @@ export const SiteSettings: GlobalConfig = {
             description: 'Optional link for secondary button',
           },
         },
+        {
+          name: 'heroGradientTopOpacity',
+          type: 'number',
+          label: 'Gradient Top Opacity',
+          defaultValue: 60,
+          min: 0,
+          max: 100,
+          admin: {
+            description: 'Opacity at the top of the gradient overlay (0-100)',
+          },
+        },
+        {
+          name: 'heroGradientMidOpacity',
+          type: 'number',
+          label: 'Gradient Middle Opacity',
+          defaultValue: 80,
+          min: 0,
+          max: 100,
+          admin: {
+            description: 'Opacity at the middle of the gradient overlay (0-100)',
+          },
+        },
+        {
+          name: 'heroGradientBottomOpacity',
+          type: 'number',
+          label: 'Gradient Bottom Opacity',
+          defaultValue: 100,
+          min: 0,
+          max: 100,
+          admin: {
+            description: 'Opacity at the bottom of the gradient overlay (0-100)',
+          },
+        },
+        {
+          name: 'heroGradientColor',
+          type: 'select',
+          label: 'Gradient Color',
+          defaultValue: 'black',
+          options: [
+            { label: 'Black', value: 'black' },
+            { label: 'Navy', value: 'navy' },
+            { label: 'Dark Blue', value: 'darkblue' },
+            { label: 'Dark Gray', value: 'darkgray' },
+          ],
+          admin: {
+            description: 'Base color for the gradient overlay',
+          },
+        },
       ],
     },
 
