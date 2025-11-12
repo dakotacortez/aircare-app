@@ -1,20 +1,27 @@
 'use client'
 
-import { createClientFeature } from '@payloadcms/richtext-lexical/dist/utilities/createClientFeature.js'
+import { createElement, type FC } from 'react'
+
+import { createClientFeature } from '@payloadcms/richtext-lexical/client'
 
 import { CalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
+import {
+  CalloutBlockPlugin,
+  CalloutBlockToolbarDropdown,
+} from '../../plugins/CalloutBlockPlugin'
+
+const CalloutBlockPluginComponent: FC<{ clientProps: undefined }> = () =>
+  createElement(CalloutBlockPlugin)
 
 export const CalloutBlockFeatureClient = createClientFeature(() => {
   return {
     nodes: [CalloutBlockNode],
     plugins: [
       {
-        Component: () =>
-          import('../../plugins/CalloutBlockPlugin').then((m) => m.CalloutBlockPlugin),
+        Component: CalloutBlockPluginComponent,
         position: 'normal',
       },
     ],
-    sanitizedClientFeatureProps: {},
     toolbarFixed: {
       groups: [
         {
@@ -25,10 +32,7 @@ export const CalloutBlockFeatureClient = createClientFeature(() => {
             {
               key: 'callout-block',
               label: 'Insert callout',
-              Component: () =>
-                import('../../plugins/CalloutBlockPlugin').then(
-                  (m) => m.CalloutBlockToolbarDropdown,
-                ),
+              Component: CalloutBlockToolbarDropdown,
             },
           ],
         },
@@ -44,10 +48,7 @@ export const CalloutBlockFeatureClient = createClientFeature(() => {
             {
               key: 'callout-block',
               label: 'Insert callout',
-              Component: () =>
-                import('../../plugins/CalloutBlockPlugin').then(
-                  (m) => m.CalloutBlockToolbarDropdown,
-                ),
+              Component: CalloutBlockToolbarDropdown,
             },
           ],
         },

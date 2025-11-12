@@ -1,22 +1,27 @@
 'use client'
 
-import { createClientFeature } from '@payloadcms/richtext-lexical/dist/utilities/createClientFeature.js'
+import { createElement, type FC } from 'react'
+
+import { createClientFeature } from '@payloadcms/richtext-lexical/client'
 
 import { CertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
+import {
+  CertificationLevelPlugin,
+  CertificationLevelToolbarDropdown,
+} from '../../plugins/CertificationLevelPlugin'
+
+const CertificationLevelPluginComponent: FC<{ clientProps: undefined }> = () =>
+  createElement(CertificationLevelPlugin)
 
 export const CertificationLevelFeatureClient = createClientFeature(() => {
   return {
     nodes: [CertificationLevelNode],
     plugins: [
       {
-        Component: () =>
-          import('../../plugins/CertificationLevelPlugin').then(
-            (m) => m.CertificationLevelPlugin,
-          ),
+        Component: CertificationLevelPluginComponent,
         position: 'normal',
       },
     ],
-    sanitizedClientFeatureProps: {},
     toolbarFixed: {
       groups: [
         {
@@ -27,10 +32,7 @@ export const CertificationLevelFeatureClient = createClientFeature(() => {
             {
               key: 'cert-level',
               label: 'Certification level',
-              Component: () =>
-                import('../../plugins/CertificationLevelPlugin').then(
-                  (m) => m.CertificationLevelToolbarDropdown,
-                ),
+              Component: CertificationLevelToolbarDropdown,
             },
           ],
         },
@@ -46,10 +48,7 @@ export const CertificationLevelFeatureClient = createClientFeature(() => {
             {
               key: 'cert-level',
               label: 'Certification level',
-              Component: () =>
-                import('../../plugins/CertificationLevelPlugin').then(
-                  (m) => m.CertificationLevelToolbarDropdown,
-                ),
+              Component: CertificationLevelToolbarDropdown,
             },
           ],
         },
