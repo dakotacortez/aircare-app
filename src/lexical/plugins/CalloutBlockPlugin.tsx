@@ -15,6 +15,7 @@ import {
   $createParagraphNode,
   $getNodeByKey,
   $getSelection,
+  $isNodeSelection,
   $isRangeSelection,
   SELECTION_CHANGE_COMMAND,
   COMMAND_PRIORITY_LOW,
@@ -166,14 +167,34 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
       () => {
         editor.getEditorState().read(() => {
           const selection = $getSelection()
+
           if ($isRangeSelection(selection)) {
-            const anchorNode = selection.anchor.getNode()
-            const topLevel = anchorNode.getTopLevelElementOrThrow()
-            if ($isCalloutBlockNode(topLevel)) {
-              setSelectedCalloutKey(topLevel.getKey())
-              return
+            const nodes = [selection.anchor.getNode(), selection.focus.getNode()]
+
+            for (const node of nodes) {
+              if (!node) continue
+              const topLevel = node.getTopLevelElementOrThrow()
+              if ($isCalloutBlockNode(topLevel)) {
+                setSelectedCalloutKey(topLevel.getKey())
+                return
+              }
+            }
+          } else if ($isNodeSelection(selection)) {
+            const nodes = selection.getNodes()
+            for (const node of nodes) {
+              if ($isCalloutBlockNode(node)) {
+                setSelectedCalloutKey(node.getKey())
+                return
+              }
+
+              const topLevel = node.getTopLevelElementOrThrow()
+              if ($isCalloutBlockNode(topLevel)) {
+                setSelectedCalloutKey(topLevel.getKey())
+                return
+              }
             }
           }
+
           setSelectedCalloutKey(null)
         })
         return false
