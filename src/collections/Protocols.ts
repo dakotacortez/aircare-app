@@ -26,6 +26,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
 import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
+import { ListBaseFeature } from '../lexical/features/listBase'
 import { isContentTeamOrAdmin } from '../access/isContentTeamOrAdmin'
 import { isAdmin } from '../access/isAdmin'
 
@@ -49,6 +50,7 @@ const getBaseFeatures = () => [
   }),
   AlignFeature(),
   IndentFeature(),
+  ListBaseFeature(),
   OrderedListFeature(),
   UnorderedListFeature(),
   ChecklistFeature(),
