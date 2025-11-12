@@ -6,24 +6,6 @@
 import type { FeatureProviderServer } from '@payloadcms/richtext-lexical'
 import { CalloutBlockNode } from '../nodes/CalloutBlockNode'
 
-const createToolbarGroups = () => [
-  {
-    type: 'dropdown' as const,
-    key: 'callout-block',
-    items: [
-      {
-        key: 'callout-block',
-        label: 'Insert callout',
-        Component: () =>
-          import('../plugins/CalloutBlockPlugin').then(
-            (m) => m.CalloutBlockToolbarDropdown,
-          ),
-        order: 60,
-      },
-    ],
-  },
-]
-
 export const CalloutBlockFeature = (): FeatureProviderServer<any, any, any> => {
   return {
     feature: () => {
@@ -43,10 +25,42 @@ export const CalloutBlockFeature = (): FeatureProviderServer<any, any, any> => {
             },
           ],
           toolbarFixed: {
-            groups: createToolbarGroups(),
+            groups: [
+              {
+                type: 'dropdown',
+                key: 'callout-block',
+                order: 60,
+                items: [
+                  {
+                    key: 'callout-block',
+                    label: 'Insert callout',
+                    Component: () =>
+                      import('../plugins/CalloutBlockPlugin').then(
+                        (m) => m.CalloutBlockToolbarDropdown,
+                      ),
+                  },
+                ],
+              },
+            ],
           },
           toolbarInline: {
-            groups: createToolbarGroups(),
+            groups: [
+              {
+                type: 'dropdown',
+                key: 'callout-block',
+                order: 60,
+                items: [
+                  {
+                    key: 'callout-block',
+                    label: 'Insert callout',
+                    Component: () =>
+                      import('../plugins/CalloutBlockPlugin').then(
+                        (m) => m.CalloutBlockToolbarDropdown,
+                      ),
+                  },
+                ],
+              },
+            ],
           },
         },
       }

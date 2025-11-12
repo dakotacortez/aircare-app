@@ -71,18 +71,37 @@ export default function LandingPage({ data }: LandingPageProps) {
     <>
       {/* HERO */}
       <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center" style={backgroundStyle}>
-        {/* Gradient overlay - vertical black gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/40 to-black/80" />
+        {/* Gradient overlay - darker vertical gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/60 to-black/100" />
 
-        {/* Pattern overlay - subtle grid */}
+        {/* Topographic pattern overlay - contour lines */}
         <div
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-20"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+              repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 40px,
+                rgba(255,255,255,0.15) 40px,
+                rgba(255,255,255,0.15) 41px
+              ),
+              repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 60px,
+                rgba(255,255,255,0.08) 60px,
+                rgba(255,255,255,0.08) 61px
+              ),
+              repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 60px,
+                rgba(255,255,255,0.08) 60px,
+                rgba(255,255,255,0.08) 61px
+              )
             `,
-            backgroundSize: '40px 40px'
+            mixBlendMode: 'screen'
           }}
         />
 
