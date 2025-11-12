@@ -1,114 +1,133 @@
 /**
- * Callout Block Presets
- * Preset configurations for common protocol callout types
+ * Callout Block configuration helpers.
+ * Provides preset options and icon utilities used by the editor and frontend renderer.
  */
 
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import {
-  faTriangleExclamation,
-  faLock,
+  faBell,
   faCircleExclamation,
   faCircleInfo,
   faLightbulb,
+  faLock,
   faPills,
-  faBell,
+  faStethoscope,
+  faTriangleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
+
+export type CalloutIconId =
+  | 'triangle-exclamation'
+  | 'lock'
+  | 'circle-exclamation'
+  | 'circle-info'
+  | 'lightbulb'
+  | 'pills'
+  | 'bell'
+  | 'stethoscope'
+
+const CALLOUT_ICONS: Record<CalloutIconId, IconDefinition> = {
+  'triangle-exclamation': faTriangleExclamation,
+  lock: faLock,
+  'circle-exclamation': faCircleExclamation,
+  'circle-info': faCircleInfo,
+  lightbulb: faLightbulb,
+  pills: faPills,
+  bell: faBell,
+  stethoscope: faStethoscope,
+}
 
 export interface CalloutPreset {
   id: string
   label: string
-  icon: IconDefinition
+  description?: string
+  icon: CalloutIconId
   color: string // Hex color
-  bgColor: string // Background color (light)
-  darkBgColor: string // Background color (dark mode)
-  borderColor: string // Border color
-  darkBorderColor: string // Border color (dark mode)
 }
 
 export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
   medicalControl: {
     id: 'medicalControl',
     label: 'Medical Control',
-    icon: faTriangleExclamation,
-    color: '#d97706', // Amber 600
-    bgColor: '#fef3c7', // Amber 100
-    darkBgColor: '#78350f20', // Amber 900/20
-    borderColor: '#f59e0b', // Amber 500
-    darkBorderColor: '#d97706', // Amber 600
+    description: 'Requires online medical direction',
+    icon: 'stethoscope',
+    color: '#f97316',
   },
   physicianOnly: {
     id: 'physicianOnly',
     label: 'Physician Only',
-    icon: faLock,
-    color: '#9333ea', // Purple 600
-    bgColor: '#f3e8ff', // Purple 100
-    darkBgColor: '#581c8720', // Purple 900/20
-    borderColor: '#a855f7', // Purple 500
-    darkBorderColor: '#9333ea', // Purple 600
+    description: 'Procedures reserved for a physician',
+    icon: 'lock',
+    color: '#6366f1',
   },
-  important: {
-    id: 'important',
-    label: 'Important',
-    icon: faCircleExclamation,
-    color: '#dc2626', // Red 600
-    bgColor: '#fee2e2', // Red 100
-    darkBgColor: '#7f1d1d20', // Red 900/20
-    borderColor: '#ef4444', // Red 500
-    darkBorderColor: '#dc2626', // Red 600
+  highRisk: {
+    id: 'highRisk',
+    label: 'High Risk',
+    description: 'Use additional caution / high-risk intervention',
+    icon: 'triangle-exclamation',
+    color: '#ef4444',
   },
-  note: {
-    id: 'note',
-    label: 'Note',
-    icon: faCircleInfo,
-    color: '#2563eb', // Blue 600
-    bgColor: '#dbeafe', // Blue 100
-    darkBgColor: '#1e3a8a20', // Blue 900/20
-    borderColor: '#3b82f6', // Blue 500
-    darkBorderColor: '#2563eb', // Blue 600
+  medication: {
+    id: 'medication',
+    label: 'Medication Guidance',
+    description: 'Important dosing or administration reminders',
+    icon: 'pills',
+    color: '#0ea5e9',
   },
   tip: {
     id: 'tip',
-    label: 'Tip / Pearl',
-    icon: faLightbulb,
-    color: '#16a34a', // Green 600
-    bgColor: '#dcfce7', // Green 100
-    darkBgColor: '#14532d20', // Green 900/20
-    borderColor: '#22c55e', // Green 500
-    darkBorderColor: '#16a34a', // Green 600
+    label: 'Pearl / Best Practice',
+    description: 'Helpful clinical tip or key reminder',
+    icon: 'lightbulb',
+    color: '#10b981',
   },
-  dosing: {
-    id: 'dosing',
-    label: 'Dosing Info',
-    icon: faPills,
-    color: '#0891b2', // Cyan 600
-    bgColor: '#cffafe', // Cyan 100
-    darkBgColor: '#164e6320', // Cyan 900/20
-    borderColor: '#06b6d4', // Cyan 500
-    darkBorderColor: '#0891b2', // Cyan 600
+  information: {
+    id: 'information',
+    label: 'General Information',
+    description: 'Additional context for the protocol',
+    icon: 'circle-info',
+    color: '#0ea5e9',
   },
-  warning: {
-    id: 'warning',
-    label: 'Warning',
-    icon: faBell,
-    color: '#ea580c', // Orange 600
-    bgColor: '#ffedd5', // Orange 100
-    darkBgColor: '#7c2d1220', // Orange 900/20
-    borderColor: '#f97316', // Orange 500
-    darkBorderColor: '#ea580c', // Orange 600
+  notification: {
+    id: 'notification',
+    label: 'Notification',
+    description: 'Non-critical notices or reminders',
+    icon: 'bell',
+    color: '#f59e0b',
   },
 }
 
 export type CalloutPresetId = keyof typeof CALLOUT_PRESETS
 
+export const CALL_OUT_ICON_OPTIONS: Array<{
+  id: CalloutIconId
+  label: string
+}> = [
+  { id: 'triangle-exclamation', label: 'Warning' },
+  { id: 'lock', label: 'Lock' },
+  { id: 'circle-exclamation', label: 'Important' },
+  { id: 'circle-info', label: 'Information' },
+  { id: 'lightbulb', label: 'Idea / Tip' },
+  { id: 'pills', label: 'Medication' },
+  { id: 'bell', label: 'Notification' },
+  { id: 'stethoscope', label: 'Medical' },
+]
+
 /**
- * Get preset by ID
+ * Resolve an icon id to the FontAwesome icon definition.
+ */
+export function getCalloutIcon(id: CalloutIconId): IconDefinition {
+  return CALLOUT_ICONS[id]
+}
+
+/**
+ * Retrieve a preset by id.
  */
 export function getCalloutPreset(id: string): CalloutPreset | undefined {
   return CALLOUT_PRESETS[id as CalloutPresetId]
 }
 
 /**
- * Get all preset IDs and labels for dropdown
+ * Build dropdown options for preset selection.
  */
 export function getCalloutPresetOptions(): Array<{ value: string; label: string }> {
   return Object.values(CALLOUT_PRESETS).map((preset) => ({

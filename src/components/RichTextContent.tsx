@@ -10,7 +10,7 @@ import React, { type ReactElement } from 'react'
 import { CERT_LEVELS } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
 import type { SerializedCalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
-import { getCalloutPreset } from '@/lib/calloutPresets'
+import { getCalloutIcon, getCalloutPreset } from '@/lib/calloutPresets'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface RichTextContentProps {
@@ -213,63 +213,89 @@ function renderCalloutBlockNode(
   showBadges: boolean,
   key: string,
 ): React.ReactNode {
-  const preset = getCalloutPreset(node.presetId)
+  const preset = node.presetId ? getCalloutPreset(node.presetId) : undefined
 
-  if (!preset) {
-    // Fallback if preset not found
+  const label = node.label || preset?.label || 'Callout'
+  const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
+  const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
+  const hasBodyContent = hasMeaningfulContent(node.children || [])
+
+  const containerStyle: React.CSSProperties = {
+    borderLeft: `4px solid ${color}`,
+    borderRadius: '0.85rem',
+    padding: '1.1rem 1.15rem',
+    marginBlock: '1.25rem',
+    backgroundColor: hexToRgba(color, hasBodyContent ? 0.12 : 0.15),
+    boxShadow: hasBodyContent ? '0 18px 36px rgba(15, 23, 42, 0.1)' : '0 10px 22px rgba(15, 23, 42, 0.08)',
+  }
+
+  ;(containerStyle as React.CSSProperties & Record<string, string>)['--callout-color'] = color
+
+  if (!hasBodyContent) {
     return (
-      <div key={key} className="callout-block callout-fallback">
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${key}-${i}`),
-        )}
+      <div key={key} className="callout-block callout-block--alert" style={containerStyle}>
+        <div className="callout-block__alert-inner">
+          <span className="callout-block__icon">
+            <FontAwesomeIcon icon={iconDefinition} />
+          </span>
+          <div className="callout-block__alert-content">
+            <span className="callout-block__label">
+              {label}
+            </span>
+            <span className="callout-block__alert-description">No additional details provided.</span>
+          </div>
+        </div>
       </div>
     )
   }
 
-  const label = node.customLabel || preset.label
-
   return (
-    <div
-      key={key}
-      className="callout-block"
-      style={{
-        backgroundColor: preset.bgColor,
-        borderLeft: `4px solid ${preset.borderColor}`,
-        borderRadius: '0.75rem',
-        padding: '1rem',
-        marginTop: '1rem',
-        marginBottom: '1rem',
-      }}
-    >
-      {/* Header with icon and label */}
-      <div
-        className="callout-header"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          marginBottom: '0.75rem',
-          fontWeight: 600,
-          fontSize: '0.95rem',
-          color: preset.color,
-        }}
-      >
-        <FontAwesomeIcon
-          icon={preset.icon}
-          style={{
-            width: '1.25rem',
-            height: '1.25rem',
-          }}
-        />
-        <span>{label}</span>
+    <div key={key} className="callout-block" style={containerStyle}>
+      <div className="callout-block__header">
+        <span className="callout-block__icon">
+          <FontAwesomeIcon icon={iconDefinition} />
+        </span>
+        <span className="callout-block__label">{label}</span>
       </div>
 
-      {/* Content */}
-      <div className="callout-content">
+      <div className="callout-block__body">
         {node.children?.map((child: any, i: number) =>
           renderLexicalNode(child, showBadges, `${key}-${i}`),
         )}
       </div>
     </div>
   )
+}
+
+function hasMeaningfulContent(children: any[]): boolean {
+  return children.some((child) => {
+    if (!child) return false
+    if (child.type === 'text') {
+      return Boolean(child.text?.trim())
+    }
+
+    if (Array.isArray(child.children)) {
+      return hasMeaningfulContent(child.children)
+    }
+
+    return false
+  })
+}
+
+function sanitizeColor(color: string): string {
+  if (!color) return '#0ea5e9'
+  return color.startsWith('#') ? color : `#${color}`
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const sanitized = hex.replace('#', '')
+  if (sanitized.length !== 6) {
+    return `rgba(59, 130, 246, ${alpha})`
+  }
+
+  const r = parseInt(sanitized.substring(0, 2), 16)
+  const g = parseInt(sanitized.substring(2, 4), 16)
+  const b = parseInt(sanitized.substring(4, 6), 16)
+
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
