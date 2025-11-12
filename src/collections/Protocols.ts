@@ -42,19 +42,19 @@ const getBaseFeatures = () => [
   InlineCodeFeature(),
   SuperscriptFeature(),
   SubscriptFeature(),
-  TextStateFeature({
-    state: {
-      color: defaultColors.text,
-    },
-  }),
+  // TextStateFeature({
+  //   state: {
+  //     color: defaultColors.text,
+  //   },
+  // }),
   AlignFeature(),
   IndentFeature(),
   OrderedListFeature(),
   UnorderedListFeature(),
   ChecklistFeature(),
   BlockquoteFeature(),
-  CalloutBlockFeature(),
-  CertificationLevelFeature(),
+  // CalloutBlockFeature(),
+  // CertificationLevelFeature(),
   FixedToolbarFeature(),
   InlineToolbarFeature(),
 ]

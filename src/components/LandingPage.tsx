@@ -72,38 +72,7 @@ export default function LandingPage({ data }: LandingPageProps) {
       {/* HERO */}
       <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center" style={backgroundStyle}>
         {/* Gradient overlay - darker vertical gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/60 to-black/100" />
-
-        {/* Topographic pattern overlay - contour lines */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 40px,
-                rgba(255,255,255,0.15) 40px,
-                rgba(255,255,255,0.15) 41px
-              ),
-              repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 60px,
-                rgba(255,255,255,0.08) 60px,
-                rgba(255,255,255,0.08) 61px
-              ),
-              repeating-linear-gradient(
-                -45deg,
-                transparent,
-                transparent 60px,
-                rgba(255,255,255,0.08) 60px,
-                rgba(255,255,255,0.08) 61px
-              )
-            `,
-            mixBlendMode: 'screen'
-          }}
-        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/75 to-black/100" />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/20 text-sm font-medium mb-4">
