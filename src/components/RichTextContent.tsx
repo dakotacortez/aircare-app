@@ -214,13 +214,12 @@ function renderCalloutBlockNode(
   key: string,
 ): React.ReactNode {
   const preset = node.presetId ? getCalloutPreset(node.presetId) : undefined
-
   const label = node.label || node.customLabel || preset?.label || 'Callout'
   const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
   const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
   const hasBodyContent = hasMeaningfulContent(node.children || [])
-  const variant: CalloutVariant =
-    (node.variant as CalloutVariant | undefined) || preset?.variant || (hasBodyContent ? 'callout' : 'alert')
+  const rawVariant = (node.variant as CalloutVariant | undefined) ?? preset?.variant ?? 'callout'
+  const variant: CalloutVariant = hasBodyContent ? rawVariant : 'alert'
   const isAlert = variant === 'alert'
 
   const containerStyle: React.CSSProperties = {
