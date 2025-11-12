@@ -283,6 +283,28 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
     [editor, insertCalloutBlock, modalContext],
   )
 
+  const quickTypeOptions = useMemo(
+    () => [
+      {
+        id: 'alert' as const,
+        label: 'Alert',
+        description: 'Red, attention grabbing layout for critical warnings.',
+        icon: 'triangle-exclamation' as CalloutIconId,
+        color: '#ef4444',
+        variant: 'alert' as CalloutVariant,
+      },
+      {
+        id: 'callout' as const,
+        label: 'Callout',
+        description: 'Standard informational callout with accent border.',
+        icon: 'circle-info' as CalloutIconId,
+        color: '#0ea5e9',
+        variant: 'callout' as CalloutVariant,
+      },
+    ],
+    [],
+  )
+
   const dropdownSections = useMemo(
     () =>
       [
@@ -328,6 +350,70 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
 
       {isDropdownOpen && (
         <div className="dropdown" ref={dropdownRef} style={dropdownContainerStyle}>
+          <div
+            style={{
+              padding: '12px 16px 6px 16px',
+              fontSize: '12px',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              color: 'var(--theme-elevation-500, #6b7280)',
+            }}
+          >
+            Quick types
+          </div>
+          {quickTypeOptions.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => {
+                insertCalloutBlock({
+                  presetId: undefined,
+                  label: option.label,
+                  icon: option.icon,
+                  color: option.color,
+                  variant: option.variant,
+                })
+                setIsDropdownOpen(false)
+              }}
+              style={dropdownItemStyle}
+              onMouseEnter={(event) => {
+                event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+              }}
+              onMouseLeave={(event) => {
+                event.currentTarget.style.backgroundColor = 'transparent'
+              }}
+            >
+              <span
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '6px',
+                  backgroundColor: option.color,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  color: 'var(--theme-elevation-500, #6b7280)',
+                }}
+              >
+                {option.label.slice(0, 1)}
+              </span>
+              <span style={calloutPreviewStyle}>
+                <span style={{ fontWeight: 600 }}>{option.label}</span>
+                <span style={{ fontSize: '12px', color: 'var(--theme-elevation-600, #4b5563)' }}>
+                  {option.description}
+                </span>
+              </span>
+            </button>
+          ))}
+
+          <div style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }} />
+
           {dropdownSections.map((section, sectionIndex) => (
             <React.Fragment key={section.id}>
               <div
