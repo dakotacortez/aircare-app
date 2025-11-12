@@ -1947,6 +1947,22 @@ export interface SiteSetting {
    * Optional link for secondary button
    */
   heroSecondaryButtonLink?: string | null;
+  /**
+   * Opacity at the top of the gradient overlay (0-100)
+   */
+  heroGradientTopOpacity?: number | null;
+  /**
+   * Opacity at the middle of the gradient overlay (0-100)
+   */
+  heroGradientMidOpacity?: number | null;
+  /**
+   * Opacity at the bottom of the gradient overlay (0-100)
+   */
+  heroGradientBottomOpacity?: number | null;
+  /**
+   * Base color for the gradient overlay
+   */
+  heroGradientColor?: ('black' | 'navy' | 'darkblue' | 'darkgray') | null;
   stats?:
     | {
         number: string;
@@ -2054,6 +2070,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   heroPrimaryButtonLink?: T;
   heroSecondaryButtonText?: T;
   heroSecondaryButtonLink?: T;
+  heroGradientTopOpacity?: T;
+  heroGradientMidOpacity?: T;
+  heroGradientBottomOpacity?: T;
+  heroGradientColor?: T;
   stats?:
     | T
     | {
