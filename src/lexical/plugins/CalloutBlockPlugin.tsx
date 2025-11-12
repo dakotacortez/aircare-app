@@ -30,6 +30,7 @@ import {
   CALLOUT_PRESETS,
   type CalloutIconId,
   type CalloutPresetId,
+  type CalloutVariant,
   getCalloutPreset,
 } from '@/lib/calloutPresets'
 import {
@@ -43,6 +44,7 @@ type CalloutSettings = {
   label: string
   icon: CalloutIconId
   color: string
+  variant: CalloutVariant
 }
 
 type ModalContext =
@@ -212,6 +214,7 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
         label: preset.label,
         icon: preset.icon,
         color: preset.color,
+        variant: preset.variant,
       })
       setIsDropdownOpen(false)
     },
@@ -219,14 +222,14 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
   )
 
   const handleOpenCustom = useCallback(() => {
-    const defaultPreset = CALLOUT_PRESETS.medicalControl
     openModal(
       { mode: 'create' },
       {
-        presetId: defaultPreset.id as CalloutPresetId,
-        label: defaultPreset.label,
-        icon: defaultPreset.icon,
-        color: defaultPreset.color,
+        presetId: undefined,
+        label: 'Callout',
+        icon: 'circle-info',
+        color: '#0ea5e9',
+        variant: 'callout',
       },
     )
   }, [openModal])
@@ -246,6 +249,7 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
           label: node.getLabel(),
           icon: node.getIcon(),
           color: node.getColor(),
+          variant: node.getVariant(),
         },
       )
     })
@@ -267,6 +271,7 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
             node.setLabel(settings.label)
             node.setIcon(settings.icon)
             node.setColor(settings.color)
+            node.setVariant(settings.variant)
           }
         })
       }
@@ -278,18 +283,31 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
     [editor, insertCalloutBlock, modalContext],
   )
 
-  const dropdownSections = useMemo(() => {
-    const presets = [
-      CALLOUT_PRESETS.medicalControl,
-      CALLOUT_PRESETS.physicianOnly,
-      CALLOUT_PRESETS.highRisk,
-      CALLOUT_PRESETS.medication,
-      CALLOUT_PRESETS.tip,
-      CALLOUT_PRESETS.information,
-    ]
-
-    return presets
-  }, [])
+  const dropdownSections = useMemo(
+    () =>
+      [
+        {
+          id: 'alerts',
+          title: 'Alert presets',
+          presets: [
+            CALLOUT_PRESETS.medicalControl,
+            CALLOUT_PRESETS.physicianOnly,
+            CALLOUT_PRESETS.highRisk,
+          ],
+        },
+        {
+          id: 'callouts',
+          title: 'Callout presets',
+          presets: [
+            CALLOUT_PRESETS.information,
+            CALLOUT_PRESETS.medication,
+            CALLOUT_PRESETS.tip,
+            CALLOUT_PRESETS.notification,
+          ],
+        },
+      ].filter((section) => section.presets.length > 0),
+    [],
+  )
 
   return (
     <div className="relative" onClick={(event) => event.stopPropagation()}>
@@ -310,56 +328,65 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
 
       {isDropdownOpen && (
         <div className="dropdown" ref={dropdownRef} style={dropdownContainerStyle}>
-          <div
-            style={{
-              padding: '8px 16px',
-              fontSize: '12px',
-              fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-              color: 'var(--theme-elevation-500, #6b7280)',
-            }}
-          >
-            Presets
-          </div>
-          {dropdownSections.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => handlePresetInsert(preset.id as CalloutPresetId)}
-              style={dropdownItemStyle}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.backgroundColor = 'transparent'
-              }}
-            >
-              <span
+          {dropdownSections.map((section, sectionIndex) => (
+            <React.Fragment key={section.id}>
+              <div
                 style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '6px',
-                  backgroundColor: preset.color,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
+                  padding: '8px 16px',
                   fontSize: '12px',
-                  fontWeight: 700,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  color: 'var(--theme-elevation-500, #6b7280)',
                 }}
               >
-                {preset.label.slice(0, 1)}
-              </span>
-              <span style={calloutPreviewStyle}>
-                <span style={{ fontWeight: 600 }}>{preset.label}</span>
-                {preset.description && (
-                  <span style={{ fontSize: '12px', color: 'var(--theme-elevation-600, #4b5563)' }}>
-                    {preset.description}
+                {section.title}
+              </div>
+              {section.presets.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => handlePresetInsert(preset.id as CalloutPresetId)}
+                  style={dropdownItemStyle}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.backgroundColor = 'transparent'
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '6px',
+                      backgroundColor: preset.color,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {preset.label.slice(0, 1)}
                   </span>
-                )}
-              </span>
-            </button>
+                  <span style={calloutPreviewStyle}>
+                    <span style={{ fontWeight: 600 }}>{preset.label}</span>
+                    {preset.description && (
+                      <span style={{ fontSize: '12px', color: 'var(--theme-elevation-600, #4b5563)' }}>
+                        {preset.description}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              ))}
+              {sectionIndex < dropdownSections.length - 1 && (
+                <div
+                  style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }}
+                />
+              )}
+            </React.Fragment>
           ))}
 
           <div style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }} />
@@ -427,17 +454,48 @@ function CalloutSettingsModal({ initialSettings, onClose, onSave }: CalloutSetti
   const [label, setLabel] = useState(initialSettings.label)
   const [iconId, setIconId] = useState<CalloutIconId>(initialSettings.icon)
   const [color, setColor] = useState(initialSettings.color)
+  const [variant, setVariant] = useState<CalloutVariant>(initialSettings.variant)
 
   const modalRoot = typeof document !== 'undefined' ? document.body : null
+
+  const presetOptions = useMemo(
+    () => Object.values(CALLOUT_PRESETS).filter((preset) => preset.variant === variant),
+    [variant],
+  )
 
   const handlePresetChange = (value: string) => {
     setPresetId(value)
     if (value) {
       const preset = getCalloutPreset(value)
       if (preset) {
+        setVariant(preset.variant)
         setLabel(preset.label)
         setIconId(preset.icon)
         setColor(preset.color)
+      }
+    }
+  }
+
+  const handleVariantChange = (value: CalloutVariant) => {
+    setVariant(value)
+    const preset = presetId ? getCalloutPreset(presetId) : undefined
+    if (preset && preset.variant !== value) {
+      setPresetId('')
+    }
+
+    if (!presetId) {
+      if (value === 'alert') {
+        if (label === 'Callout') {
+          setLabel('Alert')
+        }
+        setIconId('triangle-exclamation')
+        setColor('#ef4444')
+      } else {
+        if (label === 'Alert') {
+          setLabel('Callout')
+        }
+        setIconId('circle-info')
+        setColor('#0ea5e9')
       }
     }
   }
@@ -450,6 +508,7 @@ function CalloutSettingsModal({ initialSettings, onClose, onSave }: CalloutSetti
       label: safeLabel,
       icon: iconId,
       color: safeColor,
+      variant,
     })
   }
 
@@ -467,10 +526,38 @@ function CalloutSettingsModal({ initialSettings, onClose, onSave }: CalloutSetti
 
         <div className="callout-modal__body">
           <label className="callout-modal__field">
+            <span>Type</span>
+            <div className="callout-modal__segmented">
+              <button
+                type="button"
+                className={
+                  'callout-modal__segmented-button' +
+                  (variant === 'callout' ? ' callout-modal__segmented-button--active' : '')
+                }
+                onClick={() => handleVariantChange('callout')}
+                aria-pressed={variant === 'callout'}
+              >
+                Callout
+              </button>
+              <button
+                type="button"
+                className={
+                  'callout-modal__segmented-button' +
+                  (variant === 'alert' ? ' callout-modal__segmented-button--active' : '')
+                }
+                onClick={() => handleVariantChange('alert')}
+                aria-pressed={variant === 'alert'}
+              >
+                Alert
+              </button>
+            </div>
+          </label>
+
+          <label className="callout-modal__field">
             <span>Preset</span>
             <select value={presetId} onChange={(event) => handlePresetChange(event.target.value)}>
               <option value="">Custom</option>
-              {Object.values(CALLOUT_PRESETS).map((preset) => (
+              {presetOptions.map((preset) => (
                 <option key={preset.id} value={preset.id}>
                   {preset.label}
                 </option>

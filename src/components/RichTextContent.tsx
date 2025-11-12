@@ -10,7 +10,7 @@ import React, { type ReactElement } from 'react'
 import { CERT_LEVELS } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
 import type { SerializedCalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
-import { getCalloutIcon, getCalloutPreset } from '@/lib/calloutPresets'
+import { getCalloutIcon, getCalloutPreset, type CalloutVariant } from '@/lib/calloutPresets'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface RichTextContentProps {
@@ -219,6 +219,9 @@ function renderCalloutBlockNode(
   const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
   const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
   const hasBodyContent = hasMeaningfulContent(node.children || [])
+  const variant: CalloutVariant =
+    (node.variant as CalloutVariant | undefined) || preset?.variant || (hasBodyContent ? 'callout' : 'alert')
+  const isAlert = variant === 'alert'
 
   const containerStyle: React.CSSProperties = {
     borderLeft: `4px solid ${color}`,
@@ -231,7 +234,7 @@ function renderCalloutBlockNode(
 
   ;(containerStyle as React.CSSProperties & Record<string, string>)['--callout-color'] = color
 
-  if (!hasBodyContent) {
+  if (isAlert) {
     return (
       <div key={key} className="callout-block callout-block--alert" style={containerStyle}>
         <div className="callout-block__alert-inner">
@@ -242,7 +245,15 @@ function renderCalloutBlockNode(
             <span className="callout-block__label">
               {label}
             </span>
-            <span className="callout-block__alert-description">No additional details provided.</span>
+            {hasBodyContent ? (
+              <div className="callout-block__alert-body">
+                {node.children?.map((child: any, i: number) =>
+                  renderLexicalNode(child, showBadges, `${key}-${i}`),
+                )}
+              </div>
+            ) : (
+              <span className="callout-block__alert-description">No additional details provided.</span>
+            )}
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@ import {
   DOMConversionMap,
   DOMExportOutput,
 } from 'lexical'
-import type { CalloutIconId, CalloutPresetId } from '@/lib/calloutPresets'
+import type { CalloutIconId, CalloutPresetId, CalloutVariant } from '@/lib/calloutPresets'
 import { getCalloutIcon, getCalloutPreset } from '@/lib/calloutPresets'
 
 type CalloutSerializedFields = {
@@ -23,6 +23,7 @@ type CalloutSerializedFields = {
   icon?: CalloutIconId
   color?: string
   customLabel?: string
+  variant?: CalloutVariant
 }
 
 export type SerializedCalloutBlockNode = Spread<
@@ -107,6 +108,7 @@ export class CalloutBlockNode extends ElementNode {
   __label: string
   __icon: CalloutIconId
   __color: string
+  __variant: CalloutVariant
 
   static getType(): string {
     return 'callout-block'
@@ -114,7 +116,13 @@ export class CalloutBlockNode extends ElementNode {
 
   static clone(node: CalloutBlockNode): CalloutBlockNode {
     return new CalloutBlockNode(
-      { presetId: node.__presetId, label: node.__label, icon: node.__icon, color: node.__color },
+      {
+        presetId: node.__presetId,
+        label: node.__label,
+        icon: node.__icon,
+        color: node.__color,
+        variant: node.__variant,
+      },
       node.__key,
     )
   }
@@ -125,11 +133,13 @@ export class CalloutBlockNode extends ElementNode {
       label,
       icon,
       color,
+      variant = 'callout',
     }: {
       presetId?: CalloutPresetId
       label: string
       icon: CalloutIconId
       color: string
+      variant?: CalloutVariant
     },
     key?: NodeKey,
   ) {
@@ -138,11 +148,15 @@ export class CalloutBlockNode extends ElementNode {
     this.__label = label
     this.__icon = icon
     this.__color = color
+    this.__variant = variant
   }
 
   createDOM(_config: EditorConfig): HTMLElement {
     const container = document.createElement('div')
     container.className = 'callout-block'
+    if (this.__variant === 'alert') {
+      container.classList.add('callout-block--alert')
+    }
     container.style.borderLeft = '4px solid var(--callout-color)'
     container.style.borderRadius = '0.75rem'
     container.style.padding = '1rem'
@@ -151,6 +165,7 @@ export class CalloutBlockNode extends ElementNode {
     container.dataset.presetId = this.__presetId || ''
     container.dataset.calloutIcon = this.__icon
     container.dataset.calloutLabel = this.__label
+    container.dataset.calloutVariant = this.__variant
 
     applyCalloutStyles(container, this.__color)
     renderHeader(container, this.__icon, this.__label, this.__color)
@@ -167,11 +182,18 @@ export class CalloutBlockNode extends ElementNode {
       prevNode.__label !== this.__label ||
       prevNode.__icon !== this.__icon ||
       prevNode.__color !== this.__color ||
-      prevNode.__presetId !== this.__presetId
+      prevNode.__presetId !== this.__presetId ||
+      prevNode.__variant !== this.__variant
     ) {
       dom.dataset.presetId = this.__presetId || ''
       dom.dataset.calloutIcon = this.__icon
       dom.dataset.calloutLabel = this.__label
+      dom.dataset.calloutVariant = this.__variant
+      if (this.__variant === 'alert') {
+        dom.classList.add('callout-block--alert')
+      } else {
+        dom.classList.remove('callout-block--alert')
+      }
       applyCalloutStyles(dom, this.__color)
       renderHeader(dom, this.__icon, this.__label, this.__color)
     }
@@ -186,8 +208,9 @@ export class CalloutBlockNode extends ElementNode {
       label: this.__label,
       icon: this.__icon,
       color: this.__color,
+      variant: this.__variant,
       type: 'callout-block',
-      version: 1,
+      version: 2,
     }
   }
 
@@ -199,12 +222,14 @@ export class CalloutBlockNode extends ElementNode {
     const label = serializedNode.label || serializedNode.customLabel || preset?.label || 'Callout'
     const icon = serializedNode.icon || preset?.icon || 'circle-info'
     const color = serializedNode.color || preset?.color || '#0ea5e9'
+    const variant = serializedNode.variant || preset?.variant || (serializedNode.children?.length ? 'callout' : 'alert')
 
     const node = $createCalloutBlockNode({
       presetId: serializedNode.presetId,
       label,
       icon,
       color,
+      variant,
     })
     node.setFormat(serializedNode.format)
     node.setIndent(serializedNode.indent)
@@ -237,6 +262,10 @@ export class CalloutBlockNode extends ElementNode {
     return this.__color
   }
 
+  getVariant(): CalloutVariant {
+    return this.__variant
+  }
+
   setLabel(label: string): void {
     const writable = this.getWritable()
     writable.__label = label
@@ -250,6 +279,11 @@ export class CalloutBlockNode extends ElementNode {
   setColor(color: string): void {
     const writable = this.getWritable()
     writable.__color = color
+  }
+
+  setVariant(variant: CalloutVariant): void {
+    const writable = this.getWritable()
+    writable.__variant = variant
   }
 
   setPreset(presetId?: CalloutPresetId): void {
@@ -277,6 +311,7 @@ export function $createCalloutBlockNode(
     label: string
     icon: CalloutIconId
     color: string
+    variant?: CalloutVariant
   },
 ): CalloutBlockNode {
   return new CalloutBlockNode(options)

@@ -25,6 +25,8 @@ export type CalloutIconId =
   | 'bell'
   | 'stethoscope'
 
+export type CalloutVariant = 'callout' | 'alert'
+
 const CALLOUT_ICONS: Record<CalloutIconId, IconDefinition> = {
   'triangle-exclamation': faTriangleExclamation,
   lock: faLock,
@@ -42,6 +44,7 @@ export interface CalloutPreset {
   description?: string
   icon: CalloutIconId
   color: string // Hex color
+  variant: CalloutVariant
 }
 
 export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
@@ -51,6 +54,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Requires online medical direction',
     icon: 'stethoscope',
     color: '#f97316',
+    variant: 'alert',
   },
   physicianOnly: {
     id: 'physicianOnly',
@@ -58,6 +62,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Procedures reserved for a physician',
     icon: 'lock',
     color: '#6366f1',
+    variant: 'alert',
   },
   highRisk: {
     id: 'highRisk',
@@ -65,6 +70,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Use additional caution / high-risk intervention',
     icon: 'triangle-exclamation',
     color: '#ef4444',
+    variant: 'alert',
   },
   medication: {
     id: 'medication',
@@ -72,6 +78,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Important dosing or administration reminders',
     icon: 'pills',
     color: '#0ea5e9',
+    variant: 'callout',
   },
   tip: {
     id: 'tip',
@@ -79,6 +86,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Helpful clinical tip or key reminder',
     icon: 'lightbulb',
     color: '#10b981',
+    variant: 'callout',
   },
   information: {
     id: 'information',
@@ -86,6 +94,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Additional context for the protocol',
     icon: 'circle-info',
     color: '#0ea5e9',
+    variant: 'callout',
   },
   notification: {
     id: 'notification',
@@ -93,6 +102,7 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     description: 'Non-critical notices or reminders',
     icon: 'bell',
     color: '#f59e0b',
+    variant: 'callout',
   },
 }
 
