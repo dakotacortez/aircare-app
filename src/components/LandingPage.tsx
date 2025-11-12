@@ -71,17 +71,30 @@ export default function LandingPage({ data }: LandingPageProps) {
     <>
       {/* HERO */}
       <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center" style={backgroundStyle}>
-        <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 via-neutral-50 to-neutral-100 dark:from-red-600/10 dark:via-neutral-900 dark:to-neutral-800" />
+        {/* Gradient overlay - vertical black gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/40 to-black/80" />
+
+        {/* Pattern overlay - subtle grid */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px'
+          }}
+        />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/10 text-red-600 dark:bg-red-600/20 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/20 text-sm font-medium mb-4">
             <Shield className="h-4 w-4" />
             {data.heroBadgeText || 'Trusted by 107+ Licensed Clinicians'}
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4 text-white">
             {renderHeroTitle()}
           </h1>
-          <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-6">
+          <p className="text-lg text-white/90 mb-6">
             {data.heroSubtitle || 'Designed for CCT and ALS/BLS teams with fast search, pediatric/OB pathways, and admin‑friendly updates. Access critical care protocols anywhere, anytime.'}
           </p>
           <div className="flex flex-wrap justify-center gap-3">

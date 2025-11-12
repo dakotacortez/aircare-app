@@ -13,6 +13,7 @@ const createToolbarGroups = () => [
     items: [
       {
         key: 'callout-block',
+        label: 'Insert callout',
         Component: () =>
           import('../plugins/CalloutBlockPlugin').then(
             (m) => m.CalloutBlockToolbarDropdown,
