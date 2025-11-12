@@ -73,6 +73,34 @@
   height: 40px;
 }
 
+.callout-modal__segmented {
+  display: inline-flex;
+  border-radius: 8px;
+  border: 1px solid var(--theme-elevation-200, #cbd5f5);
+  overflow: hidden;
+  background: var(--theme-elevation-50, #f8fafc);
+}
+
+.callout-modal__segmented-button {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-elevation-600, #475569);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.callout-modal__segmented-button:hover {
+  background: var(--theme-elevation-100, #f1f5f9);
+}
+
+.callout-modal__segmented-button--active {
+  background: rgba(37, 99, 235, 0.12);
+  color: #1d4ed8;
+}
+
 .callout-modal__footer {
   display: flex;
   justify-content: flex-end;

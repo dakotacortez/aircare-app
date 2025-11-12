@@ -395,6 +395,18 @@ html[data-theme='light'] {
     gap: 0.25rem;
   }
 
+  .callout-block__alert-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: #475569;
+    font-size: 0.92rem;
+  }
+
+  .callout-block__alert-body p {
+    margin: 0;
+  }
+
   .callout-block__alert-description {
     color: #475569;
     font-size: 0.9rem;
@@ -402,5 +414,9 @@ html[data-theme='light'] {
 
   .dark .callout-block__alert-description {
     color: #cbd5f5;
+  }
+
+  .dark .callout-block__alert-body {
+    color: #e2e8f0;
   }
 }
