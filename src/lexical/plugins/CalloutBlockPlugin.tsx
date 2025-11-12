@@ -395,7 +395,10 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
                   justifyContent: 'center',
                   color: '#fff',
                   fontSize: '12px',
-                  fontWeight: 700,
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  color: 'var(--theme-elevation-500, #6b7280)',
                 }}
               >
                 {option.label.slice(0, 1)}
