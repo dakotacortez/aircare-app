@@ -1,21 +1,35 @@
 /**
  * RichTextContent Component
- * Renders Lexical rich text with authorization badges (Medical Control, Physician Only)
- * No filtering - content visibility is controlled by service line zones
+ * Renders Lexical rich text with optional certification badge styling.
+ * Applies service line filtering so only authorized content is displayed.
  */
 
 'use client'
 
 import React, { type ReactElement } from 'react'
-import { CERT_LEVELS } from '@/lib/certificationLevels'
+import { canViewContent, CERT_LEVELS } from '@/lib/certificationLevels'
 import type { SerializedCertificationLevelNode } from '@/lexical/nodes/CertificationLevelNode'
 import type { SerializedCalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
 import { getCalloutIcon, getCalloutPreset, type CalloutVariant } from '@/lib/calloutPresets'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import type { ServiceLineType } from '@/providers/ServiceLine'
+import type { CertLevelKey } from '@/lib/certificationLevels'
 
 interface RichTextContentProps {
   content: any // Lexical JSON content
   showBadges?: boolean // Whether to show authorization badges
+  serviceLine?: ServiceLineType // Active service line for filtering
+}
+
+type RenderContext = {
+  showBadges: boolean
+  serviceLineLevel?: number
+}
+
+const SERVICE_LINE_TO_CERT_KEY: Record<ServiceLineType, CertLevelKey> = {
+  BLS: 'bls',
+  ALS: 'als',
+  CCT: 'cct',
 }
 
 /**
@@ -24,34 +38,39 @@ interface RichTextContentProps {
 export function RichTextContent({
   content,
   showBadges = true,
+  serviceLine,
 }: RichTextContentProps): ReactElement {
   if (!content || !content.root) {
     return <div className="protocol-content-empty">No content available</div>
   }
 
-  return <>{renderLexicalNode(content.root, showBadges)}</>
+  const serviceLineLevel =
+    serviceLine != null ? CERT_LEVELS[SERVICE_LINE_TO_CERT_KEY[serviceLine]].level : undefined
+
+  const context: RenderContext = {
+    showBadges,
+    serviceLineLevel,
+  }
+
+  return <>{renderLexicalNode(content.root, context)}</>
 }
 
 /**
  * Render a Lexical node to React elements
  */
-function renderLexicalNode(
-  node: any,
-  showBadges: boolean,
-  key?: string,
-): React.ReactNode {
+function renderLexicalNode(node: any, context: RenderContext, key?: string): React.ReactNode {
   if (!node) return null
 
   const nodeKey = key || `node-${Math.random()}`
 
   // Handle certification level nodes (authorization badges)
   if (node.type === 'certification-level') {
-    return renderCertificationLevelNode(node as SerializedCertificationLevelNode, showBadges, nodeKey)
+    return renderCertificationLevelNode(node as SerializedCertificationLevelNode, context, nodeKey)
   }
 
   // Handle callout blocks
   if (node.type === 'callout-block') {
-    return renderCalloutBlockNode(node as SerializedCalloutBlockNode, showBadges, nodeKey)
+    return renderCalloutBlockNode(node as SerializedCalloutBlockNode, context, nodeKey)
   }
 
   // Handle text nodes
@@ -72,11 +91,14 @@ function renderLexicalNode(
 
   // Handle paragraph
   if (node.type === 'paragraph') {
+    const children = renderChildNodes(node.children, context, nodeKey)
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <p key={nodeKey}>
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
-        )}
+        {children}
       </p>
     )
   }
@@ -84,11 +106,14 @@ function renderLexicalNode(
   // Handle headings
   if (node.type === 'heading') {
     const Tag = `h${node.tag}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    const children = renderChildNodes(node.children, context, nodeKey)
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <Tag key={nodeKey}>
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
-        )}
+        {children}
       </Tag>
     )
   }
@@ -96,54 +121,69 @@ function renderLexicalNode(
   // Handle lists
   if (node.type === 'list') {
     const Tag = node.listType === 'number' ? 'ol' : 'ul'
+    const children = renderChildNodes(node.children, context, nodeKey)
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <Tag key={nodeKey}>
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
-        )}
+        {children}
       </Tag>
     )
   }
 
   if (node.type === 'listitem') {
+    const children = renderChildNodes(node.children, context, nodeKey)
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <li key={nodeKey}>
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
-        )}
+        {children}
       </li>
     )
   }
 
   // Handle links
   if (node.type === 'link') {
+    const children = renderChildNodes(node.children, context, nodeKey)
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <a key={nodeKey} href={node.url} target={node.newTab ? '_blank' : undefined} rel="noopener noreferrer">
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
-        )}
+        {children}
       </a>
     )
   }
 
   // Handle root
   if (node.type === 'root') {
+    const children = renderChildNodes(node.children, context, 'root')
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <>
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `root-${i}`),
-        )}
+        {children}
       </>
     )
   }
 
   // Fallback: render children if available
   if (node.children) {
+    const children = renderChildNodes(node.children, context, nodeKey)
+    if (children.length === 0) {
+      return null
+    }
+
     return (
       <>
-        {node.children.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${nodeKey}-${i}`),
-        )}
+        {children}
       </>
     )
   }
@@ -157,14 +197,26 @@ function renderLexicalNode(
  */
 function renderCertificationLevelNode(
   node: SerializedCertificationLevelNode,
-  showBadges: boolean,
+  context: RenderContext,
   key: string,
 ): React.ReactNode {
-  const cert = CERT_LEVELS[node.certLevel]
+  const certKey = node.certLevel as CertLevelKey
+  const cert = CERT_LEVELS[certKey]
 
-  if (!showBadges) {
+  if (!cert) {
+    return <React.Fragment key={key}>{node.text}</React.Fragment>
+  }
+
+  if (
+    typeof context.serviceLineLevel === 'number' &&
+    !canViewContent(context.serviceLineLevel, cert.level)
+  ) {
+    return null
+  }
+
+  if (!context.showBadges) {
     // Just render the text without badge
-    return <span key={key}>{node.text}</span>
+    return <React.Fragment key={key}>{node.text}</React.Fragment>
   }
 
   return (
@@ -210,28 +262,46 @@ function renderCertificationLevelNode(
  */
 function renderCalloutBlockNode(
   node: SerializedCalloutBlockNode,
-  showBadges: boolean,
+  context: RenderContext,
   key: string,
 ): React.ReactNode {
   const preset = node.presetId ? getCalloutPreset(node.presetId) : undefined
   const label = node.label || node.customLabel || preset?.label || 'Callout'
   const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
   const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
-  const hasBodyContent = hasMeaningfulContent(node.children || [])
+  const originalHasBodyContent = hasMeaningfulContent(node.children || [])
   const rawVariant = (node.variant as CalloutVariant | undefined) ?? preset?.variant ?? 'callout'
-  const variant: CalloutVariant = hasBodyContent ? rawVariant : 'alert'
+  const variant: CalloutVariant = originalHasBodyContent ? rawVariant : 'alert'
   const isAlert = variant === 'alert'
+  const renderedChildren = renderChildNodes(node.children, context, key)
+  const hasVisibleBody = renderedChildren.length > 0
 
-  const containerStyle: React.CSSProperties = {
-    borderLeft: `4px solid ${color}`,
-    borderRadius: '0.85rem',
-    padding: '1.1rem 1.15rem',
-    marginBlock: '1.25rem',
-    backgroundColor: hexToRgba(color, hasBodyContent ? 0.12 : 0.15),
-    boxShadow: hasBodyContent ? '0 18px 36px rgba(15, 23, 42, 0.1)' : '0 10px 22px rgba(15, 23, 42, 0.08)',
+  if (!isAlert && !hasVisibleBody) {
+    return null
   }
 
-  ;(containerStyle as React.CSSProperties & Record<string, string>)['--callout-color'] = color
+    const containerStyle: React.CSSProperties & Record<string, string> = {
+      marginBlock: '1.25rem',
+      '--callout-color': color,
+      '--callout-bg': hexToRgba(color, originalHasBodyContent ? 0.12 : 0.1),
+      '--callout-border': hexToRgba(color, 0.32),
+      '--callout-shadow': `0 22px 48px ${hexToRgba(color, 0.18)}`,
+      '--callout-shadow-hover': `0 30px 62px ${hexToRgba(color, 0.22)}`,
+      '--callout-icon-bg': `linear-gradient(135deg, ${hexToRgba(color, 0.9)} 0%, ${hexToRgba(color, 0.75)} 100%)`,
+      '--callout-icon-color': '#ffffff',
+      '--callout-icon-shadow': `0 16px 32px ${hexToRgba(color, 0.28)}`,
+      '--callout-label-color': color,
+      '--callout-body-color': isAlert ? '#334155' : '#1f2937',
+      '--callout-padding': isAlert ? '1.1rem 1.4rem' : '1.35rem 1.6rem',
+      '--callout-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, isAlert ? 0.32 : 0.26)} 0%, rgba(15, 23, 42, 0.88) 100%)`,
+      '--callout-border-dark': hexToRgba(color, 0.45),
+      '--callout-shadow-dark': '0 28px 60px rgba(8, 47, 73, 0.45)',
+      '--callout-shadow-dark-hover': '0 36px 70px rgba(8, 47, 73, 0.55)',
+      '--callout-body-color-dark': '#e2e8f0',
+      '--callout-icon-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, 0.6)} 0%, ${hexToRgba(color, 0.42)} 100%)`,
+      '--callout-icon-shadow-dark': `0 16px 36px ${hexToRgba(color, 0.35)}`,
+      '--callout-label-color-dark': color,
+    }
 
   if (isAlert) {
     return (
@@ -244,11 +314,9 @@ function renderCalloutBlockNode(
             <span className="callout-block__label">
               {label}
             </span>
-            {hasBodyContent ? (
+            {hasVisibleBody ? (
               <div className="callout-block__alert-body">
-                {node.children?.map((child: any, i: number) =>
-                  renderLexicalNode(child, showBadges, `${key}-${i}`),
-                )}
+                {renderedChildren}
               </div>
             ) : (
               <span className="callout-block__alert-description">No additional details provided.</span>
@@ -269,12 +337,40 @@ function renderCalloutBlockNode(
       </div>
 
       <div className="callout-block__body">
-        {node.children?.map((child: any, i: number) =>
-          renderLexicalNode(child, showBadges, `${key}-${i}`),
-        )}
+        {renderedChildren}
       </div>
     </div>
   )
+}
+
+function renderChildNodes(
+  children: any[] | undefined,
+  context: RenderContext,
+  parentKey: string,
+): React.ReactNode[] {
+  if (!Array.isArray(children)) {
+    return []
+  }
+
+  const rendered = children.map((child, index) =>
+    renderLexicalNode(child, context, `${parentKey}-${index}`),
+  )
+
+  return filterRenderableChildren(rendered)
+}
+
+function filterRenderableChildren(nodes: React.ReactNode[]): React.ReactNode[] {
+  return React.Children.toArray(nodes).filter((child) => {
+    if (typeof child === 'string') {
+      return child.trim().length > 0
+    }
+
+    if (Array.isArray(child)) {
+      return filterRenderableChildren(child).length > 0
+    }
+
+    return child !== null && child !== undefined && child !== false
+  })
 }
 
 function hasMeaningfulContent(children: any[]): boolean {

@@ -4,7 +4,8 @@ import type { LexicalEditor } from 'lexical'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR } from 'lexical'
 import * as React from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAward } from '@fortawesome/free-solid-svg-icons'
@@ -34,16 +35,16 @@ type ToolbarItemComponentProps = {
 }
 
 const dropdownStyles: React.CSSProperties = {
-  position: 'absolute',
-  top: 'calc(100% + 4px)',
-  left: 0,
-  zIndex: 1000,
-  backgroundColor: 'white',
+  position: 'fixed',
+  zIndex: 1300,
+  backgroundColor: '#ffffff',
   border: '1px solid #d1d5db',
-  borderRadius: '6px',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-  minWidth: '220px',
-  padding: '4px',
+  borderRadius: '8px',
+  boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18)',
+  minWidth: 220,
+  maxHeight: 360,
+  padding: 4,
+  overflowY: 'auto',
 }
 
 const buttonStyles: React.CSSProperties = {
@@ -69,6 +70,16 @@ const dropdownButtonStyles: React.CSSProperties = {
   transition: 'background-color 0.15s',
 }
 
+const DROPDOWN_VERTICAL_GAP = 6
+const DROPDOWN_HORIZONTAL_PADDING = 12
+const DROPDOWN_MIN_WIDTH = 220
+
+type DropdownPosition = {
+  top: number
+  left: number
+  width: number
+}
+
 /**
  * Toolbar dropdown component for cert level tagging
  */
@@ -81,7 +92,32 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
   const [isTextSelected, setIsTextSelected] = useState(false)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null)
+  const dropdownPortalTarget = typeof document !== 'undefined' ? document.body : null
   const certLevels = useMemo(() => getAllCertLevels(), [])
+
+  const updateDropdownPosition = useCallback(() => {
+    if (!buttonRef.current || typeof window === 'undefined') {
+      return
+    }
+
+    const rect = buttonRef.current.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const maxUsableWidth = Math.max(DROPDOWN_MIN_WIDTH, viewportWidth - DROPDOWN_HORIZONTAL_PADDING * 2)
+    const width = Math.min(Math.max(rect.width, DROPDOWN_MIN_WIDTH), maxUsableWidth)
+    const top = rect.bottom + DROPDOWN_VERTICAL_GAP
+
+    let left = rect.left
+    const maxLeft = viewportWidth - width - DROPDOWN_HORIZONTAL_PADDING
+    if (left > maxLeft) {
+      left = Math.max(DROPDOWN_HORIZONTAL_PADDING, maxLeft)
+    }
+    if (left < DROPDOWN_HORIZONTAL_PADDING) {
+      left = DROPDOWN_HORIZONTAL_PADDING
+    }
+
+    setDropdownPosition({ left, top, width })
+  }, [])
 
   // Check initial selection state
   useEffect(() => {
@@ -147,6 +183,27 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isDropdownOpen])
 
+  useLayoutEffect(() => {
+    if (!isDropdownOpen) {
+      setDropdownPosition(null)
+      return
+    }
+
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    updateDropdownPosition()
+    const handleScroll = () => updateDropdownPosition()
+
+    window.addEventListener('resize', updateDropdownPosition)
+    window.addEventListener('scroll', handleScroll, true)
+
+    return () => {
+      window.removeEventListener('resize', updateDropdownPosition)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [isDropdownOpen, updateDropdownPosition])
   return (
     <div className="relative" onClick={(event) => event.stopPropagation()}>
       <button
@@ -177,8 +234,21 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
         </span>
       </button>
 
-        {isDropdownOpen && isTextSelected && (
-          <div ref={dropdownRef} className="cert-level-dropdown" style={dropdownStyles}>
+      {isDropdownOpen &&
+        isTextSelected &&
+        dropdownPosition &&
+        dropdownPortalTarget &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="cert-level-dropdown"
+            style={{
+              ...dropdownStyles,
+              top: dropdownPosition.top,
+              left: dropdownPosition.left,
+              width: dropdownPosition.width,
+            }}
+          >
             {certLevels.map((cert) => (
               <button
                 key={cert.value}
@@ -209,7 +279,8 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
                 </span>
               </button>
             ))}
-          </div>
+          </div>,
+          dropdownPortalTarget,
         )}
     </div>
   )

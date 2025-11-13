@@ -25,7 +25,7 @@ export const CertificationLevelFeatureClient = createClientFeature(() => {
     toolbarFixed: {
       groups: [
         {
-          type: 'dropdown',
+          type: 'buttons',
           key: 'cert-level',
           order: 65,
           items: [
@@ -41,7 +41,7 @@ export const CertificationLevelFeatureClient = createClientFeature(() => {
     toolbarInline: {
       groups: [
         {
-          type: 'dropdown',
+          type: 'buttons',
           key: 'cert-level',
           order: 65,
           items: [

@@ -124,7 +124,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
               {/* Universal Content (always shown) */}
               {protocol.contentUniversal && (
                 <div className="prose dark:prose-invert max-w-none protocol-content">
-                  <RichTextContent content={protocol.contentUniversal} showBadges={true} />
+                  <RichTextContent
+                    content={protocol.contentUniversal}
+                    showBadges={false}
+                    serviceLine={serviceLine}
+                  />
                 </div>
               )}
 
@@ -135,7 +139,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     <span className="h-2 w-2 rounded-full bg-green-600"></span>
                     BLS Protocol
                   </div>
-                  <RichTextContent content={protocol.contentBLS} showBadges={true} />
+                  <RichTextContent
+                    content={protocol.contentBLS}
+                    showBadges={false}
+                    serviceLine={serviceLine}
+                  />
                 </div>
               )}
 
@@ -146,7 +154,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     <span className="h-2 w-2 rounded-full bg-purple-600"></span>
                     ALS Protocol
                   </div>
-                  <RichTextContent content={protocol.contentALS} showBadges={true} />
+                  <RichTextContent
+                    content={protocol.contentALS}
+                    showBadges={false}
+                    serviceLine={serviceLine}
+                  />
                 </div>
               )}
 
@@ -157,7 +169,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     <span className="h-2 w-2 rounded-full bg-red-600"></span>
                     CCT Protocol
                   </div>
-                  <RichTextContent content={protocol.contentCCT} showBadges={true} />
+                  <RichTextContent
+                    content={protocol.contentCCT}
+                    showBadges={false}
+                    serviceLine={serviceLine}
+                  />
                 </div>
               )}
 
@@ -168,7 +184,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     Key Considerations
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
-                    <RichTextContent content={protocol.specialConsiderations} showBadges={true} />
+                    <RichTextContent
+                      content={protocol.specialConsiderations}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
                   </div>
                 </div>
               )}
@@ -180,7 +200,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     Pearls
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
-                    <RichTextContent content={protocol.keyPoints} showBadges={true} />
+                    <RichTextContent
+                      content={protocol.keyPoints}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
                   </div>
                 </div>
               )}
@@ -192,7 +216,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     References & Graphics
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
-                    <RichTextContent content={protocol.references} showBadges={true} />
+                    <RichTextContent
+                      content={protocol.references}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
                   </div>
                 </div>
               )}
