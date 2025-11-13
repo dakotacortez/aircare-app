@@ -1,8 +1,13 @@
 'use client'
 
-import type { LexicalEditor } from 'lexical'
+import {
+  $getSelection,
+  $isRangeSelection,
+  COMMAND_PRIORITY_EDITOR,
+  createCommand,
+  type LexicalEditor,
+} from 'lexical'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR } from 'lexical'
 import * as React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -290,14 +295,17 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
  * Command to programmatically wrap text with cert level
  * Can be used by other plugins or keyboard shortcuts
  */
-export const INSERT_CERTIFICATION_LEVEL_COMMAND = 'INSERT_CERTIFICATION_LEVEL_COMMAND'
+export const INSERT_CERTIFICATION_LEVEL_COMMAND = createCommand<{
+  certLevel: CertLevelKey
+  text: string
+}>('INSERT_CERTIFICATION_LEVEL_COMMAND')
 
 export function useCertificationLevelCommands(): void {
   const [editor] = useLexicalComposerContext()
 
   useEffect(() => {
     return editor.registerCommand(
-      INSERT_CERTIFICATION_LEVEL_COMMAND as any,
+      INSERT_CERTIFICATION_LEVEL_COMMAND,
       (payload: { certLevel: CertLevelKey; text: string }) => {
         editor.update(() => {
           const selection = $getSelection()

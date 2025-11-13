@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     -- Add gradient configuration fields to site_settings
     ALTER TABLE "site_settings" ADD COLUMN IF NOT EXISTS "hero_gradient_top_opacity" numeric DEFAULT 60;
@@ -10,7 +10,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   `);
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
     -- Remove gradient configuration fields from site_settings
     ALTER TABLE "site_settings" DROP COLUMN IF EXISTS "hero_gradient_top_opacity";
