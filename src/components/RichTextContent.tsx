@@ -332,9 +332,7 @@ function renderCalloutBlockNode(
   const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
   const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
   const calloutChildren = (node.children ?? []) as RichTextSerializedNode[]
-  const originalHasBodyContent = hasMeaningfulContent(calloutChildren)
-  const rawVariant = (node.variant as CalloutVariant | undefined) ?? preset?.variant ?? 'callout'
-  const variant: CalloutVariant = originalHasBodyContent ? rawVariant : 'alert'
+  const variant = (node.variant as CalloutVariant | undefined) ?? preset?.variant ?? 'callout'
   const isAlert = variant === 'alert'
   const renderedChildren = renderChildNodes(calloutChildren, context, key)
   const hasVisibleBody = renderedChildren.length > 0

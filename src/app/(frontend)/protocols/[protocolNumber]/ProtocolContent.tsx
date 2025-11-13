@@ -53,6 +53,7 @@ function hasMeaningfulText(node: RichTextSerializedNode | undefined): boolean {
 
 export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const [toolsCollapsed, setToolsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -79,10 +80,16 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
     <>
       {/* Sub-header with menu button */}
       <div className="h-12 border-b dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center gap-3 px-4 sticky top-16 z-30">
-        {/* Only show button on mobile, or on desktop when sidebar is closed */}
-        {(isMobile || !sidebarOpen) && (
+        {/* Only show button on mobile, or on desktop when sidebar is collapsed */}
+        {(isMobile || sidebarCollapsed) && (
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={() => {
+              if (isMobile) {
+                setSidebarOpen(!sidebarOpen)
+              } else {
+                setSidebarCollapsed(false)
+              }
+            }}
             className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
             <FolderTree className="h-4 w-4" />
@@ -115,6 +122,8 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
           currentProtocolNumber={protocol.protocolNumber}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
         {/* Main Content */}
