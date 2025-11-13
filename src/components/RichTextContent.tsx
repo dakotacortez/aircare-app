@@ -21,7 +21,7 @@ const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const
 export interface RichTextSerializedNode extends SerializedLexicalNode {
   children?: RichTextSerializedNode[]
   text?: string
-  format?: number
+  format?: number | string // number for text nodes (bold, italic), string for block nodes (alignment)
   tag?: string | number
   listType?: 'number' | 'bullet' | string
   url?: string
@@ -101,7 +101,7 @@ function renderLexicalNode(
     let text: React.ReactNode = node.text || ''
 
     // Apply text formatting - nest properly for multiple formats
-    if (node.format) {
+    if (typeof node.format === 'number' && node.format) {
       // Apply in reverse order so outermost formatting is applied last
       if (node.format & 4) text = <s key={`${nodeKey}-strike`}>{text}</s> // Strikethrough
       if (node.format & 8) text = <u key={`${nodeKey}-underline`}>{text}</u> // Underline
