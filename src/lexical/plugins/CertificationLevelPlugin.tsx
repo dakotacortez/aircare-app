@@ -6,6 +6,8 @@ import { $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR } from 'lexic
 import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faAward } from '@fortawesome/free-solid-svg-icons'
 import { $createCertificationLevelNode } from '../nodes/CertificationLevelNode'
 import { getAllCertLevels, type CertLevelKey } from '@/lib/certificationLevels'
 
@@ -146,13 +148,20 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
   }, [isDropdownOpen])
 
   return (
-    <div className="cert-level-toolbar-button" style={{ position: 'relative', display: 'inline-block' }}>
+    <div className="relative" onClick={(event) => event.stopPropagation()}>
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsDropdownOpen((prev) => !prev)}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          if (isTextSelected) {
+            setIsDropdownOpen((prev) => !prev)
+          }
+        }}
         disabled={!isTextSelected}
         className="toolbar-item"
+        aria-label="Tag certification level"
         title="Tag certification level"
         style={{
           ...buttonStyles,
@@ -161,7 +170,11 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
           opacity: isTextSelected ? 1 : 0.5,
         }}
       >
-        🏥 Cert Level
+        <FontAwesomeIcon icon={faAward} />
+        <span className="text">Cert Level</span>
+        <span className="chevron-down" style={{ marginLeft: '4px' }}>
+          ▾
+        </span>
       </button>
 
       {isDropdownOpen && isTextSelected && (
