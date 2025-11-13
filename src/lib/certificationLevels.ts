@@ -15,7 +15,7 @@ export const CERT_LEVELS = {
     label: 'BLS',
     level: 0,
     color: '#10b981', // emerald
-    description: 'Basic Life Support service line',
+    description: 'Basic Life Support',
     isCallout: false,
     isSelectable: true,
   },
@@ -24,7 +24,7 @@ export const CERT_LEVELS = {
     label: 'ALS',
     level: 1,
     color: '#6366f1', // indigo
-    description: 'Advanced Life Support service line',
+    description: 'Advanced Life Support',
     isCallout: false,
     isSelectable: true,
   },
@@ -33,7 +33,7 @@ export const CERT_LEVELS = {
     label: 'CCT',
     level: 2,
     color: '#ef4444', // red
-    description: 'Critical Care Transport service line',
+    description: 'Critical Care Transport',
     isCallout: false,
     isSelectable: true,
   },

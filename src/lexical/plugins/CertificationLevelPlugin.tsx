@@ -52,14 +52,6 @@ const dropdownStyles: React.CSSProperties = {
   overflowY: 'auto',
 }
 
-const buttonStyles: React.CSSProperties = {
-  padding: '6px 12px',
-  border: '1px solid #d1d5db',
-  borderRadius: '4px',
-  fontSize: '14px',
-  fontWeight: 500,
-}
-
 const dropdownButtonStyles: React.CSSProperties = {
   width: '100%',
   display: 'flex',
@@ -223,17 +215,11 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
         }}
         disabled={!isTextSelected}
         className="toolbar-item"
-        aria-label="Tag certification level"
-        title="Tag certification level"
-        style={{
-          ...buttonStyles,
-          backgroundColor: isTextSelected ? '#ffffff' : '#f3f4f6',
-          cursor: isTextSelected ? 'pointer' : 'not-allowed',
-          opacity: isTextSelected ? 1 : 0.5,
-        }}
+        aria-label="Tag care level"
+        title="Tag care level"
       >
         <FontAwesomeIcon icon={faAward} />
-        <span className="text">Cert Level</span>
+        <span className="text">Care Level</span>
         <span className="chevron-down" style={{ marginLeft: '4px' }}>
           ▾
         </span>
