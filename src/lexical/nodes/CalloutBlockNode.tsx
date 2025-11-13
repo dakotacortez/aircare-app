@@ -110,10 +110,18 @@ function renderHeader(
     labelSpan.className = 'callout-block__label'
     labelSpan.textContent = label
 
+    // Add delete button for alerts
+    const deleteButton = document.createElement('button')
+    deleteButton.className = 'callout-block__delete'
+    deleteButton.textContent = '×'
+    deleteButton.setAttribute('aria-label', 'Delete alert')
+    deleteButton.setAttribute('type', 'button')
+    deleteButton.contentEditable = 'false'
+
     iconWrapper.contentEditable = 'false'
     labelSpan.contentEditable = 'false'
 
-    dom.append(iconWrapper, labelSpan)
+    dom.append(iconWrapper, labelSpan, deleteButton)
   } else {
     // For callouts, render as header (corner label design)
     const header = document.createElement('div')
@@ -230,6 +238,7 @@ export class CalloutBlockNode extends ElementNode {
     container.dataset.calloutIcon = this.__icon
     container.dataset.calloutLabel = this.__label
     container.dataset.calloutVariant = this.__variant
+    container.dataset.lexicalNodeKey = this.__key
 
     applyCalloutStyles(container, this.__color, this.__variant)
     renderHeader(container, this.__icon, this.__label, this.__variant)

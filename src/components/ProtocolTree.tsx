@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight, FolderTree, X } from 'lucide-react'
+import { ChevronRight, FolderTree, X, ChevronLeft } from 'lucide-react'
 import { Protocol } from '@/payload-types'
 
 interface ProtocolTreeProps {
@@ -9,45 +9,91 @@ interface ProtocolTreeProps {
   currentProtocolNumber?: string
   isOpen: boolean
   onClose: () => void
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose }: ProtocolTreeProps) {
+export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose, isCollapsed = false, onToggleCollapse }: ProtocolTreeProps) {
   // Group protocols by category and subcategory
   const tree: Record<string, Record<string, Protocol[]>> = {}
-  
+
   protocols.forEach((protocol) => {
     const category = protocol.category || 'Uncategorized'
     const subcategory = protocol.subcategory || 'General'
-    
+
     if (!tree[category]) tree[category] = {}
     if (!tree[category][subcategory]) tree[category][subcategory] = []
     tree[category][subcategory].push(protocol)
   })
 
   return (
-    <aside className={`fixed md:relative z-40 w-80 md:w-[320px] h-full bg-white dark:bg-neutral-800 border-r dark:border-neutral-700 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full md:hidden'} overflow-auto`}>
-      <div className="px-4 py-3 flex items-center gap-2 sticky top-0 bg-white dark:bg-neutral-800 border-b dark:border-neutral-700 z-10">
-        <FolderTree className="h-4 w-4" />
-        <div className="text-sm font-medium flex-1">Browse Protocols</div>
-        <button
-          onClick={onClose}
-          className="rounded-lg p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-      
-      <nav className="p-2 text-sm">
-        {Object.entries(tree).sort().map(([category, subcategories]) => (
-          <TreeCategory
-            key={category}
-            label={category.replace(/-/g, ' ')}
-            subcategories={subcategories}
-            currentProtocolNumber={currentProtocolNumber}
-          />
-        ))}
-      </nav>
-    </aside>
+    <>
+      {/* Desktop/Tablet Sidebar */}
+      {!isCollapsed ? (
+        <aside className={`hidden md:block w-[320px] h-full bg-white dark:bg-neutral-800 border-r dark:border-neutral-700 overflow-auto`}>
+          <div className="px-4 py-3 flex items-center gap-2 sticky top-0 bg-white dark:bg-neutral-800 border-b dark:border-neutral-700 z-10">
+            <FolderTree className="h-4 w-4" />
+            <div className="text-sm font-medium flex-1">Browse Protocols</div>
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                aria-label="Collapse protocol tree"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <nav className="p-2 text-sm">
+            {Object.entries(tree).sort().map(([category, subcategories]) => (
+              <TreeCategory
+                key={category}
+                label={category.replace(/-/g, ' ')}
+                subcategories={subcategories}
+                currentProtocolNumber={currentProtocolNumber}
+              />
+            ))}
+          </nav>
+        </aside>
+      ) : (
+        <div className="hidden md:flex flex-col border-r dark:border-neutral-700 bg-white dark:bg-neutral-800">
+          <button
+            onClick={onToggleCollapse}
+            className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex flex-col items-center gap-2 border-b dark:border-neutral-700"
+            aria-label="Expand protocol tree"
+          >
+            <FolderTree className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Sidebar */}
+      <aside className={`md:hidden fixed z-40 w-80 h-full bg-white dark:bg-neutral-800 border-r dark:border-neutral-700 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-auto`}>
+        <div className="px-4 py-3 flex items-center gap-2 sticky top-0 bg-white dark:bg-neutral-800 border-b dark:border-neutral-700 z-10">
+          <FolderTree className="h-4 w-4" />
+          <div className="text-sm font-medium flex-1">Browse Protocols</div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <nav className="p-2 text-sm">
+          {Object.entries(tree).sort().map(([category, subcategories]) => (
+            <TreeCategory
+              key={category}
+              label={category.replace(/-/g, ' ')}
+              subcategories={subcategories}
+              currentProtocolNumber={currentProtocolNumber}
+            />
+          ))}
+        </nav>
+      </aside>
+    </>
   )
 }
 
