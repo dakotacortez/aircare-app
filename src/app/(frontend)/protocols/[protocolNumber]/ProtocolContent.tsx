@@ -141,69 +141,87 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
             {/* Protocol Content */}
             <section className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-6 space-y-6">
-              {/* Universal Content (always shown) */}
+              {/* Universal Protocol */}
               {protocol.contentUniversal && (
-                <div className="prose dark:prose-invert max-w-none protocol-content">
-                  <RichTextContent
-                    content={protocol.contentUniversal}
-                    showBadges={false}
-                    serviceLine={serviceLine}
-                  />
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      Universal Protocol
+                    </h3>
+                  </div>
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
+                    <RichTextContent
+                      content={protocol.contentUniversal}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* BLS Zone */}
+              {/* BLS Protocol */}
               {serviceLine === 'BLS' && protocol.contentBLS && (
-                <div className="prose dark:prose-invert max-w-none protocol-content">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 text-sm font-medium mb-4">
-                    <span className="h-2 w-2 rounded-full bg-green-600"></span>
-                    BLS Protocol
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      BLS Protocol
+                    </h3>
                   </div>
-                  <RichTextContent
-                    content={protocol.contentBLS}
-                    showBadges={false}
-                    serviceLine={serviceLine}
-                  />
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
+                    <RichTextContent
+                      content={protocol.contentBLS}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* ALS Zone */}
+              {/* ALS Protocol */}
               {serviceLine === 'ALS' && protocol.contentALS && (
-                <div className="prose dark:prose-invert max-w-none protocol-content">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 text-sm font-medium mb-4">
-                    <span className="h-2 w-2 rounded-full bg-purple-600"></span>
-                    ALS Protocol
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      ALS Protocol
+                    </h3>
                   </div>
-                  <RichTextContent
-                    content={protocol.contentALS}
-                    showBadges={false}
-                    serviceLine={serviceLine}
-                  />
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
+                    <RichTextContent
+                      content={protocol.contentALS}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* CCT Zone */}
+              {/* CCT Protocol */}
               {serviceLine === 'CCT' && protocol.contentCCT && (
-                <div className="prose dark:prose-invert max-w-none protocol-content">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 text-sm font-medium mb-4">
-                    <span className="h-2 w-2 rounded-full bg-red-600"></span>
-                    CCT Protocol
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      CCT Protocol
+                    </h3>
                   </div>
-                  <RichTextContent
-                    content={protocol.contentCCT}
-                    showBadges={false}
-                    serviceLine={serviceLine}
-                  />
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
+                    <RichTextContent
+                      content={protocol.contentCCT}
+                      showBadges={false}
+                      serviceLine={serviceLine}
+                    />
+                  </div>
                 </div>
               )}
 
-              {/* Special Considerations (only shown if has content) */}
+              {/* Key Considerations (only shown if has content) */}
               {hasContent(protocol.specialConsiderations) && (
-                <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
-                    Key Considerations
-                  </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      Key Considerations
+                    </h3>
+                  </div>
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
                     <RichTextContent
                       content={protocol.specialConsiderations}
                       showBadges={false}
@@ -213,13 +231,15 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 </div>
               )}
 
-              {/* Key Points (only shown if has content) */}
+              {/* Pearls (only shown if has content) */}
               {hasContent(protocol.keyPoints) && (
-                <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
-                    Pearls
-                  </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      Pearls
+                    </h3>
+                  </div>
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
                     <RichTextContent
                       content={protocol.keyPoints}
                       showBadges={false}
@@ -231,11 +251,13 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
               {/* References & Graphics (only shown if has content) */}
               {hasContent(protocol.references) && (
-                <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100">
-                    References & Graphics
-                  </h3>
-                  <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
+                <div>
+                  <div className="py-4 border-b border-gray-200 dark:border-neutral-700">
+                    <h3 className="text-gray-800 dark:text-neutral-100 text-2xl font-bold">
+                      References & Graphics
+                    </h3>
+                  </div>
+                  <div className="prose dark:prose-invert max-w-none protocol-content mt-4">
                     <RichTextContent
                       content={protocol.references}
                       showBadges={false}
