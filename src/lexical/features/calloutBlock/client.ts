@@ -6,6 +6,7 @@ import { createClientFeature } from '@payloadcms/richtext-lexical/client'
 
 import { CalloutBlockNode } from '@/lexical/nodes/CalloutBlockNode'
 import {
+  AlertToolbarDropdown,
   CalloutBlockPlugin,
   CalloutBlockToolbarDropdown,
 } from '../../plugins/CalloutBlockPlugin'
@@ -25,10 +26,15 @@ export const CalloutBlockFeatureClient = createClientFeature(() => {
     toolbarFixed: {
       groups: [
         {
-          type: 'dropdown',
-          key: 'callout-block',
+          type: 'buttons',
+          key: 'callout-alert',
           order: 60,
           items: [
+            {
+              key: 'alert-block',
+              label: 'Insert alert',
+              Component: AlertToolbarDropdown,
+            },
             {
               key: 'callout-block',
               label: 'Insert callout',
@@ -41,10 +47,15 @@ export const CalloutBlockFeatureClient = createClientFeature(() => {
     toolbarInline: {
       groups: [
         {
-          type: 'dropdown',
-          key: 'callout-block',
+          type: 'buttons',
+          key: 'callout-alert',
           order: 60,
           items: [
+            {
+              key: 'alert-block',
+              label: 'Insert alert',
+              Component: AlertToolbarDropdown,
+            },
             {
               key: 'callout-block',
               label: 'Insert callout',

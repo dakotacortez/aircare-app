@@ -131,7 +131,7 @@ function CertificationLevelComponent({
   certLevel: CertLevelKey
   text: string
 }): React.JSX.Element {
-  const cert = CERT_LEVELS[certLevel]
+  const cert = CERT_LEVELS[certLevel] ?? CERT_LEVELS.bls
 
   return (
     <span
