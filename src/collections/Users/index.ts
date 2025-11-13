@@ -114,7 +114,7 @@ export const Users: CollectionConfig = {
       // Users can update their own preference, admins can update for anyone
       access: {
         create: () => true,
-        read: authenticated,
+        // Read access inherited from collection-level (authenticated users can read)
         update: ({ req: { user }, id }) => {
           // Users can update their own preference
           if (user && id && user.id === id) return true
