@@ -32,34 +32,27 @@ export type SerializedCalloutBlockNode = Spread<
   SerializedElementNode
 >
 
+function getColorScheme(color: string): { bg: string; border: string; text: string; header: string } {
+  const colorMap: Record<string, { bg: string; border: string; text: string; header: string }> = {
+    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }, // sky/blue
+    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa' }, // blue
+    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24' }, // amber/yellow
+    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171' }, // red
+    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399' }, // emerald/green
+    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c' }, // orange
+    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8' }, // indigo
+  }
+
+  return colorMap[color] || { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }
+}
+
 function applyCalloutStyles(dom: HTMLElement, color: string, variant: CalloutVariant): void {
-  const isAlert = variant === 'alert'
+  const colorScheme = getColorScheme(color)
 
-  dom.style.setProperty('--callout-color', color)
-  dom.style.setProperty('--callout-bg', hexToRgba(color, isAlert ? 0.12 : 0.1))
-  dom.style.setProperty('--callout-border', hexToRgba(color, 0.32))
-  dom.style.setProperty('--callout-shadow', `0 22px 48px ${hexToRgba(color, 0.18)}`)
-  dom.style.setProperty('--callout-shadow-hover', `0 30px 62px ${hexToRgba(color, 0.22)}`)
-  dom.style.setProperty('--callout-icon-bg', `linear-gradient(135deg, ${hexToRgba(color, 0.9)} 0%, ${hexToRgba(color, 0.75)} 100%)`)
-  dom.style.setProperty('--callout-icon-color', '#ffffff')
-  dom.style.setProperty('--callout-icon-shadow', `0 16px 32px ${hexToRgba(color, 0.28)}`)
-  dom.style.setProperty('--callout-label-color', color)
-  dom.style.setProperty('--callout-body-color', isAlert ? '#334155' : '#1f2937')
-  dom.style.setProperty('--callout-padding', isAlert ? '1.1rem 1.4rem' : '1.35rem 1.6rem')
-  dom.style.setProperty('--callout-bg-dark', `linear-gradient(135deg, ${hexToRgba(color, isAlert ? 0.32 : 0.26)} 0%, rgba(15, 23, 42, 0.88) 100%)`)
-  dom.style.setProperty('--callout-border-dark', hexToRgba(color, 0.45))
-  dom.style.setProperty('--callout-shadow-dark', '0 28px 60px rgba(8, 47, 73, 0.45)')
-  dom.style.setProperty('--callout-shadow-dark-hover', '0 36px 70px rgba(8, 47, 73, 0.55)')
-  dom.style.setProperty('--callout-body-color-dark', '#e2e8f0')
-  dom.style.setProperty('--callout-icon-bg-dark', `linear-gradient(135deg, ${hexToRgba(color, 0.6)} 0%, ${hexToRgba(color, 0.42)} 100%)`)
-  dom.style.setProperty('--callout-icon-shadow-dark', `0 16px 36px ${hexToRgba(color, 0.35)}`)
-  dom.style.setProperty('--callout-label-color-dark', color)
-
-  dom.style.padding = 'var(--callout-padding)'
-  dom.style.margin = '1.25rem 0'
-  dom.style.border = '1px solid var(--callout-border)'
-  dom.style.background = 'var(--callout-bg)'
-  dom.style.boxShadow = 'var(--callout-shadow)'
+  dom.style.setProperty('--callout-bg-color', colorScheme.bg)
+  dom.style.setProperty('--callout-border-color', colorScheme.border)
+  dom.style.setProperty('--callout-text-color', colorScheme.text)
+  dom.style.setProperty('--callout-header-bg', colorScheme.header)
 }
 
 function hexToRgba(hex: string, alpha: number): string {

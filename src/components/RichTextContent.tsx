@@ -347,6 +347,9 @@ function renderCalloutBlockNode(
   return (
     <div key={key} className="callout-block" style={containerStyle}>
       <div className="callout-block__header">
+        <span className="callout-block__icon">
+          <FontAwesomeIcon icon={iconDefinition} />
+        </span>
         <span className="callout-block__label">{label.toUpperCase()}:</span>
       </div>
 
