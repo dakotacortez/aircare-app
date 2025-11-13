@@ -1,12 +1,13 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { HeartPulse, Menu, Sun, Moon, Users } from 'lucide-react'
+import { HeartPulse, Menu, Sun, Moon, Users, FolderOpen } from 'lucide-react'
 
 import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
 import { useTheme } from '@/providers/Theme'
 import { getImplicitPreference } from '@/providers/Theme/shared'
 import { useServiceLine } from '@/providers/ServiceLine'
+import { useReferenceCard } from '@/hooks/useReferenceCard'
 
 type NavItem = {
   href: string
@@ -82,6 +83,7 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const { theme, setTheme } = useTheme()
   const { serviceLine, setServiceLine } = useServiceLine()
+  const { savedCount, setDrawerOpen, isMobile } = useReferenceCard()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
@@ -148,6 +150,22 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Reference Card Button - Mobile/Tablet Only */}
+            {isMobile && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="relative rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                aria-label="Open reference cards"
+              >
+                <FolderOpen className="h-4 w-4" />
+                {savedCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full min-w-[1.25rem] h-5 px-1 flex items-center justify-center text-xs font-bold">
+                    {savedCount}
+                  </span>
+                )}
+              </button>
+            )}
+
             <button
               onClick={() => setMobileOpen(o => !o)}
               className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
