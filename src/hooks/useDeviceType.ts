@@ -11,11 +11,13 @@ export function useDeviceType() {
 
   useEffect(() => {
     const checkDevice = () => {
-      // Check screen size AND touch capability
+      // Check screen size OR touch capability (more permissive)
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
       const isSmallScreen = window.innerWidth < 1024 // tablets and phones
-
-      setIsMobile(isTouchDevice && isSmallScreen)
+      
+      // Consider it mobile if either touch-capable OR small screen
+      // This ensures tablets and mobile devices are properly detected
+      setIsMobile(isTouchDevice || isSmallScreen)
     }
 
     checkDevice()
