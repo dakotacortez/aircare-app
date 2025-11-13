@@ -280,6 +280,23 @@ function renderCertificationLevelNode(
 }
 
 /**
+ * Get color scheme CSS variables for callout/alert
+ */
+function getColorScheme(color: string) {
+  const colorMap: Record<string, { bg: string; border: string; text: string; header: string }> = {
+    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#075985', header: '#38bdf8' }, // sky/blue
+    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e40af', header: '#60a5fa' }, // blue
+    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#92400e', header: '#fbbf24' }, // amber/yellow
+    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#991b1b', header: '#f87171' }, // red
+    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#065f46', header: '#34d399' }, // emerald/green
+    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#9a3412', header: '#fb923c' }, // orange
+    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#3730a3', header: '#818cf8' }, // indigo
+  }
+
+  return colorMap[color] || { bg: '#e0f2fe', border: '#38bdf8', text: '#075985', header: '#38bdf8' }
+}
+
+/**
  * Render a callout block node
  * Shows colored box with icon, label, and rich content
  */
@@ -304,48 +321,29 @@ function renderCalloutBlockNode(
     return null
   }
 
+  const colorScheme = getColorScheme(color)
+
   const containerStyle: React.CSSProperties & Record<string, string> = {
-    marginBlock: '1.25rem',
-    '--callout-color': color,
-    '--callout-bg': hexToRgba(color, originalHasBodyContent ? 0.12 : 0.1),
-    '--callout-border': hexToRgba(color, 0.32),
-    '--callout-shadow': `0 22px 48px ${hexToRgba(color, 0.18)}`,
-    '--callout-shadow-hover': `0 30px 62px ${hexToRgba(color, 0.22)}`,
-    '--callout-icon-bg': `linear-gradient(135deg, ${hexToRgba(color, 0.9)} 0%, ${hexToRgba(color, 0.75)} 100%)`,
-    '--callout-icon-color': '#ffffff',
-    '--callout-icon-shadow': `0 16px 32px ${hexToRgba(color, 0.28)}`,
-    '--callout-label-color': color,
-    '--callout-body-color': isAlert ? '#334155' : '#1f2937',
-    '--callout-padding': isAlert ? '1.1rem 1.4rem' : '1.35rem 1.6rem',
-    '--callout-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, isAlert ? 0.32 : 0.26)} 0%, rgba(15, 23, 42, 0.88) 100%)`,
-    '--callout-border-dark': hexToRgba(color, 0.45),
-    '--callout-shadow-dark': '0 28px 60px rgba(8, 47, 73, 0.45)',
-    '--callout-shadow-dark-hover': '0 36px 70px rgba(8, 47, 73, 0.55)',
-    '--callout-body-color-dark': '#e2e8f0',
-    '--callout-icon-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, 0.6)} 0%, ${hexToRgba(color, 0.42)} 100%)`,
-    '--callout-icon-shadow-dark': `0 16px 36px ${hexToRgba(color, 0.35)}`,
-    '--callout-label-color-dark': color,
+    '--callout-bg-color': colorScheme.bg,
+    '--callout-border-color': colorScheme.border,
+    '--callout-text-color': colorScheme.text,
+    '--callout-header-bg': colorScheme.header,
   }
 
   if (isAlert) {
     return (
       <div key={key} className="callout-block callout-block--alert" style={containerStyle}>
-        <div className="callout-block__alert-inner">
-          <span className="callout-block__icon">
-            <FontAwesomeIcon icon={iconDefinition} />
-          </span>
-          <div className="callout-block__alert-content">
-            <span className="callout-block__label">
-              {label}
-            </span>
-            {hasVisibleBody ? (
-              <div className="callout-block__alert-body">
-                {renderedChildren}
-              </div>
-            ) : (
-              <span className="callout-block__alert-description">No additional details provided.</span>
-            )}
-          </div>
+        <span className="callout-block__icon" style={{ color: colorScheme.text }}>
+          <FontAwesomeIcon icon={iconDefinition} />
+        </span>
+        <div className="callout-block__alert-inner" style={{ color: colorScheme.text }}>
+          {hasVisibleBody ? (
+            <div className="callout-block__alert-body">
+              {renderedChildren}
+            </div>
+          ) : (
+            <span className="callout-block__alert-description">An example alert with an Icon!</span>
+          )}
         </div>
       </div>
     )
@@ -354,10 +352,7 @@ function renderCalloutBlockNode(
   return (
     <div key={key} className="callout-block" style={containerStyle}>
       <div className="callout-block__header">
-        <span className="callout-block__icon">
-          <FontAwesomeIcon icon={iconDefinition} />
-        </span>
-        <span className="callout-block__label">{label}</span>
+        <span className="callout-block__label">{label.toUpperCase()}:</span>
       </div>
 
       <div className="callout-block__body">
@@ -429,17 +424,4 @@ function deriveHeadingTag(tag: RichTextSerializedNode['tag']): (typeof HEADING_T
 function sanitizeColor(color: string): string {
   if (!color) return '#0ea5e9'
   return color.startsWith('#') ? color : `#${color}`
-}
-
-function hexToRgba(hex: string, alpha: number): string {
-  const sanitized = hex.replace('#', '')
-  if (sanitized.length !== 6) {
-    return `rgba(59, 130, 246, ${alpha})`
-  }
-
-  const r = parseInt(sanitized.substring(0, 2), 16)
-  const g = parseInt(sanitized.substring(2, 4), 16)
-  const b = parseInt(sanitized.substring(4, 6), 16)
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }

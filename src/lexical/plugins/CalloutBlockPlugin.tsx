@@ -167,17 +167,8 @@ const ALERT_SECTIONS: DropdownSectionConfig[] = [
     title: 'Alerts',
     description: 'Title-only blocks for critical warnings',
     items: [
-      {
-        id: 'alert-quick',
-        label: 'Alert',
-        description: 'Red, attention grabbing layout for critical warnings.',
-        icon: 'triangle-exclamation',
-        color: '#ef4444',
-        variant: 'alert',
-      },
       createPresetItem('medicalControl'),
       createPresetItem('physicianOnly'),
-      createPresetItem('highRisk'),
     ],
   },
 ]
@@ -188,15 +179,6 @@ const CALLOUT_SECTIONS: DropdownSectionConfig[] = [
     title: 'Callouts',
     description: 'Blocks with title and body content',
     items: [
-      {
-        id: 'callout-quick',
-        label: 'Callout',
-        description: 'Standard informational callout with accent border.',
-        icon: 'circle-info',
-        color: '#0ea5e9',
-        variant: 'callout',
-      },
-      createPresetItem('information'),
       createPresetItem('medication'),
       createPresetItem('tip'),
       createPresetItem('notification'),

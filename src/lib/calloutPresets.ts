@@ -64,14 +64,6 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     color: '#6366f1',
     variant: 'alert',
   },
-  highRisk: {
-    id: 'highRisk',
-    label: 'High Risk',
-    description: 'Use additional caution / high-risk intervention',
-    icon: 'triangle-exclamation',
-    color: '#ef4444',
-    variant: 'alert',
-  },
   medication: {
     id: 'medication',
     label: 'Medication Guidance',
@@ -88,14 +80,6 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
     color: '#10b981',
     variant: 'callout',
   },
-  information: {
-    id: 'information',
-    label: 'General Information',
-    description: 'Additional context for the protocol',
-    icon: 'circle-info',
-    color: '#0ea5e9',
-    variant: 'callout',
-  },
   notification: {
     id: 'notification',
     label: 'Notification',
@@ -109,8 +93,6 @@ export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
 export type CalloutPresetId = keyof typeof CALLOUT_PRESETS
 
 const LEGACY_PRESET_ALIASES: Record<string, CalloutPresetId> = {
-  important: 'highRisk',
-  note: 'information',
   dosing: 'medication',
   warning: 'notification',
 }
