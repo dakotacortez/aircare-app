@@ -70,14 +70,33 @@ const dropdownButtonStyles: React.CSSProperties = {
 /**
  * Toolbar dropdown component for cert level tagging
  */
-export function CertificationLevelToolbarDropdown({ editor }: ToolbarItemComponentProps): React.JSX.Element {
+export function CertificationLevelToolbarDropdown({ editor: editorProp }: ToolbarItemComponentProps): React.JSX.Element {
+  // Use context as fallback if editor prop isn't available
+  const [editorFromContext] = useLexicalComposerContext()
+  const editor = editorProp || editorFromContext
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isTextSelected, setIsTextSelected] = useState(false)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
   const certLevels = useMemo(() => getAllCertLevels(), [])
 
+  // Check initial selection state
   useEffect(() => {
+    if (!editor) return
+
+    editor.getEditorState().read(() => {
+      const selection = $getSelection()
+      if ($isRangeSelection(selection)) {
+        const text = selection.getTextContent()
+        setIsTextSelected(text.length > 0)
+      }
+    })
+  }, [editor])
+
+  useEffect(() => {
+    if (!editor) return
+
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
         const selection = $getSelection()
