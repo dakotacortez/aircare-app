@@ -244,109 +244,137 @@ export const Protocols: CollectionConfig = {
       ],
     },
 
-    // Universal Content (shown to all service lines)
+      // Protocol Content Editors (grouped into tabs)
       {
-        name: 'contentUniversal',
-        type: 'richText',
-        label: 'Protocol (Universal)',
-        hooks: {
-          afterRead: [sanitizeContentUniversal],
-          beforeChange: [sanitizeContentUniversal],
-        },
-        admin: {
-          description: 'Intro and universal guidelines for all service lines',
-        },
-        editor: getFullProtocolEditor(),
-      },
-
-    // BLS-Specific Content
-      {
-        name: 'contentBLS',
-        type: 'richText',
-        label: 'Protocol (BLS)',
-        hooks: {
-          afterRead: [sanitizeContentBLS],
-          beforeChange: [sanitizeContentBLS],
-        },
-        admin: {
-          description: 'BLS-specific procedures and protocols',
-        },
-        editor: getFullProtocolEditor(),
-      },
-
-    // ALS-Specific Content
-      {
-        name: 'contentALS',
-        type: 'richText',
-        label: 'Protocol (ALS)',
-        hooks: {
-          afterRead: [sanitizeContentALS],
-          beforeChange: [sanitizeContentALS],
-        },
-        admin: {
-          description: 'ALS-specific procedures and protocols',
-        },
-        editor: getFullProtocolEditor(),
-      },
-
-    // CCT-Specific Content
-      {
-        name: 'contentCCT',
-        type: 'richText',
-        label: 'Protocol (CCT)',
-        hooks: {
-          afterRead: [sanitizeContentCCT],
-          beforeChange: [sanitizeContentCCT],
-        },
-        admin: {
-          description: 'CCT-specific procedures and protocols',
-        },
-        editor: getFullProtocolEditor(),
-      },
-
-    // Special Considerations (shared across all levels)
-      {
-        name: 'specialConsiderations',
-        type: 'richText',
-        label: 'Special Considerations',
-        hooks: {
-          afterRead: [sanitizeSpecialConsiderations],
-          beforeChange: [sanitizeSpecialConsiderations],
-        },
-        admin: {
-          description: 'Level-specific callouts and uncommon adjustments',
-        },
-        editor: getSimpleProtocolEditor(),
-      },
-
-    // Key Points / Pearls
-      {
-        name: 'keyPoints',
-        type: 'richText',
-        label: 'Key Points / Pearls',
-        hooks: {
-          afterRead: [sanitizeKeyPoints],
-          beforeChange: [sanitizeKeyPoints],
-        },
-        admin: {
-          description: 'Quick-reference items by level',
-        },
-        editor: getSimpleProtocolEditor(),
-      },
-
-    // References & Graphics
-      {
-        name: 'references',
-        type: 'richText',
-        label: 'References & Graphics',
-        hooks: {
-          afterRead: [sanitizeReferences],
-          beforeChange: [sanitizeReferences],
-        },
-        admin: {
-          description: 'Tables, diagrams, assessment reminders',
-        },
-        editor: getReferencesEditor(),
+        type: 'tabs',
+        tabs: [
+          {
+            label: 'Universal',
+            fields: [
+              {
+                name: 'contentUniversal',
+                type: 'richText',
+                label: 'Protocol (Universal)',
+                hooks: {
+                  afterRead: [sanitizeContentUniversal],
+                  beforeChange: [sanitizeContentUniversal],
+                },
+                admin: {
+                  description: 'Intro and universal guidelines for all service lines',
+                },
+                editor: getFullProtocolEditor(),
+              },
+            ],
+          },
+          {
+            label: 'BLS',
+            fields: [
+              {
+                name: 'contentBLS',
+                type: 'richText',
+                label: 'Protocol (BLS)',
+                hooks: {
+                  afterRead: [sanitizeContentBLS],
+                  beforeChange: [sanitizeContentBLS],
+                },
+                admin: {
+                  description: 'BLS-specific procedures and protocols',
+                },
+                editor: getFullProtocolEditor(),
+              },
+            ],
+          },
+          {
+            label: 'ALS',
+            fields: [
+              {
+                name: 'contentALS',
+                type: 'richText',
+                label: 'Protocol (ALS)',
+                hooks: {
+                  afterRead: [sanitizeContentALS],
+                  beforeChange: [sanitizeContentALS],
+                },
+                admin: {
+                  description: 'ALS-specific procedures and protocols',
+                },
+                editor: getFullProtocolEditor(),
+              },
+            ],
+          },
+          {
+            label: 'CCT',
+            fields: [
+              {
+                name: 'contentCCT',
+                type: 'richText',
+                label: 'Protocol (CCT)',
+                hooks: {
+                  afterRead: [sanitizeContentCCT],
+                  beforeChange: [sanitizeContentCCT],
+                },
+                admin: {
+                  description: 'CCT-specific procedures and protocols',
+                },
+                editor: getFullProtocolEditor(),
+              },
+            ],
+          },
+          {
+            label: 'Special Considerations',
+            fields: [
+              {
+                name: 'specialConsiderations',
+                type: 'richText',
+                label: 'Special Considerations',
+                hooks: {
+                  afterRead: [sanitizeSpecialConsiderations],
+                  beforeChange: [sanitizeSpecialConsiderations],
+                },
+                admin: {
+                  description: 'Level-specific callouts and uncommon adjustments',
+                },
+                editor: getSimpleProtocolEditor(),
+              },
+            ],
+          },
+          {
+            label: 'Key Points / Pearls',
+            fields: [
+              {
+                name: 'keyPoints',
+                type: 'richText',
+                label: 'Key Points / Pearls',
+                hooks: {
+                  afterRead: [sanitizeKeyPoints],
+                  beforeChange: [sanitizeKeyPoints],
+                },
+                admin: {
+                  description: 'Quick-reference items by level',
+                },
+                editor: getSimpleProtocolEditor(),
+              },
+            ],
+          },
+          {
+            label: 'References & Graphics',
+            fields: [
+              {
+                name: 'references',
+                type: 'richText',
+                label: 'References & Graphics',
+                hooks: {
+                  afterRead: [sanitizeReferences],
+                  beforeChange: [sanitizeReferences],
+                },
+                admin: {
+                  description: 'Tables, diagrams, assessment reminders',
+                },
+                editor: getReferencesEditor(),
+              },
+            ],
+          },
+        ],
       },
 
     // Version & Review Information

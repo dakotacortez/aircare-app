@@ -5,6 +5,7 @@ import './CalloutBlockPlugin.css'
 import React, {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -79,18 +80,25 @@ export function CalloutBlockPlugin(): null {
 }
 
 const dropdownContainerStyle: React.CSSProperties = {
-  position: 'absolute',
-  top: '100%',
-  left: 0,
-  marginTop: '4px',
+  position: 'fixed',
   backgroundColor: 'var(--theme-elevation-50, #fff)',
   border: '1px solid var(--theme-elevation-150, #d1d5db)',
   borderRadius: '8px',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  zIndex: 1000,
-  minWidth: '240px',
-  maxHeight: '420px',
+  boxShadow: '0 12px 32px rgba(15, 23, 42, 0.18)',
+  zIndex: 1300,
+  minWidth: 260,
+  maxHeight: 420,
   overflowY: 'auto',
+}
+
+const DROPDOWN_VERTICAL_GAP = 6
+const DROPDOWN_HORIZONTAL_PADDING = 12
+const DROPDOWN_MIN_WIDTH = 260
+
+type DropdownPosition = {
+  top: number
+  left: number
+  width: number
 }
 
 const dropdownItemStyle: React.CSSProperties = {
@@ -203,13 +211,14 @@ function createCalloutToolbarButton(config: ToolbarButtonConfig) {
     const [editorFromContext] = useLexicalComposerContext()
     const editor = editorProp ?? editorFromContext
 
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [modalContext, setModalContext] = useState<ModalContext>(null)
-    const [modalInitialSettings, setModalInitialSettings] = useState<CalloutSettings | null>(null)
-    const [selectedCalloutKey, setSelectedCalloutKey] = useState<string | null>(null)
-    const buttonRef = useRef<HTMLButtonElement | null>(null)
-    const dropdownRef = useRef<HTMLDivElement | null>(null)
+      const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+      const [isModalOpen, setIsModalOpen] = useState(false)
+      const [modalContext, setModalContext] = useState<ModalContext>(null)
+      const [modalInitialSettings, setModalInitialSettings] = useState<CalloutSettings | null>(null)
+      const [selectedCalloutKey, setSelectedCalloutKey] = useState<string | null>(null)
+      const buttonRef = useRef<HTMLButtonElement | null>(null)
+      const dropdownRef = useRef<HTMLDivElement | null>(null)
+      const [dropdownPosition, setDropdownPosition] = useState<DropdownPosition | null>(null)
 
     const insertCalloutBlock = useCallback(
       (settings: CalloutSettings) => {
@@ -256,6 +265,54 @@ function createCalloutToolbarButton(config: ToolbarButtonConfig) {
       document.addEventListener('click', handleClickOutside)
       return () => document.removeEventListener('click', handleClickOutside)
     }, [isDropdownOpen])
+
+      const updateDropdownPosition = useCallback(() => {
+        if (!buttonRef.current || typeof window === 'undefined') {
+          return
+        }
+
+        const rect = buttonRef.current.getBoundingClientRect()
+        const viewportWidth = window.innerWidth
+        const maxUsableWidth = Math.max(DROPDOWN_MIN_WIDTH, viewportWidth - DROPDOWN_HORIZONTAL_PADDING * 2)
+        const width = Math.min(Math.max(rect.width, DROPDOWN_MIN_WIDTH), maxUsableWidth)
+        const top = rect.bottom + DROPDOWN_VERTICAL_GAP
+
+        let left = rect.left
+        const maxLeft = viewportWidth - width - DROPDOWN_HORIZONTAL_PADDING
+        if (left > maxLeft) {
+          left = Math.max(DROPDOWN_HORIZONTAL_PADDING, maxLeft)
+        }
+        if (left < DROPDOWN_HORIZONTAL_PADDING) {
+          left = DROPDOWN_HORIZONTAL_PADDING
+        }
+
+        setDropdownPosition({ left, top, width })
+      }, [])
+
+      useLayoutEffect(() => {
+        if (!isDropdownOpen) {
+          setDropdownPosition(null)
+          return
+        }
+
+        if (typeof window === 'undefined') {
+          return
+        }
+
+        updateDropdownPosition()
+
+        const handleScroll = () => updateDropdownPosition()
+
+        window.addEventListener('resize', updateDropdownPosition)
+        window.addEventListener('scroll', handleScroll, true)
+
+        return () => {
+          window.removeEventListener('resize', updateDropdownPosition)
+          window.removeEventListener('scroll', handleScroll, true)
+        }
+      }, [isDropdownOpen, updateDropdownPosition])
+
+      const dropdownPortalTarget = typeof document !== 'undefined' ? document.body : null
 
     useEffect(() => {
       return editor.registerCommand(
@@ -385,133 +442,146 @@ function createCalloutToolbarButton(config: ToolbarButtonConfig) {
           </span>
         </button>
 
-        {isDropdownOpen && (
-          <div className="dropdown" ref={dropdownRef} style={dropdownContainerStyle}>
-            {config.sections.map((section, sectionIndex) => (
-              <React.Fragment key={section.id}>
-                <div
-                  style={{
-                    padding: sectionIndex === 0 ? '12px 16px 6px 16px' : '8px 16px 6px 16px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: 'var(--theme-elevation-500, #6b7280)',
-                  }}
-                >
-                  {section.title}
-                </div>
-                {section.description && (
-                  <div
-                    style={{
-                      padding: '0 16px 8px 16px',
-                      fontSize: '11px',
-                      color: 'var(--theme-elevation-600, #6b7280)',
-                    }}
-                  >
-                    {section.description}
-                  </div>
-                )}
-                {section.items.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      if (item.presetId) {
-                        handlePresetInsert(item.presetId)
-                      } else {
-                        insertCalloutBlock({
-                          presetId: undefined,
-                          label: item.label,
-                          icon: item.icon,
-                          color: item.color,
-                          variant: item.variant,
-                        })
-                        setIsDropdownOpen(false)
-                      }
-                    }}
-                    style={dropdownItemStyle}
-                    onMouseEnter={(event) => {
-                      event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
-                    }}
-                    onMouseLeave={(event) => {
-                      event.currentTarget.style.backgroundColor = 'transparent'
-                    }}
-                  >
-                    <span
+          {isDropdownOpen &&
+            dropdownPosition &&
+            dropdownPortalTarget &&
+            createPortal(
+              <div
+                className="dropdown"
+                ref={dropdownRef}
+                style={{
+                  ...dropdownContainerStyle,
+                  top: dropdownPosition.top,
+                  left: dropdownPosition.left,
+                  width: dropdownPosition.width,
+                }}
+              >
+                {config.sections.map((section, sectionIndex) => (
+                  <React.Fragment key={section.id}>
+                    <div
                       style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '6px',
-                        backgroundColor: item.color,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#fff',
+                        padding: sectionIndex === 0 ? '12px 16px 6px 16px' : '8px 16px 6px 16px',
                         fontSize: '12px',
-                        fontWeight: item.presetId ? 700 : 600,
+                        fontWeight: 600,
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
+                        color: 'var(--theme-elevation-500, #6b7280)',
                       }}
                     >
-                      {item.label.slice(0, 1)}
-                    </span>
-                    <span style={calloutPreviewStyle}>
-                      <span style={{ fontWeight: 600 }}>{item.label}</span>
-                      {item.description && (
-                        <span style={{ fontSize: '12px', color: 'var(--theme-elevation-600, #4b5563)' }}>
-                          {item.description}
+                      {section.title}
+                    </div>
+                    {section.description && (
+                      <div
+                        style={{
+                          padding: '0 16px 8px 16px',
+                          fontSize: '11px',
+                          color: 'var(--theme-elevation-600, #6b7280)',
+                        }}
+                      >
+                        {section.description}
+                      </div>
+                    )}
+                    {section.items.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          if (item.presetId) {
+                            handlePresetInsert(item.presetId)
+                          } else {
+                            insertCalloutBlock({
+                              presetId: undefined,
+                              label: item.label,
+                              icon: item.icon,
+                              color: item.color,
+                              variant: item.variant,
+                            })
+                            setIsDropdownOpen(false)
+                          }
+                        }}
+                        style={dropdownItemStyle}
+                        onMouseEnter={(event) => {
+                          event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+                        }}
+                        onMouseLeave={(event) => {
+                          event.currentTarget.style.backgroundColor = 'transparent'
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '6px',
+                            backgroundColor: item.color,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            fontSize: '12px',
+                            fontWeight: item.presetId ? 700 : 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                          }}
+                        >
+                          {item.label.slice(0, 1)}
                         </span>
-                      )}
-                    </span>
-                  </button>
+                        <span style={calloutPreviewStyle}>
+                          <span style={{ fontWeight: 600 }}>{item.label}</span>
+                          {item.description && (
+                            <span style={{ fontSize: '12px', color: 'var(--theme-elevation-600, #4b5563)' }}>
+                              {item.description}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    ))}
+                    {sectionIndex < config.sections.length - 1 && (
+                      <div
+                        style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }}
+                      />
+                    )}
+                  </React.Fragment>
                 ))}
-                {sectionIndex < config.sections.length - 1 && (
-                  <div
-                    style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }}
-                  />
-                )}
-              </React.Fragment>
-            ))}
 
-            <div style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }} />
+                <div style={{ borderTop: '1px solid var(--theme-elevation-150, #e5e7eb)', margin: '8px 0' }} />
 
-            <button
-              type="button"
-              style={dropdownItemStyle}
-              onClick={handleOpenCustom}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.backgroundColor = 'transparent'
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>{config.customActionLabel}</span>
-            </button>
+                <button
+                  type="button"
+                  style={dropdownItemStyle}
+                  onClick={handleOpenCustom}
+                  onMouseEnter={(event) => {
+                    event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.backgroundColor = 'transparent'
+                  }}
+                >
+                  <span style={{ fontWeight: 600 }}>{config.customActionLabel}</span>
+                </button>
 
-            <button
-              type="button"
-              style={{
-                ...dropdownItemStyle,
-                opacity: selectedCalloutKey ? 1 : 0.45,
-                cursor: selectedCalloutKey ? 'pointer' : 'not-allowed',
-              }}
-              disabled={!selectedCalloutKey}
-              onClick={handleOpenEdit}
-              onMouseEnter={(event) => {
-                if (!event.currentTarget.disabled) {
-                  event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
-                }
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.backgroundColor = 'transparent'
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>{config.editActionLabel}</span>
-            </button>
-          </div>
-        )}
+                <button
+                  type="button"
+                  style={{
+                    ...dropdownItemStyle,
+                    opacity: selectedCalloutKey ? 1 : 0.45,
+                    cursor: selectedCalloutKey ? 'pointer' : 'not-allowed',
+                  }}
+                  disabled={!selectedCalloutKey}
+                  onClick={handleOpenEdit}
+                  onMouseEnter={(event) => {
+                    if (!event.currentTarget.disabled) {
+                      event.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, #f3f4f6)'
+                    }
+                  }}
+                  onMouseLeave={(event) => {
+                    event.currentTarget.style.backgroundColor = 'transparent'
+                  }}
+                >
+                  <span style={{ fontWeight: 600 }}>{config.editActionLabel}</span>
+                </button>
+              </div>,
+              dropdownPortalTarget,
+            )}
 
         {isModalOpen && modalInitialSettings && (
           <CalloutSettingsModal
