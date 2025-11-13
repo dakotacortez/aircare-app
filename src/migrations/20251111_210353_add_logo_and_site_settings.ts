@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     -- Add logo field to header
     ALTER TABLE "header" ADD COLUMN IF NOT EXISTS "logo_id" integer;
@@ -136,7 +136,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   `);
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
     -- Remove logo field from header
     ALTER TABLE "header" DROP COLUMN IF EXISTS "logo_id";

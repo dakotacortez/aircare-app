@@ -4,7 +4,11 @@ import Link from 'next/link'
 import type { Protocol } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
 import { ProtocolTools } from '@/components/ProtocolTools'
-import { RichTextContent } from '@/components/RichTextContent'
+import {
+  RichTextContent,
+  type SerializedRichTextState,
+  type RichTextSerializedNode,
+} from '@/components/RichTextContent'
 import { useServiceLine } from '@/providers/ServiceLine'
 import { ChevronRight, FolderTree } from 'lucide-react'
 
@@ -16,19 +20,35 @@ interface ProtocolContentProps {
 /**
  * Check if Lexical content is empty
  */
-function hasContent(content: any): boolean {
-  if (!content || !content.root) return false
-  if (!content.root.children || content.root.children.length === 0) return false
+function hasContent(content: SerializedRichTextState | null | undefined): boolean {
+  const root = content?.root
+  if (!root?.children || root.children.length === 0) {
+    return false
+  }
 
-  // Check if all children are empty paragraphs
-  const hasNonEmptyContent = content.root.children.some((child: any) => {
-    if (child.type === 'paragraph') {
-      return child.children && child.children.length > 0
+  return root.children.some((child) => {
+    if (!child) {
+      return false
     }
-    return true // Non-paragraph nodes count as content
-  })
 
-  return hasNonEmptyContent
+    if (child.type === 'paragraph') {
+      return child.children ? child.children.some(hasMeaningfulText) : false
+    }
+
+    return true
+  })
+}
+
+function hasMeaningfulText(node: RichTextSerializedNode | undefined): boolean {
+  if (!node) {
+    return false
+  }
+
+  if (typeof node.text === 'string' && node.text.trim().length > 0) {
+    return true
+  }
+
+  return node.children ? node.children.some(hasMeaningfulText) : false
 }
 
 export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps) {

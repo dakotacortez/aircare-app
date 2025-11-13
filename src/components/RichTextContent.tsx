@@ -14,9 +14,26 @@ import { getCalloutIcon, getCalloutPreset, type CalloutVariant } from '@/lib/cal
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ServiceLineType } from '@/providers/ServiceLine'
 import type { CertLevelKey } from '@/lib/certificationLevels'
+import type { SerializedLexicalNode } from 'lexical'
+
+const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const
+
+export interface RichTextSerializedNode extends SerializedLexicalNode {
+  children?: RichTextSerializedNode[]
+  text?: string
+  format?: number
+  tag?: string | number
+  listType?: 'number' | 'bullet' | string
+  url?: string
+  newTab?: boolean
+}
+
+export interface SerializedRichTextState {
+  root?: RichTextSerializedNode
+}
 
 interface RichTextContentProps {
-  content: any // Lexical JSON content
+  content: SerializedRichTextState | null | undefined // Lexical JSON content
   showBadges?: boolean // Whether to show authorization badges
   serviceLine?: ServiceLineType // Active service line for filtering
 }
@@ -44,6 +61,8 @@ export function RichTextContent({
     return <div className="protocol-content-empty">No content available</div>
   }
 
+  const rootNode = content.root
+
   const serviceLineLevel =
     serviceLine != null ? CERT_LEVELS[SERVICE_LINE_TO_CERT_KEY[serviceLine]].level : undefined
 
@@ -52,13 +71,17 @@ export function RichTextContent({
     serviceLineLevel,
   }
 
-  return <>{renderLexicalNode(content.root, context)}</>
+  return <>{renderLexicalNode(rootNode, context)}</>
 }
 
 /**
  * Render a Lexical node to React elements
  */
-function renderLexicalNode(node: any, context: RenderContext, key?: string): React.ReactNode {
+function renderLexicalNode(
+  node: RichTextSerializedNode,
+  context: RenderContext,
+  key?: string,
+): React.ReactNode {
   if (!node) return null
 
   const nodeKey = key || `node-${Math.random()}`
@@ -105,7 +128,7 @@ function renderLexicalNode(node: any, context: RenderContext, key?: string): Rea
 
   // Handle headings
   if (node.type === 'heading') {
-    const Tag = `h${node.tag}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+    const Tag = deriveHeadingTag(node.tag)
     const children = renderChildNodes(node.children, context, nodeKey)
     if (children.length === 0) {
       return null
@@ -269,39 +292,40 @@ function renderCalloutBlockNode(
   const label = node.label || node.customLabel || preset?.label || 'Callout'
   const color = sanitizeColor(node.color || preset?.color || '#0ea5e9')
   const iconDefinition = getCalloutIcon(node.icon || preset?.icon || 'circle-info')
-  const originalHasBodyContent = hasMeaningfulContent(node.children || [])
+  const calloutChildren = (node.children ?? []) as RichTextSerializedNode[]
+  const originalHasBodyContent = hasMeaningfulContent(calloutChildren)
   const rawVariant = (node.variant as CalloutVariant | undefined) ?? preset?.variant ?? 'callout'
   const variant: CalloutVariant = originalHasBodyContent ? rawVariant : 'alert'
   const isAlert = variant === 'alert'
-  const renderedChildren = renderChildNodes(node.children, context, key)
+  const renderedChildren = renderChildNodes(calloutChildren, context, key)
   const hasVisibleBody = renderedChildren.length > 0
 
   if (!isAlert && !hasVisibleBody) {
     return null
   }
 
-    const containerStyle: React.CSSProperties & Record<string, string> = {
-      marginBlock: '1.25rem',
-      '--callout-color': color,
-      '--callout-bg': hexToRgba(color, originalHasBodyContent ? 0.12 : 0.1),
-      '--callout-border': hexToRgba(color, 0.32),
-      '--callout-shadow': `0 22px 48px ${hexToRgba(color, 0.18)}`,
-      '--callout-shadow-hover': `0 30px 62px ${hexToRgba(color, 0.22)}`,
-      '--callout-icon-bg': `linear-gradient(135deg, ${hexToRgba(color, 0.9)} 0%, ${hexToRgba(color, 0.75)} 100%)`,
-      '--callout-icon-color': '#ffffff',
-      '--callout-icon-shadow': `0 16px 32px ${hexToRgba(color, 0.28)}`,
-      '--callout-label-color': color,
-      '--callout-body-color': isAlert ? '#334155' : '#1f2937',
-      '--callout-padding': isAlert ? '1.1rem 1.4rem' : '1.35rem 1.6rem',
-      '--callout-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, isAlert ? 0.32 : 0.26)} 0%, rgba(15, 23, 42, 0.88) 100%)`,
-      '--callout-border-dark': hexToRgba(color, 0.45),
-      '--callout-shadow-dark': '0 28px 60px rgba(8, 47, 73, 0.45)',
-      '--callout-shadow-dark-hover': '0 36px 70px rgba(8, 47, 73, 0.55)',
-      '--callout-body-color-dark': '#e2e8f0',
-      '--callout-icon-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, 0.6)} 0%, ${hexToRgba(color, 0.42)} 100%)`,
-      '--callout-icon-shadow-dark': `0 16px 36px ${hexToRgba(color, 0.35)}`,
-      '--callout-label-color-dark': color,
-    }
+  const containerStyle: React.CSSProperties & Record<string, string> = {
+    marginBlock: '1.25rem',
+    '--callout-color': color,
+    '--callout-bg': hexToRgba(color, originalHasBodyContent ? 0.12 : 0.1),
+    '--callout-border': hexToRgba(color, 0.32),
+    '--callout-shadow': `0 22px 48px ${hexToRgba(color, 0.18)}`,
+    '--callout-shadow-hover': `0 30px 62px ${hexToRgba(color, 0.22)}`,
+    '--callout-icon-bg': `linear-gradient(135deg, ${hexToRgba(color, 0.9)} 0%, ${hexToRgba(color, 0.75)} 100%)`,
+    '--callout-icon-color': '#ffffff',
+    '--callout-icon-shadow': `0 16px 32px ${hexToRgba(color, 0.28)}`,
+    '--callout-label-color': color,
+    '--callout-body-color': isAlert ? '#334155' : '#1f2937',
+    '--callout-padding': isAlert ? '1.1rem 1.4rem' : '1.35rem 1.6rem',
+    '--callout-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, isAlert ? 0.32 : 0.26)} 0%, rgba(15, 23, 42, 0.88) 100%)`,
+    '--callout-border-dark': hexToRgba(color, 0.45),
+    '--callout-shadow-dark': '0 28px 60px rgba(8, 47, 73, 0.45)',
+    '--callout-shadow-dark-hover': '0 36px 70px rgba(8, 47, 73, 0.55)',
+    '--callout-body-color-dark': '#e2e8f0',
+    '--callout-icon-bg-dark': `linear-gradient(135deg, ${hexToRgba(color, 0.6)} 0%, ${hexToRgba(color, 0.42)} 100%)`,
+    '--callout-icon-shadow-dark': `0 16px 36px ${hexToRgba(color, 0.35)}`,
+    '--callout-label-color-dark': color,
+  }
 
   if (isAlert) {
     return (
@@ -344,11 +368,11 @@ function renderCalloutBlockNode(
 }
 
 function renderChildNodes(
-  children: any[] | undefined,
+  children: readonly RichTextSerializedNode[] | undefined,
   context: RenderContext,
   parentKey: string,
 ): React.ReactNode[] {
-  if (!Array.isArray(children)) {
+  if (!children) {
     return []
   }
 
@@ -369,23 +393,37 @@ function filterRenderableChildren(nodes: React.ReactNode[]): React.ReactNode[] {
       return filterRenderableChildren(child).length > 0
     }
 
-    return child !== null && child !== undefined && child !== false
+    return child !== null && child !== undefined
   })
 }
 
-function hasMeaningfulContent(children: any[]): boolean {
+function hasMeaningfulContent(children: readonly RichTextSerializedNode[]): boolean {
   return children.some((child) => {
     if (!child) return false
     if (child.type === 'text') {
       return Boolean(child.text?.trim())
     }
 
-    if (Array.isArray(child.children)) {
-      return hasMeaningfulContent(child.children)
+    const nestedChildren = child.children
+    if (nestedChildren && nestedChildren.length > 0) {
+      return hasMeaningfulContent(nestedChildren)
     }
 
     return false
   })
+}
+
+function deriveHeadingTag(tag: RichTextSerializedNode['tag']): (typeof HEADING_TAGS)[number] {
+  if (typeof tag === 'string' && HEADING_TAGS.includes(tag as (typeof HEADING_TAGS)[number])) {
+    return tag as (typeof HEADING_TAGS)[number]
+  }
+
+  const numericTag = typeof tag === 'number' ? tag : Number.parseInt(String(tag ?? ''), 10)
+  if (Number.isInteger(numericTag) && numericTag >= 1 && numericTag <= 6) {
+    return `h${numericTag}` as (typeof HEADING_TAGS)[number]
+  }
+
+  return 'h2'
 }
 
 function sanitizeColor(color: string): string {

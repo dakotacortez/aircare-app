@@ -22,7 +22,6 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
   // Always start with 'ALS' to prevent hydration mismatch
   // Will be updated from localStorage and user preferences after mount
   const [serviceLine, setServiceLineState] = useState<ServiceLineType>('ALS')
-  const [isHydrated, setIsHydrated] = useState(false)
 
   // Hydrate from localStorage and fetch user default after mount
   useEffect(() => {
@@ -30,7 +29,6 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
     if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
       setServiceLineState(stored)
-      setIsHydrated(true)
       return // Use localStorage value, don't fetch user default
     }
 
@@ -53,8 +51,6 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         // Silently fail - will use default ALS
         console.debug('Could not fetch user default service line:', error)
-      } finally {
-        setIsHydrated(true)
       }
     }
 
