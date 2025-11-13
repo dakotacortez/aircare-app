@@ -283,22 +283,23 @@ function renderCertificationLevelNode(
  * Get color scheme CSS variables for callout/alert
  */
 function getColorScheme(color: string) {
-  const colorMap: Record<string, { bg: string; border: string; text: string; header: string }> = {
-    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#075985', header: '#38bdf8' }, // sky/blue
-    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e40af', header: '#60a5fa' }, // blue
-    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#92400e', header: '#fbbf24' }, // amber/yellow
-    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#991b1b', header: '#f87171' }, // red
-    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#065f46', header: '#34d399' }, // emerald/green
-    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#9a3412', header: '#fb923c' }, // orange
-    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#3730a3', header: '#818cf8' }, // indigo
+  const colorMap: Record<string, { bg: string; border: string; text: string }> = {
+    '#0ea5e9': { bg: '#e0f2fe', border: '#0ea5e9', text: '#0c4a6e' }, // sky/blue
+    '#3b82f6': { bg: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' }, // blue
+    '#f59e0b': { bg: '#fef3c7', border: '#f59e0b', text: '#78350f' }, // amber/yellow
+    '#ef4444': { bg: '#fee2e2', border: '#ef4444', text: '#7f1d1d' }, // red
+    '#10b981': { bg: '#d1fae5', border: '#10b981', text: '#064e3b' }, // emerald/green
+    '#f97316': { bg: '#fed7aa', border: '#f97316', text: '#7c2d12' }, // orange
+    '#6366f1': { bg: '#e0e7ff', border: '#6366f1', text: '#312e81' }, // indigo
   }
 
-  return colorMap[color] || { bg: '#e0f2fe', border: '#38bdf8', text: '#075985', header: '#38bdf8' }
+  return colorMap[color] || { bg: '#e0f2fe', border: '#0ea5e9', text: '#0c4a6e' }
 }
 
 /**
  * Render a callout block node
- * Shows colored box with icon, label, and rich content
+ * Alerts: inline badges that float right
+ * Callouts: section headers with border-bottom
  */
 function renderCalloutBlockNode(
   node: SerializedCalloutBlockNode,
@@ -327,32 +328,27 @@ function renderCalloutBlockNode(
     '--callout-bg-color': colorScheme.bg,
     '--callout-border-color': colorScheme.border,
     '--callout-text-color': colorScheme.text,
-    '--callout-header-bg': colorScheme.header,
   }
 
   if (isAlert) {
+    // Render as inline badge
     return (
-      <div key={key} className="callout-block callout-block--alert" style={containerStyle}>
-        <span className="callout-block__icon" style={{ color: colorScheme.text }}>
+      <span key={key} className="callout-block callout-block--alert" style={containerStyle}>
+        <span className="callout-block__icon">
           <FontAwesomeIcon icon={iconDefinition} />
         </span>
-        <div className="callout-block__alert-inner" style={{ color: colorScheme.text }}>
-          {hasVisibleBody ? (
-            <div className="callout-block__alert-body">
-              {renderedChildren}
-            </div>
-          ) : (
-            <span className="callout-block__alert-description">An example alert with an Icon!</span>
-          )}
-        </div>
-      </div>
+        <span className="callout-block__label">{label}</span>
+      </span>
     )
   }
 
+  // Render as section header
   return (
     <div key={key} className="callout-block" style={containerStyle}>
       <div className="callout-block__header">
-        <span className="callout-block__label">{label.toUpperCase()}:</span>
+        <div>
+          <h3 className="callout-block__label">{label}</h3>
+        </div>
       </div>
 
       <div className="callout-block__body">

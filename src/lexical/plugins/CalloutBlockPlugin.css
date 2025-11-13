@@ -138,31 +138,24 @@
   background: var(--theme-success-600, #1d4ed8);
 }
 
-/* Editor callout styling */
+/* Editor callout styling - Section header style */
 .callout-block {
-  position: relative;
-  margin-block: 0.75rem;
-  border: 2px solid var(--callout-border-color);
-  border-radius: 0.375rem;
-  padding: 1.5rem 0.75rem 0.75rem;
-  background: var(--callout-bg-color);
+  margin-block: 1.5rem 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--callout-border-color, #e5e7eb);
 }
 
 .callout-block__header {
-  position: absolute;
-  left: 0;
-  top: 0;
-  padding: 0 0.5rem;
-  background: var(--callout-header-bg);
-  font-weight: 600;
-  color: #1f2937;
-  border-bottom-right-radius: 0.375rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
 }
 
 .callout-block__label {
-  display: inline;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--callout-text-color, #1f2937);
 }
 
 .callout-block__icon {
@@ -171,8 +164,9 @@
 
 .callout-block__body {
   font-size: 0.875rem;
-  color: #1f2937;
+  color: #6b7280;
   line-height: 1.625;
+  margin-top: 0.5rem;
 }
 
 .callout-block__body p {
@@ -183,60 +177,67 @@
   margin-top: 0.5rem;
 }
 
-/* Alert variant - flex layout with icon */
+/* Alert variant - inline badge that floats right */
 .callout-block--alert {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-  border-radius: 0.375rem;
+  font-weight: 500;
+  border-radius: 0.25rem;
   border: 1px solid var(--callout-border-color);
+  background: var(--callout-bg-color);
+  color: var(--callout-text-color);
+  margin-left: 0.5rem;
+  float: right;
+  margin-block: 0;
 }
 
 .callout-block--alert .callout-block__header {
-  position: static;
-  padding: 0;
-  background: transparent;
-  border-radius: 0;
   display: none;
 }
 
 .callout-block--alert .callout-block__icon {
   display: inline-flex;
   flex-shrink: 0;
-  margin-right: 0.5rem;
-  height: 1.25rem;
-  width: 1.25rem;
+  height: 0.875rem;
+  width: 0.875rem;
+  margin-right: 0;
 }
 
 .callout-block--alert .callout-block__alert-inner {
-  flex-grow: 1;
+  display: inline;
 }
 
 .callout-block--alert .callout-block__label {
-  display: none;
+  display: inline;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .callout-block__alert-inner {
-  display: block;
+  display: inline;
 }
 
 .callout-block__alert-content {
-  display: block;
+  display: inline;
 }
 
 .callout-block__alert-body {
+  display: inline;
   font-size: inherit;
   color: inherit;
-  line-height: 1.5;
+  line-height: inherit;
 }
 
 .callout-block__alert-body p {
+  display: inline;
   margin: 0;
 }
 
 .callout-block__alert-description {
+  display: inline;
   font-size: inherit;
   color: inherit;
 }
