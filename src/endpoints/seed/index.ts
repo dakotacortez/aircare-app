@@ -11,6 +11,7 @@ import { post2 } from './post-2'
 import { post3 } from './post-3'
 import { privacyPage } from './privacy-page'
 import { termsPage } from './terms-page'
+import { changelogPage } from './changelog-page'
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -230,7 +231,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [_, contactPage, privacyPageDoc, termsPageDoc] = await Promise.all([
+  const [_, contactPage, privacyPageDoc, termsPageDoc, changelogPageDoc] = await Promise.all([
     payload.create({
       collection: 'pages',
       depth: 0,
@@ -250,6 +251,11 @@ export const seed = async ({
       collection: 'pages',
       depth: 0,
       data: termsPage(),
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: changelogPage(),
     }),
   ])
 
