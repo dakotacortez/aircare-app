@@ -63,9 +63,13 @@ export default function LandingPage({ data }: LandingPageProps) {
   };
 
   const heroBackgroundUrl = getMediaUrl(data.heroBackgroundImage);
-  const backgroundStyle = heroBackgroundUrl
-    ? { backgroundImage: `url(${heroBackgroundUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : {};
+  // Use uploaded image if available, otherwise use fallback
+  const backgroundImageUrl = heroBackgroundUrl || '/media/image-hero1.webp';
+  const backgroundStyle = {
+    backgroundImage: `url(${backgroundImageUrl})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center'
+  };
 
   // Build gradient style from CMS settings
   const gradientColor = data.heroGradientColor || 'black';

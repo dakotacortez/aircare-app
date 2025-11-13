@@ -299,6 +299,12 @@ export const seed = async ({
         ],
       },
     }),
+    payload.updateGlobal({
+      slug: 'site-settings',
+      data: {
+        heroBackgroundImage: imageHomeDoc.id,
+      },
+    }),
   ])
 
   payload.logger.info('Seeded database successfully!')
