@@ -283,23 +283,23 @@ function renderCertificationLevelNode(
  * Get color scheme CSS variables for callout/alert
  */
 function getColorScheme(color: string) {
-  const colorMap: Record<string, { bg: string; border: string; text: string }> = {
-    '#0ea5e9': { bg: '#e0f2fe', border: '#0ea5e9', text: '#0c4a6e' }, // sky/blue
-    '#3b82f6': { bg: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' }, // blue
-    '#f59e0b': { bg: '#fef3c7', border: '#f59e0b', text: '#78350f' }, // amber/yellow
-    '#ef4444': { bg: '#fee2e2', border: '#ef4444', text: '#7f1d1d' }, // red
-    '#10b981': { bg: '#d1fae5', border: '#10b981', text: '#064e3b' }, // emerald/green
-    '#f97316': { bg: '#fed7aa', border: '#f97316', text: '#7c2d12' }, // orange
-    '#6366f1': { bg: '#e0e7ff', border: '#6366f1', text: '#312e81' }, // indigo
+  const colorMap: Record<string, { bg: string; border: string; text: string; header: string }> = {
+    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }, // sky/blue
+    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa' }, // blue
+    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24' }, // amber/yellow
+    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171' }, // red
+    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399' }, // emerald/green
+    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c' }, // orange
+    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8' }, // indigo
   }
 
-  return colorMap[color] || { bg: '#e0f2fe', border: '#0ea5e9', text: '#0c4a6e' }
+  return colorMap[color] || { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }
 }
 
 /**
  * Render a callout block node
  * Alerts: inline badges that float right
- * Callouts: section headers with border-bottom
+ * Callouts: corner label boxes with colored borders
  */
 function renderCalloutBlockNode(
   node: SerializedCalloutBlockNode,
@@ -328,6 +328,7 @@ function renderCalloutBlockNode(
     '--callout-bg-color': colorScheme.bg,
     '--callout-border-color': colorScheme.border,
     '--callout-text-color': colorScheme.text,
+    '--callout-header-bg': colorScheme.header,
   }
 
   if (isAlert) {
@@ -342,13 +343,11 @@ function renderCalloutBlockNode(
     )
   }
 
-  // Render as section header
+  // Render as corner label box
   return (
     <div key={key} className="callout-block" style={containerStyle}>
       <div className="callout-block__header">
-        <div>
-          <h3 className="callout-block__label">{label}</h3>
-        </div>
+        <span className="callout-block__label">{label.toUpperCase()}:</span>
       </div>
 
       <div className="callout-block__body">
