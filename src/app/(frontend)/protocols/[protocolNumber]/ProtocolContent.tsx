@@ -80,16 +80,10 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
     <>
       {/* Sub-header with menu button */}
       <div className="h-12 border-b dark:border-neutral-700 bg-white dark:bg-neutral-800 flex items-center gap-3 px-4 sticky top-16 z-30">
-        {/* Only show button on mobile, or on desktop when sidebar is collapsed */}
-        {(isMobile || sidebarCollapsed) && (
+        {/* Only show button on mobile */}
+        {isMobile && (
           <button
-            onClick={() => {
-              if (isMobile) {
-                setSidebarOpen(!sidebarOpen)
-              } else {
-                setSidebarCollapsed(false)
-              }
-            }}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
             className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
           >
             <FolderTree className="h-4 w-4" />

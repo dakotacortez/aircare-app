@@ -153,30 +153,6 @@ function renderHeader(
   }
 }
 
-function hasMeaningfulSerializedChildren(children?: SerializedLexicalNode[]): boolean {
-  if (!Array.isArray(children)) {
-    return false
-  }
-
-  return children.some((child) => {
-    if (!child) {
-      return false
-    }
-
-    const text = (child as { text?: unknown }).text
-    if (typeof text === 'string' && text.trim().length > 0) {
-      return true
-    }
-
-    const nestedChildren = (child as { children?: SerializedLexicalNode[] }).children
-    if (Array.isArray(nestedChildren)) {
-      return hasMeaningfulSerializedChildren(nestedChildren)
-    }
-
-    return false
-  })
-}
-
 /**
  * Callout Block Node - colored box with icon, label, and rich content
  */
@@ -276,9 +252,6 @@ export class CalloutBlockNode extends ElementNode {
 
   exportJSON(): SerializedCalloutBlockNode {
     const base = super.exportJSON()
-    const hasContent = hasMeaningfulSerializedChildren(
-      (base.children as SerializedLexicalNode[] | undefined) ?? undefined,
-    )
 
     return {
       ...base,
@@ -286,16 +259,13 @@ export class CalloutBlockNode extends ElementNode {
       label: this.__label,
       icon: this.__icon,
       color: this.__color,
-      variant: hasContent ? this.__variant : 'alert',
+      variant: this.__variant,
       type: 'callout-block',
       version: 2,
     }
   }
 
   static importJSON(serializedNode: SerializedCalloutBlockNode): CalloutBlockNode {
-    const hasContent = hasMeaningfulSerializedChildren(
-      (serializedNode.children as SerializedLexicalNode[] | undefined) ?? undefined,
-    )
     const preset = serializedNode.presetId
       ? getCalloutPreset(serializedNode.presetId)
       : undefined
@@ -303,8 +273,7 @@ export class CalloutBlockNode extends ElementNode {
     const label = serializedNode.label || serializedNode.customLabel || preset?.label || 'Callout'
     const icon = serializedNode.icon || preset?.icon || 'circle-info'
     const color = serializedNode.color || preset?.color || '#0ea5e9'
-    const baseVariant = (serializedNode.variant as CalloutVariant | undefined) ?? preset?.variant
-    const variant: CalloutVariant = hasContent ? baseVariant ?? 'callout' : 'alert'
+    const variant = (serializedNode.variant as CalloutVariant | undefined) ?? preset?.variant ?? 'callout'
 
     const node = $createCalloutBlockNode({
       presetId: serializedNode.presetId,
