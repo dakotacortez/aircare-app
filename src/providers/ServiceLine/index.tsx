@@ -19,28 +19,27 @@ const SERVICE_LINE_STORAGE_KEY = 'aircare-service-line'
  * Falls back to user's default service line if no localStorage value exists
  */
 export function ServiceLineProvider({ children }: { children: ReactNode }) {
-  const [userDefaultServiceLine, setUserDefaultServiceLine] = useState<ServiceLineType | null>(null)
+  // Always start with 'ALS' to prevent hydration mismatch
+  // Will be updated from localStorage and user preferences after mount
+  const [serviceLine, setServiceLineState] = useState<ServiceLineType>('ALS')
+  const [isHydrated, setIsHydrated] = useState(false)
 
-  // Lazy initialization: read localStorage immediately on first render
-  // This prevents flash and ensures correct value from the start
-  const [serviceLine, setServiceLineState] = useState<ServiceLineType>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
-      // Validate and sanitize the stored value
-      if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
-        return stored
-      }
-      // If invalid value exists, clear it
-      if (stored) {
-        localStorage.removeItem(SERVICE_LINE_STORAGE_KEY)
-      }
-    }
-    // Will be updated with user default once fetched, or stay at ALS
-    return 'ALS'
-  })
-
-  // Fetch user's default service line on mount
+  // Hydrate from localStorage and fetch user default after mount
   useEffect(() => {
+    // First, check localStorage for saved preference
+    const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
+    if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
+      setServiceLineState(stored)
+      setIsHydrated(true)
+      return // Use localStorage value, don't fetch user default
+    }
+
+    // If invalid value exists, clear it
+    if (stored) {
+      localStorage.removeItem(SERVICE_LINE_STORAGE_KEY)
+    }
+
+    // No localStorage value, fetch user's default
     const fetchUserDefault = async () => {
       try {
         const res = await fetch('/api/users/me')
@@ -48,22 +47,17 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
           const data = await res.json()
           const defaultLine = data.user?.defaultServiceLine
           if (defaultLine === 'BLS' || defaultLine === 'ALS' || defaultLine === 'CCT') {
-            setUserDefaultServiceLine(defaultLine)
-
-            // Only update the active service line if there's no localStorage value
-            if (typeof window !== 'undefined') {
-              const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
-              if (!stored || (stored !== 'BLS' && stored !== 'ALS' && stored !== 'CCT')) {
-                setServiceLineState(defaultLine)
-              }
-            }
+            setServiceLineState(defaultLine)
           }
         }
       } catch (error) {
         // Silently fail - will use default ALS
         console.debug('Could not fetch user default service line:', error)
+      } finally {
+        setIsHydrated(true)
       }
     }
+
     fetchUserDefault()
   }, [])
 
