@@ -485,11 +485,6 @@ html[data-theme='light'] {
       border-color: var(--callout-border-color);
     }
 
-    .dark .callout-block__body,
-    [data-theme='dark'] .callout-block__body {
-      color: #e2e8f0;
-    }
-
     .dark .callout-block__header,
     [data-theme='dark'] .callout-block__header {
       background: var(--callout-header-bg);
