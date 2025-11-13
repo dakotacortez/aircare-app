@@ -177,36 +177,40 @@ export function CertificationLevelToolbarDropdown({ editor: editorProp }: Toolba
         </span>
       </button>
 
-      {isDropdownOpen && isTextSelected && (
-        <div ref={dropdownRef} className="cert-level-dropdown" style={dropdownStyles}>
-          {certLevels.map((cert) => (
-            <button
-              key={cert.value}
-              type="button"
-              onClick={() => handleWrapSelection(cert.value as CertLevelKey)}
-              style={dropdownButtonStyles}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.backgroundColor = '#f3f4f6'
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.backgroundColor = 'transparent'
-              }}
-            >
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: '12px',
-                  height: '12px',
-                  borderRadius: '3px',
-                  backgroundColor: cert.color,
+        {isDropdownOpen && isTextSelected && (
+          <div ref={dropdownRef} className="cert-level-dropdown" style={dropdownStyles}>
+            {certLevels.map((cert) => (
+              <button
+                key={cert.value}
+                type="button"
+                onClick={() => handleWrapSelection(cert.value as CertLevelKey)}
+                style={dropdownButtonStyles}
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.backgroundColor = '#f3f4f6'
                 }}
-              />
-              <span style={{ flex: 1, fontWeight: 500 }}>{cert.label}</span>
-              <span style={{ fontSize: '12px', color: '#6b7280' }}>Level {cert.level}</span>
-            </button>
-          ))}
-        </div>
-      )}
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.backgroundColor = 'transparent'
+                }}
+              >
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '3px',
+                    backgroundColor: cert.color,
+                  }}
+                />
+                <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontWeight: 600 }}>{cert.label}</span>
+                  {cert.description && (
+                    <span style={{ fontSize: '12px', color: '#6b7280' }}>{cert.description}</span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
     </div>
   )
 }

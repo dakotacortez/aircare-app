@@ -1,67 +1,86 @@
 /**
- * Certification level hierarchy and inline callouts for protocol content
+ * Certification level hierarchy and inline callouts for protocol content.
  *
- * Two types of tags:
- * 1. Hierarchical cert levels (Basic → EMT → AEMT → ALS → CCT) - content filtered by user level
- * 2. Callouts (Medical Control, Physician Only) - always visible, just highlighted
+ * Current service lines:
+ *  - BLS (Basic Life Support)
+ *  - ALS (Advanced Life Support)
+ *  - CCT (Critical Care Transport)
+ *
+ * Legacy inline tags are kept for backwards compatibility but hidden from the editor UI.
  */
 
 export const CERT_LEVELS = {
-  basic: {
-    value: 'basic',
-    label: 'Basic/EMR',
+  bls: {
+    value: 'bls',
+    label: 'BLS',
     level: 0,
-    color: '#6b7280', // gray
-    description: 'Basic life support content',
+    color: '#10b981', // emerald
+    description: 'Basic Life Support service line',
     isCallout: false,
-  },
-  emt: {
-    value: 'emt',
-    label: 'EMT',
-    level: 1,
-    color: '#10b981', // green
-    description: 'Emergency Medical Technician',
-    isCallout: false,
-  },
-  aemt: {
-    value: 'aemt',
-    label: 'AEMT',
-    level: 2,
-    color: '#3b82f6', // blue
-    description: 'Advanced Emergency Medical Technician',
-    isCallout: false,
+    isSelectable: true,
   },
   als: {
     value: 'als',
-    label: 'ALS/Paramedic',
-    level: 3,
-    color: '#8b5cf6', // purple
-    description: 'Advanced Life Support / Paramedic',
+    label: 'ALS',
+    level: 1,
+    color: '#6366f1', // indigo
+    description: 'Advanced Life Support service line',
     isCallout: false,
+    isSelectable: true,
   },
   cct: {
     value: 'cct',
     label: 'CCT',
-    level: 4,
+    level: 2,
     color: '#ef4444', // red
-    description: 'Critical Care Transport',
+    description: 'Critical Care Transport service line',
     isCallout: false,
+    isSelectable: true,
+  },
+  basic: {
+    value: 'basic',
+    label: 'Basic/EMR',
+    level: 0,
+    color: '#6b7280',
+    description: 'Legacy basic level (maps to BLS)',
+    isCallout: false,
+    isSelectable: false,
+  },
+  emt: {
+    value: 'emt',
+    label: 'EMT',
+    level: 0,
+    color: '#0d9488',
+    description: 'Legacy EMT level (maps to BLS)',
+    isCallout: false,
+    isSelectable: false,
+  },
+  aemt: {
+    value: 'aemt',
+    label: 'AEMT',
+    level: 0,
+    color: '#3b82f6',
+    description: 'Legacy AEMT level (maps to BLS)',
+    isCallout: false,
+    isSelectable: false,
   },
   medicalControl: {
     value: 'medicalControl',
     label: 'Medical Control',
-    level: 999, // Always visible (not filtered)
-    color: '#dc2626', // red-600
-    description: 'Requires medical control authorization',
+    level: 999,
+    color: '#dc2626',
+    description: 'Legacy tag — use an Alert callout instead',
     isCallout: true,
+    isSelectable: false,
   },
   physicianOnly: {
     value: 'physicianOnly',
     label: 'Physician Only',
-    level: 999, // Always visible (not filtered)
-    color: '#f59e0b', // amber
-    description: 'Physician-only procedures',
+    level: 999,
+    color: '#f59e0b',
+    description: 'Legacy tag — use an Alert callout instead',
     isCallout: true,
+    isSelectable: false,
   },
 } as const
 
@@ -102,7 +121,9 @@ export function getCertLevel(key: CertLevelKey): CertLevel {
  * Gets all certification levels sorted by hierarchy
  */
 export function getAllCertLevels(): CertLevel[] {
-  return Object.values(CERT_LEVELS).sort((a, b) => a.level - b.level)
+  return Object.values(CERT_LEVELS)
+    .filter((cert) => cert.isSelectable)
+    .sort((a, b) => a.level - b.level)
 }
 
 /**
@@ -110,7 +131,7 @@ export function getAllCertLevels(): CertLevel[] {
  */
 export function getCertLevelsOnly(): CertLevel[] {
   return Object.values(CERT_LEVELS)
-    .filter((cert) => !cert.isCallout)
+    .filter((cert) => !cert.isCallout && cert.isSelectable)
     .sort((a, b) => a.level - b.level)
 }
 
@@ -128,6 +149,6 @@ export function getCallouts(): CertLevel[] {
  */
 export function getAvailableCertLevelsForUser(userLevel: number): CertLevel[] {
   return Object.values(CERT_LEVELS).filter(
-    (cert) => cert.isCallout || cert.level <= userLevel
+    (cert) => cert.isCallout || (cert.isSelectable && cert.level <= userLevel)
   )
 }
