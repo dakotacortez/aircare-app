@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { HeartPulse, Menu, Sun, Moon, Users, FolderOpen } from 'lucide-react'
+import { HeartPulse, Sun, Moon, Users, FolderOpen } from 'lucide-react'
 
 import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
 import { useTheme } from '@/providers/Theme'
@@ -85,6 +85,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const { serviceLine, setServiceLine } = useServiceLine()
   const { savedCount, setDrawerOpen, isMobile } = useReferenceCard()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
 
@@ -114,7 +115,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   }, [theme])
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileOpen(false)
+        setUserMenuOpen(false)
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -123,11 +129,25 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     <>
       <header className="h-16 border-b dark:border-neutral-700 bg-white dark:bg-neutral-800 sticky top-0 z-50 px-4">
         <div className="h-full flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
+          {/* Logo - opens nav menu on mobile, links to home on desktop */}
+          <button
+            onClick={() => setMobileOpen(o => !o)}
+            className="xl:hidden flex items-center gap-3"
+            aria-label="Open menu"
+          >
             <div className="h-9 w-9 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0">
               <HeartPulse className="h-5 w-5 text-white" />
             </div>
             <div className="leading-tight hidden sm:block">
+              <div className="font-semibold">Air Care & Mobile Care</div>
+              <div className="text-xs text-neutral-500 dark:text-neutral-400">Critical Care Transport</div>
+            </div>
+          </button>
+          <Link href="/" className="hidden xl:flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0">
+              <HeartPulse className="h-5 w-5 text-white" />
+            </div>
+            <div className="leading-tight">
               <div className="font-semibold">Air Care & Mobile Care</div>
               <div className="text-xs text-neutral-500 dark:text-neutral-400">Critical Care Transport</div>
             </div>
@@ -165,16 +185,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 )}
               </button>
             )}
-
-            <button
-              onClick={() => setMobileOpen(o => !o)}
-              className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              aria-label="Open menu"
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-menu"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
 
             <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
               <button
@@ -233,31 +243,83 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
               </button>
             </div>
 
-            {user ? (
-              <Link
-                href="/admin"
-                className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                aria-label="Admin dashboard"
-              >
-                <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
-                  {getUserInitials(user)}
-                </div>
-              </Link>
-            ) : (
-              <Link
-                href="/admin/login"
-                className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                aria-label="Login"
-              >
-                <Users className="h-4 w-4" />
-              </Link>
-            )}
+            {/* User menu - dropdown on mobile/tablet, direct link on desktop */}
+            <div className="relative">
+              {user ? (
+                <>
+                  {/* Mobile/Tablet: Menu button */}
+                  <button
+                    onClick={() => setUserMenuOpen(o => !o)}
+                    className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    aria-label="User menu"
+                    aria-expanded={userMenuOpen}
+                  >
+                    <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
+                      {getUserInitials(user)}
+                    </div>
+                  </button>
+                  {/* Desktop: Direct link */}
+                  <Link
+                    href="/admin"
+                    className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    aria-label="Admin dashboard"
+                  >
+                    <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
+                      {getUserInitials(user)}
+                    </div>
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href="/admin/login"
+                  className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                  aria-label="Login"
+                >
+                  <Users className="h-4 w-4" />
+                </Link>
+              )}
 
+              {/* User menu dropdown (mobile/tablet only) */}
+              {userMenuOpen && user && (
+                <div className="xl:hidden absolute right-0 top-full mt-2 w-56 rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl z-50">
+                  <div className="p-2">
+                    <Link
+                      href="/admin"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
+                    >
+                      Edit Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')
+                        setUserMenuOpen(false)
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm flex items-center gap-2"
+                    >
+                      {effectiveTheme === 'dark' ? (
+                        <>
+                          <Sun className="h-4 w-4" />
+                          Light Mode
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="h-4 w-4" />
+                          Dark Mode
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Theme toggle - desktop only */}
             <button
               onClick={() => {
                 setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')
               }}
-              className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               aria-label="Toggle theme"
             >
               {effectiveTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -289,6 +351,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-black/40 xl:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+      {userMenuOpen && (
+        <div className="fixed inset-0 z-40 xl:hidden" onClick={() => setUserMenuOpen(false)} />
       )}
     </>
   )
