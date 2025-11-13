@@ -287,26 +287,6 @@ export const seed = async ({
         navItems: [
           {
             link: {
-              type: 'reference',
-              label: 'Privacy Policy',
-              reference: {
-                relationTo: 'pages',
-                value: privacyPageDoc.id,
-              },
-            },
-          },
-          {
-            link: {
-              type: 'reference',
-              label: 'Terms of Use',
-              reference: {
-                relationTo: 'pages',
-                value: termsPageDoc.id,
-              },
-            },
-          },
-          {
-            link: {
               type: 'custom',
               label: 'Admin',
               url: '/admin',
