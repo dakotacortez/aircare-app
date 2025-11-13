@@ -126,10 +126,17 @@ export function CalloutBlockToolbarDropdown({ editor }: ToolbarItemComponentProp
     (settings: CalloutSettings) => {
       editor.update(() => {
         const calloutBlock = $createCalloutBlockNode(settings)
-        const paragraph = $createParagraphNode()
-        calloutBlock.append(paragraph)
-        $insertNodeToNearestRoot(calloutBlock)
-        paragraph.select()
+
+        // Only add paragraph child for callouts, not alerts
+        if (settings.variant === 'callout') {
+          const paragraph = $createParagraphNode()
+          calloutBlock.append(paragraph)
+          $insertNodeToNearestRoot(calloutBlock)
+          paragraph.select()
+        } else {
+          // Alerts have no body content
+          $insertNodeToNearestRoot(calloutBlock)
+        }
       })
     },
     [editor],

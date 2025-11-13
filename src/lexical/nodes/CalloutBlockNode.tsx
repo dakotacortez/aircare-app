@@ -330,9 +330,14 @@ export class CalloutBlockNode extends ElementNode {
     return false
   }
 
-  // Allow callout blocks at the top level
+  // Allow alerts to be empty (no body content), but callouts must have content
   canBeEmpty(): boolean {
-    return false
+    return this.__variant === 'alert'
+  }
+
+  // Don't allow selecting the callout block itself for alerts (they have no editable content)
+  isIsolated(): boolean {
+    return this.__variant === 'alert'
   }
 }
 
