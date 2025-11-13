@@ -76,6 +76,34 @@ export function CalloutBlockPlugin(): null {
     }
   }, [editor])
 
+  useEffect(() => {
+    const handleDeleteClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (target.classList.contains('callout-block__delete')) {
+        const calloutBlock = target.closest('.callout-block')
+        if (calloutBlock instanceof HTMLElement) {
+          const nodeKey = calloutBlock.dataset.lexicalNodeKey
+          if (nodeKey) {
+            editor.update(() => {
+              const node = $getNodeByKey(nodeKey)
+              if (node) {
+                node.remove()
+              }
+            })
+          }
+        }
+      }
+    }
+
+    const editorElement = editor.getRootElement()
+    if (editorElement) {
+      editorElement.addEventListener('click', handleDeleteClick)
+      return () => {
+        editorElement.removeEventListener('click', handleDeleteClick)
+      }
+    }
+  }, [editor])
+
   return null
 }
 
