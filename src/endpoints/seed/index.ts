@@ -266,25 +266,7 @@ export const seed = async ({
       slug: 'header',
       data: {
         logo: null,
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Posts',
-              url: '/posts',
-            },
-          },
-          {
-            link: {
-              type: 'reference',
-              label: 'Contact',
-              reference: {
-                relationTo: 'pages',
-                value: contactPage.id,
-              },
-            },
-          },
-        ],
+        navItems: [],
       },
     }),
     payload.updateGlobal({

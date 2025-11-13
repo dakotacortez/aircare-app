@@ -37,14 +37,6 @@ interface HeaderClientProps {
   data?: HeaderData | null
 }
 
-const fallbackNavItems: NavItem[] = [
-  { href: '/protocols', label: 'Protocols', newTab: false },
-  { href: '#', label: 'References', newTab: false },
-  { href: '#', label: 'Calculators', newTab: false },
-  { href: '#', label: 'Checklists', newTab: false },
-  { href: '#', label: 'Safety Concerns', newTab: false },
-]
-
 function resolveNavItems(data?: HeaderData | null): NavItem[] {
   const cmsNavItems =
     data?.navItems
@@ -76,8 +68,8 @@ function resolveNavItems(data?: HeaderData | null): NavItem[] {
       })
       .filter(isNotNull) ?? []
 
-  // Return CMS items if they exist, otherwise fallback
-  return cmsNavItems.length > 0 ? cmsNavItems : fallbackNavItems
+  // Return only CMS items managed through admin panel
+  return cmsNavItems
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
