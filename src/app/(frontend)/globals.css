@@ -421,6 +421,17 @@ html[data-theme='light'] {
       margin-top: 0.5rem;
     }
 
+    .callout-block__body ul,
+    .callout-block__body ol {
+      margin-left: 1.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .callout-block__body li {
+      margin-bottom: 0.25rem;
+    }
+
     /* Alert variant - inline badge that floats right */
     .callout-block--alert {
       display: inline-flex;

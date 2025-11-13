@@ -369,7 +369,7 @@ function renderCalloutBlockNode(
         <span className="callout-block__icon">
           <FontAwesomeIcon icon={iconDefinition} />
         </span>
-        <span className="callout-block__label">{label.toUpperCase()}:</span>
+        <span className="callout-block__label">{label.toUpperCase()}</span>
       </div>
 
       <div className="callout-block__body">
