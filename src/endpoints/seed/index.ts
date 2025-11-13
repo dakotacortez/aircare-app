@@ -9,6 +9,8 @@ import { imageHero1 } from './image-hero-1'
 import { post1 } from './post-1'
 import { post2 } from './post-2'
 import { post3 } from './post-3'
+import { privacyPage } from './privacy-page'
+import { termsPage } from './terms-page'
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -228,7 +230,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [_, contactPage] = await Promise.all([
+  const [_, contactPage, privacyPageDoc, termsPageDoc] = await Promise.all([
     payload.create({
       collection: 'pages',
       depth: 0,
@@ -238,6 +240,16 @@ export const seed = async ({
       collection: 'pages',
       depth: 0,
       data: contactPageData({ contactForm: contactForm }),
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: privacyPage(),
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: termsPage(),
     }),
   ])
 
@@ -273,6 +285,26 @@ export const seed = async ({
       slug: 'footer',
       data: {
         navItems: [
+          {
+            link: {
+              type: 'reference',
+              label: 'Privacy Policy',
+              reference: {
+                relationTo: 'pages',
+                value: privacyPageDoc.id,
+              },
+            },
+          },
+          {
+            link: {
+              type: 'reference',
+              label: 'Terms of Use',
+              reference: {
+                relationTo: 'pages',
+                value: termsPageDoc.id,
+              },
+            },
+          },
           {
             link: {
               type: 'custom',
