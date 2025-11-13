@@ -342,14 +342,20 @@ function createCalloutToolbarButton(config: ToolbarButtonConfig) {
       (presetId: CalloutPresetId) => {
         const preset = CALLOUT_PRESETS[presetId]
         if (!preset) return
-        insertCalloutBlock({
-          presetId,
-          label: preset.label,
-          icon: preset.icon,
-          color: preset.color,
-          variant: preset.variant,
-        })
+
+        // Close dropdown first to prevent duplicate clicks
         setIsDropdownOpen(false)
+
+        // Insert on next tick to ensure clean state
+        requestAnimationFrame(() => {
+          insertCalloutBlock({
+            presetId,
+            label: preset.label,
+            icon: preset.icon,
+            color: preset.color,
+            variant: preset.variant,
+          })
+        })
       },
       [insertCalloutBlock],
     )
@@ -467,18 +473,22 @@ function createCalloutToolbarButton(config: ToolbarButtonConfig) {
                       <button
                         key={item.id}
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
                           if (item.presetId) {
                             handlePresetInsert(item.presetId)
                           } else {
-                            insertCalloutBlock({
-                              presetId: undefined,
-                              label: item.label,
-                              icon: item.icon,
-                              color: item.color,
-                              variant: item.variant,
-                            })
                             setIsDropdownOpen(false)
+                            requestAnimationFrame(() => {
+                              insertCalloutBlock({
+                                presetId: undefined,
+                                label: item.label,
+                                icon: item.icon,
+                                color: item.color,
+                                variant: item.variant,
+                              })
+                            })
                           }
                         }}
                         style={dropdownItemStyle}

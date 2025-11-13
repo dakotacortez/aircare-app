@@ -1,13 +1,15 @@
 'use client'
 import React, { useState } from 'react'
-import { Syringe, X, ChevronUp } from 'lucide-react'
+import { Syringe, X, ChevronUp, Calculator, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface ProtocolToolsProps {
   isOpen: boolean
   onClose: () => void
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
-export function ProtocolTools({ isOpen, onClose }: ProtocolToolsProps) {
+export function ProtocolTools({ isOpen, onClose, isCollapsed = false, onToggleCollapse }: ProtocolToolsProps) {
   const [weight, setWeight] = useState('')
   const [dose, setDose] = useState('')
 
@@ -22,15 +24,37 @@ export function ProtocolTools({ isOpen, onClose }: ProtocolToolsProps) {
   return (
     <>
       {/* Desktop Right Sidebar */}
-      <aside className="hidden lg:block w-[320px] border-l dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-auto">
-        <div className="px-4 py-3 border-b dark:border-neutral-700">
-          <div className="text-sm font-medium">Quick Tools</div>
+      {!isCollapsed ? (
+        <aside className="hidden lg:block w-[320px] border-l dark:border-neutral-700 bg-white dark:bg-neutral-800 overflow-auto">
+          <div className="px-4 py-3 border-b dark:border-neutral-700 flex items-center justify-between">
+            <div className="text-sm font-medium">Quick Tools</div>
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                aria-label="Collapse tools panel"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="p-4 space-y-4">
+            <DoseCalculator weight={weight} setWeight={setWeight} dose={dose} calculateDose={calculateDose} />
+          </div>
+        </aside>
+      ) : (
+        <div className="hidden lg:flex flex-col border-l dark:border-neutral-700 bg-white dark:bg-neutral-800">
+          <button
+            onClick={onToggleCollapse}
+            className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex flex-col items-center gap-2 border-b dark:border-neutral-700"
+            aria-label="Expand tools panel"
+          >
+            <Calculator className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
+          </button>
         </div>
-        
-        <div className="p-4 space-y-4">
-          <DoseCalculator weight={weight} setWeight={setWeight} dose={dose} calculateDose={calculateDose} />
-        </div>
-      </aside>
+      )}
 
       {/* Mobile Bottom Drawer */}
       <div className={`lg:hidden fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-neutral-800 border-t dark:border-neutral-700 rounded-t-2xl transform transition-transform duration-300 ${

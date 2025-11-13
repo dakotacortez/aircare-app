@@ -122,11 +122,12 @@ export const AdminBar: React.FC<{
               padding: 0,
               position: 'relative',
               zIndex: 'unset',
+              order: 2,
             }}
           />
-          {/* Right section: User role badge */}
+          {/* User role badge - now appears before logout */}
           {user && (
-            <div className="text-sm font-medium text-white/80 whitespace-nowrap">
+            <div className="text-sm font-medium text-white whitespace-nowrap" style={{ order: 1 }}>
               {formatRole(user.role)}
             </div>
           )}

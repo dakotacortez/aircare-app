@@ -162,6 +162,27 @@ function renderLexicalNode(
       return null
     }
 
+    // Check if this is a checkbox list item
+    const isCheckbox = typeof (node as { checked?: unknown }).checked === 'boolean'
+    const isChecked = (node as { checked?: boolean }).checked ?? false
+
+    if (isCheckbox) {
+      return (
+        <li key={nodeKey} className="checkbox-list-item">
+          <input
+            type="checkbox"
+            checked={isChecked}
+            disabled
+            readOnly
+            aria-label={isChecked ? 'Checked item' : 'Unchecked item'}
+          />
+          <span className="checkbox-list-item__content">
+            {children}
+          </span>
+        </li>
+      )
+    }
+
     return (
       <li key={nodeKey}>
         {children}

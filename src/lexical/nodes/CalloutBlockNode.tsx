@@ -68,38 +68,81 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-function renderHeader(dom: HTMLElement, icon: CalloutIconId, label: string): void {
+function renderHeader(
+  dom: HTMLElement,
+  icon: CalloutIconId,
+  label: string,
+  variant: CalloutVariant,
+): void {
   const existingHeader = dom.querySelector(':scope > .callout-block__header')
+  const existingIcon = dom.querySelector(':scope > .callout-block__icon')
+  const existingLabel = dom.querySelector(':scope > .callout-block__label')
+
   if (existingHeader) {
     existingHeader.remove()
   }
-
-  const header = document.createElement('div')
-  header.className = 'callout-block__header'
-  header.contentEditable = 'false'
-
-  const iconWrapper = document.createElement('span')
-  iconWrapper.className = 'callout-block__icon'
-
-  try {
-    const definition = getCalloutIcon(icon)
-    const rendered = faIconFactory(definition)
-    if (rendered?.node?.[0]) {
-      const svg = rendered.node[0] as SVGElement
-      svg.setAttribute('aria-hidden', 'true')
-      iconWrapper.append(svg)
-    }
-  } catch (error) {
-    console.error('Unable to render callout icon', error)
-    iconWrapper.textContent = '•'
+  if (existingIcon) {
+    existingIcon.remove()
+  }
+  if (existingLabel) {
+    existingLabel.remove()
   }
 
-  const labelSpan = document.createElement('span')
-  labelSpan.className = 'callout-block__label'
-  labelSpan.textContent = label
+  if (variant === 'alert') {
+    // For alerts, render icon and label as direct children (not in header)
+    const iconWrapper = document.createElement('span')
+    iconWrapper.className = 'callout-block__icon'
 
-  header.append(iconWrapper, labelSpan)
-  dom.prepend(header)
+    try {
+      const definition = getCalloutIcon(icon)
+      const rendered = faIconFactory(definition)
+      if (rendered?.node?.[0]) {
+        const svg = rendered.node[0] as SVGElement
+        svg.setAttribute('aria-hidden', 'true')
+        iconWrapper.append(svg)
+      }
+    } catch (error) {
+      console.error('Unable to render callout icon', error)
+      iconWrapper.textContent = '•'
+    }
+
+    const labelSpan = document.createElement('span')
+    labelSpan.className = 'callout-block__label'
+    labelSpan.textContent = label
+
+    iconWrapper.contentEditable = 'false'
+    labelSpan.contentEditable = 'false'
+
+    dom.append(iconWrapper, labelSpan)
+  } else {
+    // For callouts, render as header (corner label design)
+    const header = document.createElement('div')
+    header.className = 'callout-block__header'
+    header.contentEditable = 'false'
+
+    const iconWrapper = document.createElement('span')
+    iconWrapper.className = 'callout-block__icon'
+
+    try {
+      const definition = getCalloutIcon(icon)
+      const rendered = faIconFactory(definition)
+      if (rendered?.node?.[0]) {
+        const svg = rendered.node[0] as SVGElement
+        svg.setAttribute('aria-hidden', 'true')
+        iconWrapper.append(svg)
+      }
+    } catch (error) {
+      console.error('Unable to render callout icon', error)
+      iconWrapper.textContent = '•'
+    }
+
+    const labelSpan = document.createElement('span')
+    labelSpan.className = 'callout-block__label'
+    labelSpan.textContent = label
+
+    header.append(iconWrapper, labelSpan)
+    dom.prepend(header)
+  }
 }
 
 function hasMeaningfulSerializedChildren(children?: SerializedLexicalNode[]): boolean {
@@ -189,7 +232,7 @@ export class CalloutBlockNode extends ElementNode {
     container.dataset.calloutVariant = this.__variant
 
     applyCalloutStyles(container, this.__color, this.__variant)
-    renderHeader(container, this.__icon, this.__label)
+    renderHeader(container, this.__icon, this.__label, this.__variant)
 
     return container
   }
@@ -216,7 +259,7 @@ export class CalloutBlockNode extends ElementNode {
         dom.classList.remove('callout-block--alert')
       }
       applyCalloutStyles(dom, this.__color, this.__variant)
-      renderHeader(dom, this.__icon, this.__label)
+      renderHeader(dom, this.__icon, this.__label, this.__variant)
     }
 
     return false
