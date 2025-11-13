@@ -183,12 +183,27 @@
   line-height: 1.625;
 }
 
+.callout-block__body * {
+  color: inherit;
+}
+
 .callout-block__body p {
   margin: 0;
 }
 
 .callout-block__body p + p {
   margin-top: 0.5rem;
+}
+
+.callout-block__body ul,
+.callout-block__body ol {
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.callout-block__body li {
+  margin-bottom: 0.25rem;
 }
 
 /* Alert variant - inline badge that floats right */
@@ -298,6 +313,11 @@
 
 .dark .callout-block__body,
 [data-theme='dark'] .callout-block__body {
+  color: #e2e8f0;
+}
+
+.dark .callout-block__body *,
+[data-theme='dark'] .callout-block__body * {
   color: #e2e8f0;
 }
 
