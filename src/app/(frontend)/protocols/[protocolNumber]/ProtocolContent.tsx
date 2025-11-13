@@ -163,9 +163,9 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
               {/* Special Considerations (only shown if has content) */}
               {hasContent(protocol.specialConsiderations) && (
-                <div className="rounded-xl border-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-amber-900 dark:text-amber-100">
-                    Special Considerations
+                <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
+                    Key Considerations
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
                     <RichTextContent content={protocol.specialConsiderations} showBadges={true} />
@@ -175,9 +175,9 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
               {/* Key Points (only shown if has content) */}
               {hasContent(protocol.keyPoints) && (
-                <div className="rounded-xl border-2 border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30 p-4">
-                  <h3 className="text-sm font-semibold mb-2 text-blue-900 dark:text-blue-100">
-                    Key Points / Pearls
+                <div className="rounded-xl border dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-4">
+                  <h3 className="text-sm font-semibold mb-2 text-neutral-900 dark:text-neutral-100 uppercase tracking-wide">
+                    Pearls
                   </h3>
                   <div className="text-sm text-neutral-700 dark:text-neutral-300 protocol-content">
                     <RichTextContent content={protocol.keyPoints} showBadges={true} />
