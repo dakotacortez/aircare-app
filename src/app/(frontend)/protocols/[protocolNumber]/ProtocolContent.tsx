@@ -271,16 +271,13 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
             </section>
 
             {/* Version Info */}
-            <div className="mt-6 text-sm text-neutral-500 flex items-center gap-4">
-              {protocol.versionNumber && (
-                <span>Version {protocol.versionNumber}</span>
-              )}
-              {protocol.lastReviewed && (
+            {protocol.lastReviewed && (
+              <div className="mt-6 text-sm text-neutral-500">
                 <span>
                   Last Reviewed: {new Date(protocol.lastReviewed).toLocaleDateString()}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </main>
 

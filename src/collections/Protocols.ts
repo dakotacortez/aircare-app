@@ -409,8 +409,9 @@ export const Protocols: CollectionConfig = {
       name: 'versionNumber',
       type: 'text',
       label: 'Version',
-      required: true,
+      required: false,
       admin: {
+        hidden: true,
         placeholder: 'e.g., v2.1',
       },
     },
