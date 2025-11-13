@@ -183,10 +183,6 @@
   line-height: 1.625;
 }
 
-.callout-block__body * {
-  color: inherit;
-}
-
 .callout-block__body p {
   margin: 0;
 }
@@ -309,16 +305,6 @@
 [data-theme='dark'] .callout-block {
   background: var(--callout-bg-color);
   border-color: var(--callout-border-color);
-}
-
-.dark .callout-block__body,
-[data-theme='dark'] .callout-block__body {
-  color: #e2e8f0;
-}
-
-.dark .callout-block__body *,
-[data-theme='dark'] .callout-block__body * {
-  color: #e2e8f0;
 }
 
 .dark .callout-block__header,

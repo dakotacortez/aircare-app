@@ -449,6 +449,17 @@ html[data-theme='light'] {
       margin-block: 0;
     }
 
+    /* Collapse containers that only have alert badges to prevent empty space */
+    .protocol-content p:has(> .callout-block--alert:only-child),
+    .protocol-content li:has(> .callout-block--alert:only-child) {
+      height: 0;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+      overflow: visible;
+    }
+
     .callout-block--alert .callout-block__header {
       display: none;
     }
@@ -472,11 +483,6 @@ html[data-theme='light'] {
     [data-theme='dark'] .callout-block {
       background: var(--callout-bg-color);
       border-color: var(--callout-border-color);
-    }
-
-    .dark .callout-block__body,
-    [data-theme='dark'] .callout-block__body {
-      color: #e2e8f0;
     }
 
     .dark .callout-block__header,

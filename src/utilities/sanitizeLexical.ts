@@ -247,6 +247,15 @@ function sanitizeNode(node: unknown, parentType: string, unknownTypes: Set<strin
       }
     }
 
+    if (type === 'listitem') {
+      if (typeof typedNode.value === 'number') {
+        sanitizedNode.value = typedNode.value
+      }
+      if (typeof typedNode.checked === 'boolean') {
+        sanitizedNode.checked = typedNode.checked
+      }
+    }
+
     if (Array.isArray(typedNode.children)) {
       for (let i = 0; i < sanitizedChildren.length; i += 1) {
         if (sanitizedChildren[i] !== typedNode.children[i]) {
