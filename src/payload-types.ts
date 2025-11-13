@@ -434,6 +434,10 @@ export interface User {
    * User account status
    */
   status: 'pending' | 'active' | 'inactive';
+  /**
+   * Default protocol level for this user. Users can still toggle between levels, but this will be their starting preference.
+   */
+  defaultServiceLine?: ('BLS' | 'ALS' | 'CCT') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -944,7 +948,7 @@ export interface Protocol {
   } | null;
   effectiveDate: string;
   lastReviewed?: string | null;
-  versionNumber: string;
+  versionNumber?: string | null;
   /**
    * Diagrams, flowcharts, reference images, or PDFs
    */
@@ -1522,6 +1526,7 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   approved?: T;
   status?: T;
+  defaultServiceLine?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
