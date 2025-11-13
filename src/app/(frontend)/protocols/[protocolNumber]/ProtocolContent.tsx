@@ -54,6 +54,7 @@ function hasMeaningfulText(node: RichTextSerializedNode | undefined): boolean {
 export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
+  const [toolsCollapsed, setToolsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const { serviceLine } = useServiceLine()
 
@@ -283,9 +284,11 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
         </main>
 
         {/* Right Sidebar - Tools */}
-        <ProtocolTools 
+        <ProtocolTools
           isOpen={toolsOpen}
           onClose={() => setToolsOpen(!toolsOpen)}
+          isCollapsed={toolsCollapsed}
+          onToggleCollapse={() => setToolsCollapsed(!toolsCollapsed)}
         />
 
         {/* Backdrop for mobile */}

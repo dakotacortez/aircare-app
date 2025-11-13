@@ -169,6 +169,33 @@ html[data-theme='light'] {
     margin-bottom: 0.5rem;
   }
 
+  /* Mobile responsive text scaling */
+  @media (max-width: 640px) {
+    .protocol-content {
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .protocol-content h2 {
+      font-size: 1.35rem;
+      margin-top: 1.5rem;
+    }
+
+    .protocol-content h3 {
+      font-size: 1.15rem;
+      margin-top: 1.25rem;
+    }
+
+    .protocol-content h4 {
+      font-size: 1.05rem;
+    }
+
+    .protocol-content ul,
+    .protocol-content ol {
+      margin-left: 1.25rem;
+    }
+  }
+
   .protocol-content ul,
   .protocol-content ol {
     margin-left: 1.5rem;
