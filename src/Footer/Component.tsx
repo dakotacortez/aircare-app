@@ -62,38 +62,26 @@ export async function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-neutral-600 dark:text-neutral-400">
         <div>© {new Date().getFullYear()} Air Care & Mobile Care · All rights reserved</div>
         <div className="flex items-center gap-4">
-          {navItems.length > 0 ? (
-            <>
-              {navItems.map(({ href, label, newTab }, index) => (
-                <React.Fragment key={`${href}-${label}`}>
-                  {index > 0 && <span>·</span>}
-                  <Link
-                    href={href}
-                    target={newTab ? '_blank' : undefined}
-                    rel={newTab ? 'noreferrer noopener' : undefined}
-                    className="hover:text-neutral-900 dark:hover:text-neutral-100"
-                  >
-                    {label}
-                  </Link>
-                </React.Fragment>
-              ))}
-            </>
-          ) : (
-            <>
-              <a href="#" className="hover:text-neutral-900 dark:hover:text-neutral-100">Changelog</a>
-              <span>·</span>
-              <a href="#" className="hover:text-neutral-900 dark:hover:text-neutral-100">Version 0.1</a>
-            </>
-          )}
-          {isLoggedIn && (
-            <>
-              <span>·</span>
-              <Link href="/admin" className="hover:text-neutral-900 dark:hover:text-neutral-100">
-                Admin
+          {navItems.map(({ href, label, newTab }, index) => (
+            <React.Fragment key={`${href}-${label}`}>
+              {index > 0 && <span>·</span>}
+              <Link
+                href={href}
+                target={newTab ? '_blank' : undefined}
+                rel={newTab ? 'noreferrer noopener' : undefined}
+                className="hover:text-neutral-900 dark:hover:text-neutral-100"
+              >
+                {label}
               </Link>
-            </>
+            </React.Fragment>
+          ))}
+          {navItems.length > 0 && isLoggedIn && <span>·</span>}
+          {isLoggedIn && (
+            <Link href="/admin" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+              Admin
+            </Link>
           )}
-          <span>·</span>
+          {(navItems.length > 0 || isLoggedIn) && <span>·</span>}
           <ThemeSelector />
         </div>
       </div>
