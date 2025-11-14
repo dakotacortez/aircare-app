@@ -9,6 +9,9 @@ import { imageHero1 } from './image-hero-1'
 import { post1 } from './post-1'
 import { post2 } from './post-2'
 import { post3 } from './post-3'
+import { privacyPage } from './privacy-page'
+import { termsPage } from './terms-page'
+import { changelogPage } from './changelog-page'
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -228,7 +231,7 @@ export const seed = async ({
 
   payload.logger.info(`— Seeding pages...`)
 
-  const [_, contactPage] = await Promise.all([
+  const [_, contactPage, privacyPageDoc, termsPageDoc, changelogPageDoc] = await Promise.all([
     payload.create({
       collection: 'pages',
       depth: 0,
@@ -239,6 +242,21 @@ export const seed = async ({
       depth: 0,
       data: contactPageData({ contactForm: contactForm }),
     }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: privacyPage(),
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: termsPage(),
+    }),
+    payload.create({
+      collection: 'pages',
+      depth: 0,
+      data: changelogPage(),
+    }),
   ])
 
   payload.logger.info(`— Seeding globals...`)
@@ -248,25 +266,7 @@ export const seed = async ({
       slug: 'header',
       data: {
         logo: null,
-        navItems: [
-          {
-            link: {
-              type: 'custom',
-              label: 'Posts',
-              url: '/posts',
-            },
-          },
-          {
-            link: {
-              type: 'reference',
-              label: 'Contact',
-              reference: {
-                relationTo: 'pages',
-                value: contactPage.id,
-              },
-            },
-          },
-        ],
+        navItems: [],
       },
     }),
     payload.updateGlobal({
