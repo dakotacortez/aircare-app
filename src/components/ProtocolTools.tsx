@@ -1,6 +1,9 @@
 'use client'
 import React, { useState } from 'react'
 import { Syringe, X, ChevronUp, Calculator, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useReferenceCard } from '@/hooks/useReferenceCard'
+import { SaveCalculationModal } from '@/components/ReferenceCard'
+import type { CalculationData } from '@/types/referenceCard'
 
 interface ProtocolToolsProps {
   isOpen: boolean
@@ -95,55 +98,92 @@ export function ProtocolTools({ isOpen, onClose, isCollapsed = false, onToggleCo
   )
 }
 
-function DoseCalculator({ 
-  weight, 
-  setWeight, 
-  dose, 
-  calculateDose 
-}: { 
+function DoseCalculator({
+  weight,
+  setWeight,
+  dose,
+  calculateDose,
+}: {
   weight: string
   setWeight: (value: string) => void
   dose: string
   calculateDose: () => void
 }) {
+  const { isMobile } = useReferenceCard()
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [calculationToSave, setCalculationToSave] = useState<CalculationData | null>(null)
+
+  const handleSave = () => {
+    if (!isMobile || !dose) return
+
+    const calculation: CalculationData = {
+      calculatorName: 'Dose Calculator',
+      inputs: {
+        weightKg: weight,
+      },
+      outputs: {
+        doseMg: `${dose} mg`,
+      },
+    }
+
+    setCalculationToSave(calculation)
+    setShowSaveModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowSaveModal(false)
+    setCalculationToSave(null)
+  }
+
   return (
     <div className="rounded-2xl border dark:border-neutral-700 p-4">
       <h3 className="text-sm font-semibold mb-3">Dose Calculator</h3>
-      
+
       <div className="space-y-3">
         <div>
-          <label className="text-xs text-neutral-600 dark:text-neutral-400 block mb-1">
-            Weight (kg)
-          </label>
-          <input 
+          <label className="text-xs text-neutral-600 dark:text-neutral-400 block mb-1">Weight (kg)</label>
+          <input
             type="number"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className="w-full border dark:border-neutral-700 bg-transparent rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-600 outline-none" 
-            placeholder="Enter weight" 
+            className="w-full border dark:border-neutral-700 bg-transparent rounded px-3 py-2 text-sm focus:ring-2 focus:ring-red-600 outline-none"
+            placeholder="Enter weight"
           />
         </div>
-        
-        <button 
+
+        <button
           onClick={calculateDose}
           className="w-full rounded-lg bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm font-medium transition-colors"
         >
           Calculate
         </button>
-        
+
         {dose && (
           <div className="p-3 bg-neutral-50 dark:bg-neutral-900 rounded-lg">
             <div className="text-xs text-neutral-600 dark:text-neutral-400 mb-1">Calculated Dose</div>
             <div className="text-lg font-semibold">{dose} mg</div>
           </div>
         )}
+
+        {dose && isMobile && (
+          <button
+            onClick={handleSave}
+            className="w-full rounded-lg bg-green-600 hover:bg-green-700 text-white px-4 py-2 text-sm font-medium transition-colors"
+          >
+            Save to Reference Card
+          </button>
+        )}
       </div>
-      
+
       <div className="mt-4 pt-4 border-t dark:border-neutral-700">
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
           Example calculator. Real drug calculations will be added.
         </p>
       </div>
+
+      {showSaveModal && calculationToSave && (
+        <SaveCalculationModal calculation={calculationToSave} onClose={handleCloseModal} />
+      )}
     </div>
   )
 }
