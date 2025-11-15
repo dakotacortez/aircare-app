@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '@/access/isAdmin'
+import { isAdmin } from '@/access/roles'
 import { revalidateSiteSettings } from './hooks/revalidateSiteSettings'
 
 export const SiteSettings: GlobalConfig = {
@@ -8,6 +8,10 @@ export const SiteSettings: GlobalConfig = {
   access: {
     read: () => true,
     update: isAdmin, // Only Admin Team can update site settings
+  },
+  admin: {
+    group: 'Administration',
+    description: 'Site-wide settings and configuration (admin only)',
   },
   fields: [
     // Branding Section

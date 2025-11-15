@@ -1,8 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { isContentTeamOrAdmin } from '../../access/isContentTeamOrAdmin'
-import { isAdmin } from '../../access/isAdmin'
+import { isAdmin } from '../../access/roles'
 import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
@@ -25,10 +24,11 @@ import {
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
   access: {
-    create: isContentTeamOrAdmin,
+    // Only admin team can manage pages
+    create: isAdmin,
     delete: isAdmin,
     read: authenticatedOrPublished,
-    update: isContentTeamOrAdmin,
+    update: isAdmin,
   },
   // This config controls what's populated by default when a page is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
@@ -38,6 +38,8 @@ export const Pages: CollectionConfig<'pages'> = {
     slug: true,
   },
   admin: {
+    group: 'Administration',
+    description: 'Site pages (admin only)',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>

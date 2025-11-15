@@ -1,25 +1,20 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
+import { isAdmin, isContentOrAdmin } from '../../access/roles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    // Only Content Team and Admin Team can access the admin panel
-    admin: ({ req: { user } }) => {
-      if (!user) return false
-      return (
-        (user.role === 'content-team' || user.role === 'admin-team') &&
-        user.status === 'active'
-      )
-    },
-    // Allow anyone to create an account (they'll start as pending user)
-    create: () => true,
-    delete: authenticated,
-    read: authenticated,
-    update: authenticated,
+    // Only admin team can create and delete users
+    create: isAdmin,
+    delete: isAdmin,
+    // Content team and admin team can read and update users (to change status, approve, etc.)
+    read: isContentOrAdmin,
+    update: isContentOrAdmin,
   },
   admin: {
+    group: 'Administration',
+    description: 'User management - Admin can add/delete, Content team can edit details',
     defaultColumns: ['name', 'email', 'role', 'status', 'defaultServiceLine'],
     useAsTitle: 'name',
   },
@@ -117,6 +112,45 @@ export const Users: CollectionConfig = {
         // Read access inherited from collection-level (authenticated users can read)
         update: ({ req: { user }, id }) => {
           // Users can update their own preference
+          if (user && id && user.id === id) return true
+          // Admins can update for anyone
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'pushNotificationsEnabled',
+      type: 'checkbox',
+      label: 'Enable Push Notifications',
+      defaultValue: false,
+      admin: {
+        description: 'Opt-in to receive push notifications for protocol updates and announcements',
+        position: 'sidebar',
+      },
+      // Users can update their own preference, admins can update for anyone
+      access: {
+        create: () => true,
+        update: ({ req: { user }, id }) => {
+          // Users can update their own preference
+          if (user && id && user.id === id) return true
+          // Admins can update for anyone
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'profileImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Profile Image',
+      admin: {
+        description: 'Upload a profile picture',
+      },
+      // Users can update their own image, admins can update for anyone
+      access: {
+        create: () => true,
+        update: ({ req: { user }, id }) => {
+          // Users can update their own image
           if (user && id && user.id === id) return true
           // Admins can update for anyone
           return user?.role === 'admin-team'

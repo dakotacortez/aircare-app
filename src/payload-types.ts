@@ -78,6 +78,7 @@ export interface Config {
     hospitals: Hospital;
     'hospital-change-requests': HospitalChangeRequest;
     bases: Base;
+    assets: Asset;
     calculators: Calculator;
     redirects: Redirect;
     forms: Form;
@@ -107,6 +108,7 @@ export interface Config {
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     'hospital-change-requests': HospitalChangeRequestsSelect<false> | HospitalChangeRequestsSelect<true>;
     bases: BasesSelect<false> | BasesSelect<true>;
+    assets: AssetsSelect<false> | AssetsSelect<true>;
     calculators: CalculatorsSelect<false> | CalculatorsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -166,6 +168,8 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Site pages (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
@@ -235,6 +239,8 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Blog posts (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
@@ -285,6 +291,8 @@ export interface Post {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Media library (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -404,6 +412,8 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
+ * Post categories (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -428,6 +438,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * User management - Admin can add/delete, Content team can edit details
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -450,6 +462,14 @@ export interface User {
    * Default protocol level for this user. Users can still toggle between levels, but this will be their starting preference.
    */
   defaultServiceLine?: ('BLS' | 'ALS' | 'CCT') | null;
+  /**
+   * Opt-in to receive push notifications for protocol updates and announcements
+   */
+  pushNotificationsEnabled?: boolean | null;
+  /**
+   * Upload a profile picture
+   */
+  profileImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1008,6 +1028,10 @@ export interface Calculator {
    */
   description?: string | null;
   /**
+   * Primary category for organizing calculators
+   */
+  category: 'neuro' | 'respiratory' | 'cardiovascular' | 'medications' | 'pediatric' | 'trauma' | 'general';
+  /**
    * Which service lines this calculator applies to
    */
   serviceLines?: ('BLS' | 'ALS' | 'MICU' | 'Flight' | 'CCT' | 'CommSpec')[] | null;
@@ -1060,27 +1084,31 @@ export interface HospitalNetwork {
   createdAt: string;
 }
 /**
- * Clinical capabilities and certifications for hospitals
+ * Define capability types and their certification levels (e.g., Trauma with levels I-IV)
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "hospital-capabilities".
  */
 export interface HospitalCapability {
   id: number;
+  /**
+   * The name of this capability type
+   */
   name: string;
   /**
-   * Category for organizing capabilities
+   * Category for organizing and filtering capabilities
    */
   category: 'trauma' | 'cardiac' | 'neuro' | 'obstetrics' | 'other';
   /**
-   * Possible levels for this capability (e.g., "Level I", "Level II", "Level III")
+   * Define all possible certification levels for this capability. These levels will appear as options when assigning this capability to hospitals.
    */
-  levels?:
-    | {
-        level: string;
-        id?: string | null;
-      }[]
-    | null;
+  levels: {
+    /**
+     * Enter the level name exactly as it should appear (e.g., "Level I", "Level 2 - Moderate Risk")
+     */
+    level: string;
+    id?: string | null;
+  }[];
   updatedAt: string;
   createdAt: string;
 }
@@ -1137,15 +1165,18 @@ export interface Hospital {
       }[]
     | null;
   /**
-   * Clinical capabilities and certifications
+   * Add clinical capabilities and their certification levels
    */
   capabilities?:
     | {
+        /**
+         * Select a capability type (e.g., Trauma, PCI, Stroke)
+         */
         capability: number | HospitalCapability;
         /**
-         * Specific level for this capability (e.g., "Level I"). Can be refined later to pull from capability's levels.
+         * Select the certification level from the dropdown. Options are loaded from the selected Capability Type.
          */
-        level?: string | null;
+        level: string;
         id?: string | null;
       }[]
     | null;
@@ -1278,16 +1309,38 @@ export interface Base {
       }[]
     | null;
   /**
-   * Vehicles and units stationed at this base
+   * Select vehicles and units stationed at this base. Assets already assigned to other bases will not appear in the list.
    */
-  assetsBasedThere?:
-    | {
-        assetName?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  assets?: (number | Asset)[] | null;
   /**
    * Additional information about this base
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * EMS vehicles and units (ambulances, helicopters, etc.)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assets".
+ */
+export interface Asset {
+  id: number;
+  /**
+   * Unique identifier for this asset
+   */
+  name: string;
+  /**
+   * Type of vehicle or unit
+   */
+  type: 'bls' | 'als' | 'micu' | 'cct' | 'helicopter' | 'chase' | 'support' | 'other';
+  /**
+   * Aircraft tail number (helicopters only)
+   */
+  tailNumber?: string | null;
+  /**
+   * Additional details about this asset (equipment, capabilities, etc.)
    */
   notes?: string | null;
   updatedAt: string;
@@ -1526,6 +1579,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bases';
         value: number | Base;
+      } | null)
+    | ({
+        relationTo: 'assets';
+        value: number | Asset;
       } | null)
     | ({
         relationTo: 'calculators';
@@ -1883,6 +1940,8 @@ export interface UsersSelect<T extends boolean = true> {
   approved?: T;
   status?: T;
   defaultServiceLine?: T;
+  pushNotificationsEnabled?: T;
+  profileImage?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2086,12 +2145,19 @@ export interface BasesSelect<T extends boolean = true> {
         code?: T;
         id?: T;
       };
-  assetsBasedThere?:
-    | T
-    | {
-        assetName?: T;
-        id?: T;
-      };
+  assets?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "assets_select".
+ */
+export interface AssetsSelect<T extends boolean = true> {
+  name?: T;
+  type?: T;
+  tailNumber?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2104,6 +2170,7 @@ export interface CalculatorsSelect<T extends boolean = true> {
   title?: T;
   key?: T;
   description?: T;
+  category?: T;
   serviceLines?: T;
   tags?:
     | T
@@ -2395,6 +2462,8 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Site header configuration (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
@@ -2428,6 +2497,8 @@ export interface Header {
   createdAt?: string | null;
 }
 /**
+ * Site footer configuration (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
@@ -2457,6 +2528,8 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * Site-wide settings and configuration (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
  */

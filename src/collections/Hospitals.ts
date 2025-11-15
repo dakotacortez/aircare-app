@@ -200,56 +200,57 @@ export const Hospitals: CollectionConfig = {
         },
         {
           name: 'level',
-          type: 'select',
+          type: 'text',
           label: 'Certification Level',
           required: true,
           admin: {
-            description: 'Select the certification level from the options defined for this capability',
+            description: 'Select the certification level from the dropdown. Options are loaded from the selected Capability Type.',
+            components: {
+              Field: '@/components/fields/CapabilityLevelSelect',
+            },
           },
-          options: (async ({ data, siblingData, req }: any) => {
-            // Get the selected capability ID from sibling data
+          validate: async (value: unknown, { siblingData, req }: any) => {
+            if (!value) {
+              return 'Certification level is required'
+            }
+
+            const levelValue = value as string
             const capabilityId = siblingData?.capability
 
             if (!capabilityId) {
-              return [
-                {
-                  label: 'Please select a capability type first',
-                  value: '',
-                },
-              ]
+              return 'Please select a capability type first'
             }
 
             try {
-              // Fetch the capability to get its defined levels
+              // Fetch the capability to validate the level
               const capability = await req.payload.findByID({
                 collection: 'hospital-capabilities',
                 id: typeof capabilityId === 'object' ? capabilityId.id : capabilityId,
               })
 
               if (!capability?.levels || capability.levels.length === 0) {
-                return [
-                  {
-                    label: 'No levels defined - please add levels to this capability type first',
-                    value: '',
-                  },
-                ]
+                return 'The selected capability has no levels defined. Please add levels in Capability Types first.'
               }
 
-              // Map the levels to select options
-              return capability.levels.map((levelObj: { level: string }) => ({
-                label: levelObj.level,
-                value: levelObj.level,
-              }))
+              // Check if the entered level matches one of the defined levels (case-insensitive)
+              const validLevel = capability.levels.some(
+                (levelObj: { level: string }) =>
+                  levelObj.level.toLowerCase() === levelValue.toLowerCase(),
+              )
+
+              if (!validLevel) {
+                const availableLevels = capability.levels
+                  .map((l: { level: string }) => `"${l.level}"`)
+                  .join(', ')
+                return `Invalid level for ${capability.name}. Valid levels are: ${availableLevels}. Please enter the level exactly as shown.`
+              }
+
+              return true
             } catch (error) {
-              console.error('Error loading capability levels:', error)
-              return [
-                {
-                  label: 'Error loading levels - please try again',
-                  value: '',
-                },
-              ]
+              console.error('Error validating capability level:', error)
+              return 'Error validating level. Please try again.'
             }
-          }) as any,
+          },
         },
       ],
     },

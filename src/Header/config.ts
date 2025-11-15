@@ -2,13 +2,17 @@ import type { GlobalConfig } from 'payload'
 
 import { link } from '@/fields/link'
 import { revalidateHeader } from './hooks/revalidateHeader'
-import { isAdmin } from '@/access/isAdmin'
+import { isAdmin } from '@/access/roles'
 
 export const Header: GlobalConfig = {
   slug: 'header',
   access: {
     read: () => true,
     update: isAdmin, // Only Admin Team can update global header
+  },
+  admin: {
+    group: 'Administration',
+    description: 'Site header configuration (admin only)',
   },
   fields: [
     {
