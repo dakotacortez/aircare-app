@@ -11,9 +11,11 @@ interface ProtocolTreeProps {
   onClose: () => void
   isCollapsed?: boolean
   onToggleCollapse?: () => void
+  expandedCategory?: string
+  onCategoryExpanded?: () => void
 }
 
-export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose, isCollapsed = false, onToggleCollapse }: ProtocolTreeProps) {
+export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose, isCollapsed = false, onToggleCollapse, expandedCategory, onCategoryExpanded }: ProtocolTreeProps) {
   // Group protocols by category and subcategory
   const tree: Record<string, Record<string, Protocol[]>> = {}
 
@@ -49,9 +51,12 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
             {Object.entries(tree).sort().map(([category, subcategories]) => (
               <TreeCategory
                 key={category}
+                category={category}
                 label={category.replace(/-/g, ' ')}
                 subcategories={subcategories}
                 currentProtocolNumber={currentProtocolNumber}
+                expandedCategory={expandedCategory}
+                onCategoryExpanded={onCategoryExpanded}
               />
             ))}
           </nav>
@@ -86,9 +91,12 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
           {Object.entries(tree).sort().map(([category, subcategories]) => (
             <TreeCategory
               key={category}
+              category={category}
               label={category.replace(/-/g, ' ')}
               subcategories={subcategories}
               currentProtocolNumber={currentProtocolNumber}
+              expandedCategory={expandedCategory}
+              onCategoryExpanded={onCategoryExpanded}
             />
           ))}
         </nav>
@@ -98,19 +106,36 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
 }
 
 function TreeCategory({
+  category,
   label,
   subcategories,
-  currentProtocolNumber
+  currentProtocolNumber,
+  expandedCategory,
+  onCategoryExpanded
 }: {
+  category: string
   label: string
   subcategories: Record<string, Protocol[]>
   currentProtocolNumber?: string
+  expandedCategory?: string
+  onCategoryExpanded?: () => void
 }) {
   // Check if this category contains the active protocol in any subcategory
   const containsActiveProtocol = Object.values(subcategories).some((protocols) =>
     protocols.some((protocol) => protocol.protocolNumber === currentProtocolNumber)
   )
   const [open, setOpen] = useState(containsActiveProtocol || !currentProtocolNumber)
+
+  // Handle expandedCategory prop
+  React.useEffect(() => {
+    if (expandedCategory && expandedCategory === category) {
+      setOpen(true)
+      // Reset the expandedCategory after handling
+      if (onCategoryExpanded) {
+        onCategoryExpanded()
+      }
+    }
+  }, [expandedCategory, category, onCategoryExpanded])
 
   return (
     <div>
@@ -130,6 +155,7 @@ function TreeCategory({
               label={subcategory}
               protocols={protocols}
               currentProtocolNumber={currentProtocolNumber}
+              shouldCollapse={expandedCategory === category}
             />
           ))}
         </div>
@@ -141,17 +167,26 @@ function TreeCategory({
 function TreeSubcategory({
   label,
   protocols,
-  currentProtocolNumber
+  currentProtocolNumber,
+  shouldCollapse
 }: {
   label: string
   protocols: Protocol[]
   currentProtocolNumber?: string
+  shouldCollapse?: boolean
 }) {
   // Check if this subcategory contains the active protocol
   const containsActiveProtocol = protocols.some(
     (protocol) => protocol.protocolNumber === currentProtocolNumber
   )
   const [open, setOpen] = useState(containsActiveProtocol)
+
+  // Collapse this subcategory when category is clicked from breadcrumb
+  React.useEffect(() => {
+    if (shouldCollapse) {
+      setOpen(false)
+    }
+  }, [shouldCollapse])
 
   return (
     <div>

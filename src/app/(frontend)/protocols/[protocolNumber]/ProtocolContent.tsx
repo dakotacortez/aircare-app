@@ -57,6 +57,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
   const [toolsOpen, setToolsOpen] = useState(false)
   const [toolsCollapsed, setToolsCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [expandedCategory, setExpandedCategory] = useState<string | undefined>(undefined)
   const { serviceLine } = useServiceLine()
 
   useEffect(() => {
@@ -84,6 +85,16 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
     setToolsOpen(false)
   }
 
+  const handleCategoryClick = () => {
+    if (protocol.category) {
+      setExpandedCategory(protocol.category)
+      setSidebarOpen(true)
+      if (sidebarCollapsed) {
+        setSidebarCollapsed(false)
+      }
+    }
+  }
+
   return (
     <>
       {/* Sub-header with menu button */}
@@ -104,7 +115,12 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
           <ChevronRight className="h-3 w-3" />
           {protocol.category && (
             <>
-              <span className="capitalize">{protocol.category.replace(/-/g, ' ')}</span>
+              <button 
+                onClick={handleCategoryClick}
+                className="capitalize hover:text-neutral-900 dark:hover:text-neutral-100 cursor-pointer"
+              >
+                {protocol.category.replace(/-/g, ' ')}
+              </button>
               <ChevronRight className="h-3 w-3" />
             </>
           )}
@@ -124,6 +140,8 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
           onClose={() => setSidebarOpen(false)}
           isCollapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          expandedCategory={expandedCategory}
+          onCategoryExpanded={() => setExpandedCategory(undefined)}
         />
 
         {/* Main Content */}
@@ -134,11 +152,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
               <div className="flex items-center gap-4 text-sm text-neutral-500 mb-2">
                 {protocol.protocolNumber && (
                   <span className="font-mono">{protocol.protocolNumber}</span>
-                )}
-                {protocol.effectiveDate && (
-                  <span>
-                    Effective: {new Date(protocol.effectiveDate).toLocaleDateString()}
-                  </span>
                 )}
               </div>
               <h1 className="text-3xl font-bold">{protocol.title}</h1>
@@ -279,11 +292,18 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
             </section>
 
             {/* Version Info */}
-            {protocol.lastReviewed && (
-              <div className="mt-6 text-sm text-neutral-500">
-                <span>
-                  Last Reviewed: {new Date(protocol.lastReviewed).toLocaleDateString()}
-                </span>
+            {(protocol.lastReviewed || protocol.effectiveDate) && (
+              <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-neutral-500">
+                {protocol.effectiveDate && (
+                  <span>
+                    Effective: {new Date(protocol.effectiveDate).toLocaleDateString()}
+                  </span>
+                )}
+                {protocol.lastReviewed && (
+                  <span>
+                    Last Reviewed: {new Date(protocol.lastReviewed).toLocaleDateString()}
+                  </span>
+                )}
               </div>
             )}
           </div>
