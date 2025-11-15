@@ -21,6 +21,7 @@ import { HospitalCapabilities } from './collections/HospitalCapabilities'
 import { Hospitals } from './collections/Hospitals'
 import { HospitalChangeRequests } from './collections/HospitalChangeRequests'
 import { Bases } from './collections/Bases'
+import { Assets } from './collections/Assets'
 import { Calculators } from './collections/Calculators'
 
 import { plugins } from './plugins'
@@ -87,6 +88,7 @@ export default buildConfig({
     Hospitals,
     HospitalChangeRequests,
     Bases,
+    Assets,
     Calculators,
   ],
 
