@@ -57,6 +57,7 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
                 currentProtocolNumber={currentProtocolNumber}
                 expandedCategory={expandedCategory}
                 onCategoryExpanded={onCategoryExpanded}
+                onProtocolClick={onClose}
               />
             ))}
           </nav>
@@ -97,6 +98,7 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
               currentProtocolNumber={currentProtocolNumber}
               expandedCategory={expandedCategory}
               onCategoryExpanded={onCategoryExpanded}
+              onProtocolClick={onClose}
             />
           ))}
         </nav>
@@ -105,21 +107,25 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
   )
 }
 
-function TreeCategory({
-  category,
-  label,
-  subcategories,
-  currentProtocolNumber,
-  expandedCategory,
-  onCategoryExpanded
-}: {
+interface TreeCategoryProps {
   category: string
   label: string
   subcategories: Record<string, Protocol[]>
   currentProtocolNumber?: string
   expandedCategory?: string
   onCategoryExpanded?: () => void
-}) {
+  onProtocolClick?: () => void
+}
+
+function TreeCategory({
+  category,
+  label,
+  subcategories,
+  currentProtocolNumber,
+  expandedCategory,
+  onCategoryExpanded,
+  onProtocolClick
+}: TreeCategoryProps) {
   // Check if this category contains the active protocol in any subcategory
   const containsActiveProtocol = Object.values(subcategories).some((protocols) =>
     protocols.some((protocol) => protocol.protocolNumber === currentProtocolNumber)
@@ -156,6 +162,7 @@ function TreeCategory({
               protocols={protocols}
               currentProtocolNumber={currentProtocolNumber}
               shouldCollapse={expandedCategory === category}
+              onProtocolClick={onProtocolClick}
             />
           ))}
         </div>
@@ -164,17 +171,21 @@ function TreeCategory({
   )
 }
 
-function TreeSubcategory({
-  label,
-  protocols,
-  currentProtocolNumber,
-  shouldCollapse
-}: {
+interface TreeSubcategoryProps {
   label: string
   protocols: Protocol[]
   currentProtocolNumber?: string
   shouldCollapse?: boolean
-}) {
+  onProtocolClick?: () => void
+}
+
+function TreeSubcategory({
+  label,
+  protocols,
+  currentProtocolNumber,
+  shouldCollapse,
+  onProtocolClick
+}: TreeSubcategoryProps) {
   // Check if this subcategory contains the active protocol
   const containsActiveProtocol = protocols.some(
     (protocol) => protocol.protocolNumber === currentProtocolNumber
@@ -187,6 +198,13 @@ function TreeSubcategory({
       setOpen(false)
     }
   }, [shouldCollapse])
+
+  const handleProtocolClick = (protocolNumber: string) => {
+    // If clicking the currently active protocol, close the sidebar (mobile)
+    if (protocolNumber === currentProtocolNumber && onProtocolClick) {
+      onProtocolClick()
+    }
+  }
 
   return (
     <div>
@@ -206,6 +224,7 @@ function TreeSubcategory({
               <Link
                 key={protocol.id}
                 href={`/protocols/${protocol.protocolNumber}`}
+                onClick={() => handleProtocolClick(protocol.protocolNumber)}
                 className={`flex items-center gap-2 px-8 py-1.5 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
                   isActive ? 'bg-neutral-100 dark:bg-neutral-700 border-l-4 border-neutral-900 dark:border-neutral-100' : ''
                 }`}
