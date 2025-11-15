@@ -170,7 +170,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           <div className="ml-auto flex items-center gap-2">
             <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
                   serviceLine === 'BLS'
                     ? 'bg-green-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
@@ -188,7 +188,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 BLS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
                   serviceLine === 'ALS'
                     ? 'bg-purple-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
@@ -206,7 +206,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 ALS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
                   serviceLine === 'CCT'
                     ? 'bg-red-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
