@@ -134,22 +134,61 @@ export const Bases: CollectionConfig = {
       ],
     },
     {
-      name: 'assetsBasedThere',
-      type: 'array',
+      name: 'assets',
+      type: 'relationship',
+      relationTo: 'assets' as any,
+      hasMany: true,
       label: 'Assets Based Here',
       admin: {
-        description: 'Vehicles and units stationed at this base',
+        description: 'Select vehicles and units stationed at this base. Assets already assigned to other bases will not appear in the list.',
       },
-      fields: [
-        {
-          name: 'assetName',
-          type: 'text',
-          label: 'Asset Name',
-          admin: {
-            placeholder: 'e.g., Air Care 1, MICU 2, Ambulance 5',
-          },
-        },
-      ],
+      filterOptions: (async ({ id, relationTo, data, siblingData, req }: any) => {
+        // This will filter out assets that are already assigned to OTHER bases
+        try {
+          // Query all other bases (not the current one being edited)
+          const allBases = await req.payload.find({
+            collection: 'bases',
+            where: {
+              id: {
+                not_equals: id,
+              },
+            },
+            limit: 1000,
+          })
+
+          // Collect all asset IDs that are assigned to other bases
+          const assignedAssetIds: number[] = []
+
+          if (allBases?.docs) {
+            allBases.docs.forEach((base: any) => {
+              if (base.assets && Array.isArray(base.assets)) {
+                base.assets.forEach((asset: any) => {
+                  const assetId = typeof asset === 'object' ? asset.id : asset
+                  if (assetId && !assignedAssetIds.includes(assetId)) {
+                    assignedAssetIds.push(assetId)
+                  }
+                })
+              }
+            })
+          }
+
+          // Return filter to exclude already assigned assets
+          if (assignedAssetIds.length > 0) {
+            return {
+              id: {
+                not_in: assignedAssetIds,
+              },
+            }
+          }
+
+          // If no assets are assigned elsewhere, show all
+          return {}
+        } catch (error) {
+          console.error('Error filtering assets:', error)
+          // On error, show all assets
+          return {}
+        }
+      }) as any,
     },
     {
       name: 'notes',
