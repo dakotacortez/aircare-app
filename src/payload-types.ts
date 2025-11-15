@@ -73,6 +73,12 @@ export interface Config {
     categories: Category;
     users: User;
     protocols: Protocol;
+    'hospital-networks': HospitalNetwork;
+    'hospital-capabilities': HospitalCapability;
+    hospitals: Hospital;
+    'hospital-change-requests': HospitalChangeRequest;
+    bases: Base;
+    calculators: Calculator;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -96,6 +102,12 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     protocols: ProtocolsSelect<false> | ProtocolsSelect<true>;
+    'hospital-networks': HospitalNetworksSelect<false> | HospitalNetworksSelect<true>;
+    'hospital-capabilities': HospitalCapabilitiesSelect<false> | HospitalCapabilitiesSelect<true>;
+    hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
+    'hospital-change-requests': HospitalChangeRequestsSelect<false> | HospitalChangeRequestsSelect<true>;
+    bases: BasesSelect<false> | BasesSelect<true>;
+    calculators: CalculatorsSelect<false> | CalculatorsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -950,6 +962,23 @@ export interface Protocol {
   lastReviewed?: string | null;
   versionNumber?: string | null;
   /**
+   * Override which calculators are shown and their order for this protocol
+   */
+  calculatorOverrides?:
+    | {
+        calculator: number | Calculator;
+        /**
+         * Override the calculator's defaultOrder for this protocol
+         */
+        order?: number | null;
+        /**
+         * If true, hide this calculator for this protocol even if tags would otherwise match
+         */
+        hidden?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Diagrams, flowcharts, reference images, or PDFs
    */
   attachments?: (number | Media)[] | null;
@@ -960,6 +989,309 @@ export interface Protocol {
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Clinical calculators and quick tools metadata
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "calculators".
+ */
+export interface Calculator {
+  id: number;
+  title: string;
+  /**
+   * This must match a key in the front end calculator registry
+   */
+  key: string;
+  /**
+   * Brief description of what this calculator does
+   */
+  description?: string | null;
+  /**
+   * Which service lines this calculator applies to
+   */
+  serviceLines?: ('BLS' | 'ALS' | 'MICU' | 'Flight' | 'CCT' | 'CommSpec')[] | null;
+  /**
+   * Tags for matching calculators to protocols (e.g., "RSI", "Vent", "Peds", "Weight based")
+   */
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Default ordering for quick tools (lower numbers appear first)
+   */
+  defaultOrder?: number | null;
+  /**
+   * Disable to hide calculator system-wide
+   */
+  enabled?: boolean | null;
+  /**
+   * Calculators can be hidden per protocol even if tags match
+   */
+  showByDefault?: boolean | null;
+  /**
+   * User who created this calculator
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * User who last updated this calculator
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Hospital systems and networks
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospital-networks".
+ */
+export interface HospitalNetwork {
+  id: number;
+  name: string;
+  /**
+   * Default logo for hospitals in this network
+   */
+  logo?: (number | null) | Media;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Clinical capabilities and certifications for hospitals
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospital-capabilities".
+ */
+export interface HospitalCapability {
+  id: number;
+  name: string;
+  /**
+   * Category for organizing capabilities
+   */
+  category: 'trauma' | 'cardiac' | 'neuro' | 'obstetrics' | 'other';
+  /**
+   * Possible levels for this capability (e.g., "Level I", "Level II", "Level III")
+   */
+  levels?:
+    | {
+        level: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Hospital directory with contact info, capabilities, and EMS notes
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospitals".
+ */
+export interface Hospital {
+  id: number;
+  name: string;
+  /**
+   * Parent network/system this hospital belongs to
+   */
+  network?: (number | null) | HospitalNetwork;
+  /**
+   * Override the network logo with a hospital-specific logo
+   */
+  networkLogoOverride?: (number | null) | Media;
+  address?: {
+    line1?: string | null;
+    line2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip?: string | null;
+  };
+  /**
+   * For mapping and routing
+   */
+  latitude?: number | null;
+  /**
+   * For mapping and routing
+   */
+  longitude?: number | null;
+  /**
+   * Primary EMS contact number
+   */
+  squadPhone?: string | null;
+  otherPhones?:
+    | {
+        label?: string | null;
+        phoneNumber?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Entry codes for EMS access
+   */
+  doorCodes?:
+    | {
+        code?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Clinical capabilities and certifications
+   */
+  capabilities?:
+    | {
+        capability: number | HospitalCapability;
+        /**
+         * Specific level for this capability (e.g., "Level I"). Can be refined later to pull from capability's levels.
+         */
+        level?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Additional information for EMS crews
+   */
+  notes?: string | null;
+  /**
+   * User who created this record
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * User who last updated this record
+   */
+  updatedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * User-submitted requests to add or update hospital information
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospital-change-requests".
+ */
+export interface HospitalChangeRequest {
+  id: number;
+  /**
+   * Type of change request
+   */
+  type: 'add' | 'update';
+  /**
+   * Hospital to update (required for update requests)
+   */
+  targetHospital?: (number | null) | Hospital;
+  /**
+   * The data to add or update
+   */
+  proposedData?: {
+    name?: string | null;
+    address?: {
+      line1?: string | null;
+      line2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      zip?: string | null;
+    };
+    squadPhone?: string | null;
+    otherPhones?:
+      | {
+          label?: string | null;
+          phoneNumber?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    doorCodes?:
+      | {
+          code?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    capabilities?:
+      | {
+          capability?: (number | null) | HospitalCapability;
+          level?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    notes?: string | null;
+  };
+  /**
+   * User who submitted this request
+   */
+  submittedBy?: (number | null) | User;
+  /**
+   * When set to approved, changes are automatically applied to the hospital
+   */
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * Internal notes about this request
+   */
+  adminNotes?: string | null;
+  /**
+   * When the change was automatically applied
+   */
+  appliedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * EMS base locations and station information
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bases".
+ */
+export interface Base {
+  id: number;
+  name: string;
+  address?: {
+    line1?: string | null;
+    line2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zip?: string | null;
+  };
+  /**
+   * For mapping and routing
+   */
+  latitude?: number | null;
+  /**
+   * For mapping and routing
+   */
+  longitude?: number | null;
+  /**
+   * Phone numbers and contact methods
+   */
+  contactInfo?:
+    | {
+        label?: string | null;
+        phoneNumber?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Entry codes for base access
+   */
+  doorCodes?:
+    | {
+        code?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Vehicles and units stationed at this base
+   */
+  assetsBasedThere?:
+    | {
+        assetName?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Additional information about this base
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1174,6 +1506,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'protocols';
         value: number | Protocol;
+      } | null)
+    | ({
+        relationTo: 'hospital-networks';
+        value: number | HospitalNetwork;
+      } | null)
+    | ({
+        relationTo: 'hospital-capabilities';
+        value: number | HospitalCapability;
+      } | null)
+    | ({
+        relationTo: 'hospitals';
+        value: number | Hospital;
+      } | null)
+    | ({
+        relationTo: 'hospital-change-requests';
+        value: number | HospitalChangeRequest;
+      } | null)
+    | ({
+        relationTo: 'bases';
+        value: number | Base;
+      } | null)
+    | ({
+        relationTo: 'calculators';
+        value: number | Calculator;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1564,11 +1920,204 @@ export interface ProtocolsSelect<T extends boolean = true> {
   effectiveDate?: T;
   lastReviewed?: T;
   versionNumber?: T;
+  calculatorOverrides?:
+    | T
+    | {
+        calculator?: T;
+        order?: T;
+        hidden?: T;
+        id?: T;
+      };
   attachments?: T;
   keywords?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospital-networks_select".
+ */
+export interface HospitalNetworksSelect<T extends boolean = true> {
+  name?: T;
+  logo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospital-capabilities_select".
+ */
+export interface HospitalCapabilitiesSelect<T extends boolean = true> {
+  name?: T;
+  category?: T;
+  levels?:
+    | T
+    | {
+        level?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospitals_select".
+ */
+export interface HospitalsSelect<T extends boolean = true> {
+  name?: T;
+  network?: T;
+  networkLogoOverride?: T;
+  address?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        zip?: T;
+      };
+  latitude?: T;
+  longitude?: T;
+  squadPhone?: T;
+  otherPhones?:
+    | T
+    | {
+        label?: T;
+        phoneNumber?: T;
+        id?: T;
+      };
+  doorCodes?:
+    | T
+    | {
+        code?: T;
+        id?: T;
+      };
+  capabilities?:
+    | T
+    | {
+        capability?: T;
+        level?: T;
+        id?: T;
+      };
+  notes?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "hospital-change-requests_select".
+ */
+export interface HospitalChangeRequestsSelect<T extends boolean = true> {
+  type?: T;
+  targetHospital?: T;
+  proposedData?:
+    | T
+    | {
+        name?: T;
+        address?:
+          | T
+          | {
+              line1?: T;
+              line2?: T;
+              city?: T;
+              state?: T;
+              zip?: T;
+            };
+        squadPhone?: T;
+        otherPhones?:
+          | T
+          | {
+              label?: T;
+              phoneNumber?: T;
+              id?: T;
+            };
+        doorCodes?:
+          | T
+          | {
+              code?: T;
+              id?: T;
+            };
+        capabilities?:
+          | T
+          | {
+              capability?: T;
+              level?: T;
+              id?: T;
+            };
+        notes?: T;
+      };
+  submittedBy?: T;
+  status?: T;
+  adminNotes?: T;
+  appliedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bases_select".
+ */
+export interface BasesSelect<T extends boolean = true> {
+  name?: T;
+  address?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        zip?: T;
+      };
+  latitude?: T;
+  longitude?: T;
+  contactInfo?:
+    | T
+    | {
+        label?: T;
+        phoneNumber?: T;
+        id?: T;
+      };
+  doorCodes?:
+    | T
+    | {
+        code?: T;
+        id?: T;
+      };
+  assetsBasedThere?:
+    | T
+    | {
+        assetName?: T;
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "calculators_select".
+ */
+export interface CalculatorsSelect<T extends boolean = true> {
+  title?: T;
+  key?: T;
+  description?: T;
+  serviceLines?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  defaultOrder?: T;
+  enabled?: T;
+  showByDefault?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

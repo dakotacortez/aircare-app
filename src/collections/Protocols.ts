@@ -416,17 +416,43 @@ export const Protocols: CollectionConfig = {
       },
     },
 
-    // Related Tools (for future implementation)
-    // Commented out until Tools collection is created
-    // {
-    //   name: 'tools',
-    //   type: 'relationship',
-    //   relationTo: 'tools',
-    //   hasMany: true,
-    //   admin: {
-    //     description: 'Quick tools/calculators for this protocol',
-    //   },
-    // },
+    // Calculator Overrides
+    // Calculators are auto-selected by tag and service line, then these overrides
+    // refine visibility and ordering for this specific protocol
+    {
+      name: 'calculatorOverrides',
+      type: 'array',
+      label: 'Calculator Overrides',
+      admin: {
+        description: 'Override which calculators are shown and their order for this protocol',
+      },
+      fields: [
+        {
+          name: 'calculator',
+          type: 'relationship',
+          relationTo: 'calculators',
+          required: true,
+          label: 'Calculator',
+        },
+        {
+          name: 'order',
+          type: 'number',
+          label: 'Order',
+          admin: {
+            description: 'Override the calculator\'s defaultOrder for this protocol',
+          },
+        },
+        {
+          name: 'hidden',
+          type: 'checkbox',
+          label: 'Hidden',
+          defaultValue: false,
+          admin: {
+            description: 'If true, hide this calculator for this protocol even if tags would otherwise match',
+          },
+        },
+      ],
+    },
 
     // Supporting Documents
     {
