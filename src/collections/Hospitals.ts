@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, FieldHook, PayloadRequest } from 'payload'
 import { isLoggedIn, isContentOrAdmin } from '../access/roles'
 
 /**
@@ -185,7 +185,7 @@ export const Hospitals: CollectionConfig = {
       type: 'array',
       label: 'Hospital Capabilities',
       admin: {
-        description: 'Clinical capabilities and certifications',
+        description: 'Add clinical capabilities and their certification levels',
       },
       fields: [
         {
@@ -194,14 +194,59 @@ export const Hospitals: CollectionConfig = {
           relationTo: 'hospital-capabilities',
           required: true,
           label: 'Capability',
+          admin: {
+            description: 'Select a capability type (e.g., Trauma, PCI, Stroke)',
+          },
         },
         {
           name: 'level',
           type: 'text',
-          label: 'Level',
+          label: 'Certification Level',
           admin: {
-            description: 'Specific level for this capability (e.g., "Level I"). Can be refined later to pull from capability\'s levels.',
-            placeholder: 'e.g., Level I, Primary',
+            description:
+              'Enter the certification level exactly as defined in the selected capability (e.g., "Level I", "Level 2 - Moderate Risk"). View the capability in Hospital Capabilities to see available levels.',
+            placeholder: 'e.g., Level I, Level 2 - Moderate Risk',
+          },
+          validate: async (value: unknown, { siblingData, req }: any) => {
+            if (!value) {
+              return true // Optional field
+            }
+
+            const levelValue = value as string
+            const capabilityId = siblingData?.capability
+            if (!capabilityId) {
+              return 'Please select a capability first'
+            }
+
+            try {
+              // Get the capability to check if this level is valid
+              const capability = await req.payload.findByID({
+                collection: 'hospital-capabilities',
+                id: typeof capabilityId === 'object' ? capabilityId.id : capabilityId,
+              })
+
+              if (!capability?.levels || capability.levels.length === 0) {
+                return 'The selected capability has no levels defined. Please add levels in Hospital Capabilities first.'
+              }
+
+              // Check if the entered level matches one of the defined levels
+              const validLevel = capability.levels.some(
+                (levelObj: { level: string }) =>
+                  levelObj.level.toLowerCase() === levelValue.toLowerCase(),
+              )
+
+              if (!validLevel) {
+                const availableLevels = capability.levels
+                  .map((l: { level: string }) => l.level)
+                  .join(', ')
+                return `Invalid level. Available levels for ${capability.name}: ${availableLevels}`
+              }
+
+              return true
+            } catch (error) {
+              console.error('Error validating capability level:', error)
+              return 'Error validating level. Please try again.'
+            }
           },
         },
       ],
