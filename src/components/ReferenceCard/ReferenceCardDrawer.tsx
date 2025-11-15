@@ -1,16 +1,104 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useReferenceCard } from '@/hooks/useReferenceCard'
 import { ReferenceCardItem } from './ReferenceCardItem'
 import { AddNoteModal } from './AddNoteModal'
-import { FileText, X, Download, Trash2, Plus } from 'lucide-react'
+import { FileText, X, Download, Trash2, Plus, EyeOff, Eye } from 'lucide-react'
 
 export const ReferenceCardDrawer: React.FC = () => {
   const { cards, drawerOpen, setDrawerOpen, savedCount, clearAll, exportCards, isMobile } =
     useReferenceCard()
   const [showAddNote, setShowAddNote] = useState(false)
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const [fabDismissed, setFabDismissed] = useState(false)
+  const [fabPosition, setFabPosition] = useState<{ x: number; y: number }>({ x: 16, y: 0 })
+  const fabRef = useRef<HTMLDivElement | null>(null)
+
+  const FAB_POSITION_KEY = 'acmc-reference-fab-position'
+  const FAB_DISMISSED_KEY = 'acmc-reference-fab-dismissed'
+
+  useEffect(() => {
+    if (!isMobile) return
+
+    try {
+      const stored = localStorage.getItem(FAB_POSITION_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as { x: number; y: number }
+        if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+          setFabPosition(parsed)
+        }
+      } else {
+        setFabPosition({
+          x: 16,
+          y: Math.max(16, window.innerHeight - 120),
+        })
+      }
+    } catch {
+      // ignore parse errors
+    }
+
+    const dismissed = localStorage.getItem(FAB_DISMISSED_KEY) === 'true'
+    setFabDismissed(dismissed)
+  }, [isMobile])
+
+  useEffect(() => {
+    if (!isMobile) return
+    try {
+      localStorage.setItem(FAB_POSITION_KEY, JSON.stringify(fabPosition))
+    } catch {
+      // ignore storage errors
+    }
+  }, [fabPosition, isMobile])
+
+  useEffect(() => {
+    if (!isMobile) return
+    try {
+      localStorage.setItem(FAB_DISMISSED_KEY, String(fabDismissed))
+    } catch {
+      // ignore storage errors
+    }
+  }, [fabDismissed, isMobile])
+
+  const clamp = useCallback((value: number, min: number, max: number) => Math.min(Math.max(value, min), max), [])
+
+  const handleFabPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if ((event.target as HTMLElement).closest('[data-no-drag="true"]')) {
+        return
+      }
+
+      if (!fabRef.current) return
+
+      const startX = event.clientX
+      const startY = event.clientY
+      const rect = fabRef.current.getBoundingClientRect()
+      const initialPosition = { x: rect.left, y: rect.top }
+
+      const handlePointerMove = (moveEvent: PointerEvent) => {
+        const deltaX = moveEvent.clientX - startX
+        const deltaY = moveEvent.clientY - startY
+        const buttonWidth = fabRef.current?.offsetWidth ?? 64
+        const buttonHeight = fabRef.current?.offsetHeight ?? 64
+        const maxX = window.innerWidth - buttonWidth - 8
+        const maxY = window.innerHeight - buttonHeight - 8
+
+        setFabPosition({
+          x: clamp(initialPosition.x + deltaX, 8, maxX),
+          y: clamp(initialPosition.y + deltaY, 8, maxY),
+        })
+      }
+
+      const handlePointerUp = () => {
+        document.removeEventListener('pointermove', handlePointerMove)
+        document.removeEventListener('pointerup', handlePointerUp)
+      }
+
+      document.addEventListener('pointermove', handlePointerMove)
+      document.addEventListener('pointerup', handlePointerUp)
+    },
+    [clamp],
+  )
 
   // Don't render on desktop
   if (!isMobile) return null
@@ -69,11 +157,16 @@ export const ReferenceCardDrawer: React.FC = () => {
     setShowExportMenu(false)
   }
 
-  return (
+    return (
     <>
       {/* FAB - Only show when cards exist */}
-      {savedCount > 0 && (
-        <div className="fixed bottom-4 left-4 z-50 flex flex-col-reverse items-start gap-2">
+        {savedCount > 0 && !fabDismissed && (
+          <div
+            ref={fabRef}
+            className="fixed z-50 flex flex-col items-start gap-2 cursor-grab"
+            style={{ left: fabPosition.x, top: fabPosition.y }}
+            onPointerDown={handleFabPointerDown}
+          >
           {/* Main FAB */}
           <button
             onClick={() => setDrawerOpen(!drawerOpen)}
@@ -92,10 +185,21 @@ export const ReferenceCardDrawer: React.FC = () => {
               onClick={() => setShowAddNote(true)}
               className="bg-green-600 hover:bg-green-700 text-white rounded-full p-3 shadow-lg transition-all animate-in fade-in slide-in-from-bottom-2 duration-200"
               aria-label="Add note"
+                data-no-drag="true"
             >
               <Plus className="h-5 w-5" />
             </button>
           )}
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-full border dark:border-neutral-700 bg-white/90 dark:bg-neutral-900/80 px-3 py-1 text-xs text-neutral-600 dark:text-neutral-300 shadow"
+              onClick={() => setFabDismissed(true)}
+              aria-label="Hide floating reference button"
+              data-no-drag="true"
+            >
+              <EyeOff className="h-3.5 w-3.5" />
+              Hide
+            </button>
         </div>
       )}
 
@@ -117,6 +221,20 @@ export const ReferenceCardDrawer: React.FC = () => {
                 <h3 className="font-semibold">Quick Reference ({savedCount})</h3>
               </div>
               <div className="flex items-center gap-1">
+                  {fabDismissed && (
+                    <button
+                      onClick={() => {
+                        setFabDismissed(false)
+                        if (!savedCount) {
+                          localStorage.removeItem(FAB_DISMISSED_KEY)
+                        }
+                      }}
+                      className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                      aria-label="Show floating shortcut"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </button>
+                  )}
                 {cards.length > 0 && (
                   <>
                     <div className="relative">
