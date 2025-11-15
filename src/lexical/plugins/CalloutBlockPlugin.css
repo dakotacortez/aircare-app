@@ -331,3 +331,11 @@
   border-color: var(--callout-border-color);
   color: var(--callout-text-color);
 }
+
+/* Mobile: reduce list indentation for better space usage */
+@media (max-width: 640px) {
+  .callout-block__body ul,
+  .callout-block__body ol {
+    margin-left: 0.5rem;
+  }
+}

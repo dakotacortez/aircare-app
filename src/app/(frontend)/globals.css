@@ -202,7 +202,12 @@ html[data-theme='light'] {
 
       .protocol-content ul,
       .protocol-content ol {
-        margin-left: 1rem;
+        margin-left: 0.5rem;
+      }
+
+      /* Adjust checkbox list items for reduced mobile indent */
+      .protocol-content .checkbox-list-item {
+        margin-left: -0.5rem;
       }
     }
 
@@ -519,6 +524,14 @@ html[data-theme='light'] {
       border-color: var(--callout-border-color);
       color: var(--callout-text-color);
     }
+
+  /* Mobile: reduce list indentation in callout blocks for better space usage */
+  @media (max-width: 640px) {
+    .callout-block__body ul,
+    .callout-block__body ol {
+      margin-left: 0.5rem;
+    }
+  }
 
   /* Reference Card System */
   @keyframes slide-in-from-bottom {
