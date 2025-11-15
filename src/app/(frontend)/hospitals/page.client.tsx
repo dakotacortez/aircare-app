@@ -53,7 +53,7 @@ function calculateETA(distanceInMiles: number): number {
 }
 
 export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProps) {
-  const [selectedCapabilities, setSelectedCapabilities] = useState<string[]>([])
+  const [selectedCapabilities, setSelectedCapabilities] = useState<number[]>([])
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
@@ -139,7 +139,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
     return processed
   }, [hospitals, selectedCapabilities, userLocation, isMobile])
 
-  const toggleCapability = (capabilityId: string) => {
+  const toggleCapability = (capabilityId: number) => {
     setSelectedCapabilities((prev) =>
       prev.includes(capabilityId)
         ? prev.filter((id) => id !== capabilityId)
