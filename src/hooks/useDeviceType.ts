@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 
 /**
- * Hook to detect if device is mobile/tablet (not desktop)
+ * Hook to detect if device is mobile/tablet/PWA (not desktop)
  * Used to conditionally show reference card features
  */
 export function useDeviceType() {
@@ -11,19 +11,41 @@ export function useDeviceType() {
 
   useEffect(() => {
     const checkDevice = () => {
-      // Check screen size OR touch capability (more permissive)
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      const isTouchDevice =
+        window.matchMedia('(pointer: coarse)').matches ||
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0
       const isSmallScreen = window.innerWidth < 1024 // tablets and phones
-      
-      // Consider it mobile if either touch-capable OR small screen
-      // This ensures tablets and mobile devices are properly detected
-      setIsMobile(isTouchDevice || isSmallScreen)
+      const standaloneMedia = window.matchMedia('(display-mode: standalone)')
+      const isStandalonePWA =
+        standaloneMedia.matches || (window.navigator as any).standalone === true
+
+      // Consider it mobile if touch-capable, small screen, or running as an installed PWA
+      setIsMobile(isTouchDevice || isSmallScreen || isStandalonePWA)
     }
+
+    const standaloneMedia = window.matchMedia('(display-mode: standalone)')
+    const handleDisplayModeChange = () => checkDevice()
 
     checkDevice()
     window.addEventListener('resize', checkDevice)
+    window.addEventListener('orientationchange', checkDevice)
 
-    return () => window.removeEventListener('resize', checkDevice)
+    if (standaloneMedia.addEventListener) {
+      standaloneMedia.addEventListener('change', handleDisplayModeChange)
+    } else if (standaloneMedia.addListener) {
+      standaloneMedia.addListener(handleDisplayModeChange)
+    }
+
+    return () => {
+      window.removeEventListener('resize', checkDevice)
+      window.removeEventListener('orientationchange', checkDevice)
+      if (standaloneMedia.removeEventListener) {
+        standaloneMedia.removeEventListener('change', handleDisplayModeChange)
+      } else if (standaloneMedia.removeListener) {
+        standaloneMedia.removeListener(handleDisplayModeChange)
+      }
+    }
   }, [])
 
   return isMobile
