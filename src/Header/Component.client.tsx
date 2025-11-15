@@ -77,6 +77,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const { serviceLine, setServiceLine } = useServiceLine()
   const { savedCount, setDrawerOpen, isMobile } = useReferenceCard()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
 
@@ -115,6 +116,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setMobileOpen(false)
+        setUserMenuOpen(false)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -239,16 +241,21 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
               </button>
             )}
 
-              {/* User menu - desktop only (hidden on mobile to reduce clutter) */}
+              {/* User menu - dropdown on mobile/tablet, direct link on desktop */}
               <div className="relative">
                 {user && profileLink ? (
                   <>
-                    {/* Mobile/Tablet: User avatar indicator only (no menu) */}
-                    <div className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2">
+                    {/* Mobile/Tablet: Menu button */}
+                    <button
+                      onClick={() => setUserMenuOpen((open) => !open)}
+                      className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                      aria-label="User menu"
+                      aria-expanded={userMenuOpen}
+                    >
                       <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
                         {getUserInitials(user)}
                       </div>
-                    </div>
+                    </button>
                     {/* Desktop: Direct link */}
                     <Link
                       href={profileLink.href}
@@ -261,16 +268,47 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                     </Link>
                   </>
                 ) : (
-                  <>
-                    {/* Login link - hidden on mobile, visible on desktop */}
-                    <Link
-                      href="/admin/login"
-                      className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                      aria-label="Login"
-                    >
-                      <Users className="h-4 w-4" />
-                    </Link>
-                  </>
+                  <Link
+                    href="/admin/login"
+                    className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                    aria-label="Login"
+                  >
+                    <Users className="h-4 w-4" />
+                  </Link>
+                )}
+
+                {/* User menu dropdown (mobile/tablet only) */}
+                {userMenuOpen && user && profileLink && (
+                  <div className="xl:hidden absolute right-0 top-full mt-2 w-56 rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl z-50">
+                    <div className="p-2">
+                      <Link
+                        href={profileLink.href}
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
+                      >
+                        {profileLink.label}
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')
+                          setUserMenuOpen(false)
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm flex items-center gap-2"
+                      >
+                        {effectiveTheme === 'dark' ? (
+                          <>
+                            <Sun className="h-4 w-4" />
+                            Light Mode
+                          </>
+                        ) : (
+                          <>
+                            <Moon className="h-4 w-4" />
+                            Dark Mode
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
 

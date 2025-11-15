@@ -41,14 +41,16 @@ export function FooterContent({ navItems, isLoggedIn }: FooterContentProps) {
               </Link>
             </React.Fragment>
           ))}
-          {navItems.length > 0 && isLoggedIn && <span>·</span>}
+          {navItems.length > 0 && isLoggedIn && <span className="hidden md:inline">·</span>}
           {isLoggedIn && (
-            <Link href="/admin" className="hover:text-neutral-900 dark:hover:text-neutral-100">
+            <Link href="/admin" className="hidden md:inline hover:text-neutral-900 dark:hover:text-neutral-100">
               Admin
             </Link>
           )}
-          {(navItems.length > 0 || isLoggedIn) && <span>·</span>}
-          <ThemeSelector />
+          {(navItems.length > 0 || isLoggedIn) && <span className="hidden md:inline">·</span>}
+          <div className="hidden md:block">
+            <ThemeSelector />
+          </div>
         </div>
       </div>
     </footer>
