@@ -1,6 +1,17 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from 'react'
+
 import { useDeviceType } from './useDeviceType'
 import type { ReferenceCard, CardEntry, CalculationData } from '@/types/referenceCard'
 
@@ -38,26 +49,59 @@ export function formatTimeAgo(timestamp: number): string {
   return `${minutes}min ago`
 }
 
-export function useReferenceCard() {
+type ReferenceCardContextValue = {
+  cards: ReferenceCard[]
+  drawerOpen: boolean
+  setDrawerOpen: Dispatch<SetStateAction<boolean>>
+  savedCount: number
+  createCard: (name?: string) => string
+  addEntryToCard: (cardId: string, entry: Omit<CardEntry, 'id' | 'timestamp'>) => void
+  saveCalculation: (
+    calculatorName: string,
+    inputs: Record<string, any>,
+    outputs: Record<string, any>,
+  ) => CalculationData
+  deleteCard: (cardId: string) => void
+  deleteEntry: (cardId: string, entryId: string) => void
+  clearAll: () => void
+  exportCards: () => string
+  isMobile: boolean
+}
+
+const noopDispatch: Dispatch<SetStateAction<boolean>> = () => undefined
+const emptyCalculation: CalculationData = { calculatorName: '', inputs: {}, outputs: {} }
+
+const defaultReferenceCardValue: ReferenceCardContextValue = {
+  cards: [],
+  drawerOpen: false,
+  setDrawerOpen: noopDispatch,
+  savedCount: 0,
+  createCard: () => '',
+  addEntryToCard: () => {},
+  saveCalculation: () => emptyCalculation,
+  deleteCard: () => {},
+  deleteEntry: () => {},
+  clearAll: () => {},
+  exportCards: () => '',
+  isMobile: false,
+}
+
+const ReferenceCardContext = createContext<ReferenceCardContextValue>(defaultReferenceCardValue)
+
+export const ReferenceCardProvider = ({ children }: { children: ReactNode }) => {
+  const value = useReferenceCardState()
+
+  return <ReferenceCardContext.Provider value={value}>{children}</ReferenceCardContext.Provider>
+}
+
+export function useReferenceCard(): ReferenceCardContextValue {
+  return useContext(ReferenceCardContext)
+}
+
+function useReferenceCardState(): ReferenceCardContextValue {
   const isMobile = useDeviceType()
   const [cards, setCards] = useState<ReferenceCard[]>([])
   const [drawerOpen, setDrawerOpen] = useState(false)
-
-  // Early return with no-op functions on desktop
-  const noOpReturn = {
-    cards: [],
-    drawerOpen: false,
-    setDrawerOpen: () => {},
-    savedCount: 0,
-    createCard: () => '',
-    addEntryToCard: () => {},
-    saveCalculation: () => ({} as CalculationData),
-    deleteCard: () => {},
-    deleteEntry: () => {},
-    clearAll: () => {},
-    exportCards: () => '',
-    isMobile: false,
-  }
 
   // Initialize: Load from localStorage and clean expired
   useEffect(() => {
@@ -70,7 +114,6 @@ export function useReferenceCard() {
         const active = parsed.filter((card) => card.expiresAt > Date.now())
         setCards(active)
         if (active.length !== parsed.length) {
-          // Some expired, update storage
           localStorage.setItem(STORAGE_KEY, JSON.stringify(active))
         }
       } catch (error) {
@@ -223,22 +266,34 @@ export function useReferenceCard() {
     return output
   }, [cards])
 
-  if (!isMobile) {
-    return noOpReturn
-  }
+  const contextValue = useMemo<ReferenceCardContextValue>(
+    () => ({
+      cards,
+      drawerOpen,
+      setDrawerOpen,
+      savedCount: cards.length,
+      createCard,
+      addEntryToCard,
+      saveCalculation,
+      deleteCard,
+      deleteEntry,
+      clearAll,
+      exportCards,
+      isMobile,
+    }),
+    [
+      addEntryToCard,
+      cards,
+      clearAll,
+      deleteCard,
+      deleteEntry,
+      drawerOpen,
+      exportCards,
+      isMobile,
+      saveCalculation,
+      createCard,
+    ],
+  )
 
-  return {
-    cards,
-    drawerOpen,
-    setDrawerOpen,
-    savedCount: cards.length,
-    createCard,
-    addEntryToCard,
-    saveCalculation,
-    deleteCard,
-    deleteEntry,
-    clearAll,
-    exportCards,
-    isMobile,
-  }
+  return isMobile ? contextValue : defaultReferenceCardValue
 }

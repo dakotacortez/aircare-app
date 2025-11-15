@@ -12,11 +12,44 @@ interface ServiceLineContextType {
 const ServiceLineContext = createContext<ServiceLineContextType | null>(null)
 
 const SERVICE_LINE_STORAGE_KEY = 'aircare-service-line'
+const SERVICE_LINE_META_KEY = 'aircare-service-line-meta'
+
+type ServiceLineMeta = {
+  userId?: string
+  defaultServiceLine?: ServiceLineType
+}
+
+const isValidServiceLine = (value: unknown): value is ServiceLineType => {
+  return value === 'BLS' || value === 'ALS' || value === 'CCT'
+}
+
+const readMeta = (): ServiceLineMeta | null => {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = localStorage.getItem(SERVICE_LINE_META_KEY)
+    if (!stored) return null
+    const parsed = JSON.parse(stored) as ServiceLineMeta
+    return parsed
+  } catch {
+    localStorage.removeItem(SERVICE_LINE_META_KEY)
+    return null
+  }
+}
+
+const writeMeta = (meta: ServiceLineMeta | null) => {
+  if (typeof window === 'undefined') return
+  if (!meta || (!meta.userId && !meta.defaultServiceLine)) {
+    localStorage.removeItem(SERVICE_LINE_META_KEY)
+    return
+  }
+  localStorage.setItem(SERVICE_LINE_META_KEY, JSON.stringify(meta))
+}
 
 /**
  * Provider for managing service line selection (BLS/ALS/CCT)
  * Persists selection to localStorage with cross-tab sync
  * Falls back to user's default service line if no localStorage value exists
+ * Resets when a different user logs in or their default assignment changes
  */
 export function ServiceLineProvider({ children }: { children: ReactNode }) {
   // Always start with 'ALS' to prevent hydration mismatch
@@ -25,31 +58,65 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
 
   // Hydrate from localStorage and fetch user default after mount
   useEffect(() => {
+    let storedLine: ServiceLineType | null = null
+
     // First, check localStorage for saved preference
     const stored = localStorage.getItem(SERVICE_LINE_STORAGE_KEY)
-    if (stored === 'BLS' || stored === 'ALS' || stored === 'CCT') {
+    if (isValidServiceLine(stored)) {
+      storedLine = stored
       setServiceLineState(stored)
-      return // Use localStorage value, don't fetch user default
-    }
-
-    // If invalid value exists, clear it
-    if (stored) {
+    } else if (stored) {
       localStorage.removeItem(SERVICE_LINE_STORAGE_KEY)
     }
 
-    // No localStorage value, fetch user's default
+    // Fetch user's default to ensure we respect their assignment
     const fetchUserDefault = async () => {
       try {
         const res = await fetch('/api/users/me')
-        if (res.ok) {
-          const data = await res.json()
-          const defaultLine = data.user?.defaultServiceLine
-          if (defaultLine === 'BLS' || defaultLine === 'ALS' || defaultLine === 'CCT') {
-            setServiceLineState(defaultLine)
+        if (!res.ok) {
+          return
+        }
+
+        const data = await res.json()
+        const defaultLine = data.user?.defaultServiceLine
+        const userId = data.user?.id
+
+        if (!userId) {
+          writeMeta(null)
+          return
+        }
+
+        const meta = readMeta()
+        let shouldResetStored = false
+
+        if (meta) {
+          if (meta.userId !== userId) {
+            shouldResetStored = true
+          } else if (
+            meta.defaultServiceLine &&
+            isValidServiceLine(defaultLine) &&
+            meta.defaultServiceLine !== defaultLine
+          ) {
+            shouldResetStored = true
           }
         }
+
+        if (shouldResetStored) {
+          localStorage.removeItem(SERVICE_LINE_STORAGE_KEY)
+          storedLine = null
+        }
+
+        if (!storedLine && isValidServiceLine(defaultLine)) {
+          setServiceLineState(defaultLine)
+          localStorage.setItem(SERVICE_LINE_STORAGE_KEY, defaultLine)
+          storedLine = defaultLine
+        }
+
+        writeMeta({
+          userId,
+          defaultServiceLine: isValidServiceLine(defaultLine) ? defaultLine : undefined,
+        })
       } catch (error) {
-        // Silently fail - will use default ALS
         console.debug('Could not fetch user default service line:', error)
       }
     }
@@ -68,10 +135,8 @@ export function ServiceLineProvider({ children }: { children: ReactNode }) {
   // Cross-tab sync: update when localStorage changes in other tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === SERVICE_LINE_STORAGE_KEY && e.newValue) {
-        if (e.newValue === 'BLS' || e.newValue === 'ALS' || e.newValue === 'CCT') {
-          setServiceLineState(e.newValue)
-        }
+      if (e.key === SERVICE_LINE_STORAGE_KEY && e.newValue && isValidServiceLine(e.newValue)) {
+        setServiceLineState(e.newValue)
       }
     }
 
