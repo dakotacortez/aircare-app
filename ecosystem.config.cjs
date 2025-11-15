@@ -10,7 +10,14 @@ module.exports = {
     max_memory_restart: '1G',
     env: {
       NODE_ENV: 'production',
-      PORT: 3000
+      PORT: 3000,
+      // CRITICAL: These environment variables are REQUIRED
+      // Load from .env file or set them here directly
+      DATABASE_URI: process.env.DATABASE_URI,
+      PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
+      NEXT_PUBLIC_SERVER_URL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://ucair.care',
+      CRON_SECRET: process.env.CRON_SECRET,
+      PREVIEW_SECRET: process.env.PREVIEW_SECRET,
     },
     error_file: '/home/ucair/logs/payload-error.log',
     out_file: '/home/ucair/logs/payload-out.log',

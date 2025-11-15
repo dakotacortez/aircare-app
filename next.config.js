@@ -32,6 +32,8 @@ const nextConfig = {
   },
   reactStrictMode: true,
   redirects,
+  // Enable standalone output for Docker deployments
+  output: 'standalone',
 }
 
 const payloadConfig = withPayload(nextConfig, { devBundleServerPackages: false })
