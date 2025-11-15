@@ -91,7 +91,11 @@ const ReferenceCardContext = createContext<ReferenceCardContextValue>(defaultRef
 export const ReferenceCardProvider = ({ children }: { children: ReactNode }) => {
   const value = useReferenceCardState()
 
-  return <ReferenceCardContext.Provider value={value}>{children}</ReferenceCardContext.Provider>
+  return (
+    <ReferenceCardContext.Provider value={value}>
+      {children}
+    </ReferenceCardContext.Provider>
+  )
 }
 
 export function useReferenceCard(): ReferenceCardContextValue {
