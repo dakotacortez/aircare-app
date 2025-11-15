@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { HeartPulse, Sun, Moon, Users, FolderOpen } from 'lucide-react'
+import { HeartPulse, Sun, Moon, Users, FolderOpen, Monitor } from 'lucide-react'
 
 import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
 import { useTheme } from '@/providers/Theme'
@@ -85,11 +85,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   const navItems = resolveNavItems(data)
   const isAdminUser = user?.role === 'content-team' || user?.role === 'admin-team'
-  const profileLink = user
-    ? isAdminUser
-      ? { href: '/admin', label: 'Open Admin' }
-      : { href: '/account', label: 'Edit Profile' }
-    : null
+  const profileLink = user ? { href: '/account', label: 'Edit Profile' } : null
+  const adminLink = isAdminUser ? { href: '/admin', label: 'Admin / CMS' } : null
   
   // Only show service line toggle on protocol pages
   const isProtocolPage = pathname?.startsWith('/protocols')
@@ -113,8 +110,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   useEffect(() => {
     // Update effective theme when theme changes or on mount
-    const current = theme || getImplicitPreference() || 'light'
-    setEffectiveTheme(current)
+    if (theme === 'system' || theme === null || theme === undefined) {
+      const current = getImplicitPreference() || 'light'
+      setEffectiveTheme(current)
+    } else {
+      setEffectiveTheme(theme)
+    }
   }, [theme])
 
   useEffect(() => {
@@ -249,14 +250,14 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
               </button>
             )}
 
-              {/* User menu - dropdown on mobile/tablet, direct link on desktop */}
+              {/* User menu - dropdown */}
               <div className="relative">
                 {user && profileLink ? (
                   <>
-                    {/* Mobile/Tablet: Menu button */}
+                    {/* Menu button for all screen sizes */}
                     <button
                       onClick={() => setUserMenuOpen((open) => !open)}
-                      className="xl:hidden rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                      className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                       aria-label="User menu"
                       aria-expanded={userMenuOpen}
                     >
@@ -264,16 +265,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                         {getUserInitials(user)}
                       </div>
                     </button>
-                    {/* Desktop: Direct link */}
-                    <Link
-                      href={profileLink.href}
-                      className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                      aria-label={profileLink.label}
-                    >
-                      <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
-                        {getUserInitials(user)}
-                      </div>
-                    </Link>
                   </>
                 ) : (
                   <Link
@@ -285,9 +276,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                   </Link>
                 )}
 
-                {/* User menu dropdown (mobile/tablet only) */}
+                {/* User menu dropdown */}
                 {userMenuOpen && user && profileLink && (
-                  <div className="xl:hidden absolute right-0 top-full mt-2 w-56 rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl z-50">
+                  <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl z-50">
                     <div className="p-2">
                       <Link
                         href={profileLink.href}
@@ -296,22 +287,37 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                       >
                         {profileLink.label}
                       </Link>
+                      {adminLink && (
+                        <Link
+                          href={adminLink.href}
+                          onClick={() => setUserMenuOpen(false)}
+                          className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
+                        >
+                          {adminLink.label}
+                        </Link>
+                      )}
                       <button
                         onClick={() => {
-                          setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')
+                          const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
+                          setTheme(nextTheme)
                           setUserMenuOpen(false)
                         }}
                         className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm flex items-center gap-2"
                       >
-                        {effectiveTheme === 'dark' ? (
+                        {theme === 'system' ? (
                           <>
-                            <Sun className="h-4 w-4" />
-                            Light Mode
+                            <Monitor className="h-4 w-4" />
+                            System Theme
                           </>
-                        ) : (
+                        ) : effectiveTheme === 'dark' ? (
                           <>
                             <Moon className="h-4 w-4" />
                             Dark Mode
+                          </>
+                        ) : (
+                          <>
+                            <Sun className="h-4 w-4" />
+                            Light Mode
                           </>
                         )}
                       </button>
@@ -323,12 +329,19 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             {/* Theme toggle - desktop only */}
             <button
               onClick={() => {
-                setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')
+                const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
+                setTheme(nextTheme)
               }}
               className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               aria-label="Toggle theme"
             >
-              {effectiveTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === 'system' ? (
+                <Monitor className="h-4 w-4" />
+              ) : effectiveTheme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </button>
           </div>
 
@@ -359,7 +372,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
         <div className="fixed inset-0 z-40 bg-black/40 xl:hidden" onClick={() => setMobileOpen(false)} />
       )}
       {userMenuOpen && (
-        <div className="fixed inset-0 z-40 xl:hidden" onClick={() => setUserMenuOpen(false)} />
+        <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
       )}
     </>
   )

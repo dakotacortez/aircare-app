@@ -26,6 +26,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       const implicitPreference = getImplicitPreference()
       document.documentElement.setAttribute('data-theme', implicitPreference || '')
       if (implicitPreference) setThemeState(implicitPreference)
+    } else if (themeToSet === 'system') {
+      setThemeState('system')
+      window.localStorage.setItem(themeLocalStorageKey, 'system')
+      const implicitPreference = getImplicitPreference()
+      document.documentElement.setAttribute('data-theme', implicitPreference || 'light')
     } else {
       setThemeState(themeToSet)
       window.localStorage.setItem(themeLocalStorageKey, themeToSet)
@@ -39,15 +44,22 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (themeIsValid(preference)) {
       themeToSet = preference
+      // If system theme is selected, use implicit preference for data-theme
+      if (preference === 'system') {
+        const implicitPreference = getImplicitPreference()
+        document.documentElement.setAttribute('data-theme', implicitPreference || 'light')
+      } else {
+        document.documentElement.setAttribute('data-theme', themeToSet)
+      }
     } else {
       const implicitPreference = getImplicitPreference()
 
       if (implicitPreference) {
         themeToSet = implicitPreference
       }
+      document.documentElement.setAttribute('data-theme', themeToSet)
     }
 
-    document.documentElement.setAttribute('data-theme', themeToSet)
     setThemeState(themeToSet)
   }, [])
 
