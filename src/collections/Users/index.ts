@@ -24,7 +24,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   auth: {
-    tokenExpiration: 172800, // 48 hours (2 days) - grace period for offline access
+    tokenExpiration: 60 * 60 * 24 * 30, // ~30 days for offline/PWA access
     cookies: {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Lax',
