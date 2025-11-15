@@ -118,6 +118,45 @@ export const Users: CollectionConfig = {
         },
       },
     },
+    {
+      name: 'pushNotificationsEnabled',
+      type: 'checkbox',
+      label: 'Enable Push Notifications',
+      defaultValue: false,
+      admin: {
+        description: 'Opt-in to receive push notifications for protocol updates and announcements',
+        position: 'sidebar',
+      },
+      // Users can update their own preference, admins can update for anyone
+      access: {
+        create: () => true,
+        update: ({ req: { user }, id }) => {
+          // Users can update their own preference
+          if (user && id && user.id === id) return true
+          // Admins can update for anyone
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'profileImage',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Profile Image',
+      admin: {
+        description: 'Upload a profile picture',
+      },
+      // Users can update their own image, admins can update for anyone
+      access: {
+        create: () => true,
+        update: ({ req: { user }, id }) => {
+          // Users can update their own image
+          if (user && id && user.id === id) return true
+          // Admins can update for anyone
+          return user?.role === 'admin-team'
+        },
+      },
+    },
   ],
   timestamps: true,
 }

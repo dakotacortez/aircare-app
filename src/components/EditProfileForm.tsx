@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import type { User } from '@/payload-types'
 import type { ServiceLineType } from '@/providers/ServiceLine'
 import { useServiceLine } from '@/providers/ServiceLine'
+import { useRouter } from 'next/navigation'
+import { Upload, Trash2, Bell, BellOff } from 'lucide-react'
 
 const SERVICE_LINE_LABELS: Record<ServiceLineType, string> = {
   BLS: 'BLS (Basic Life Support)',
@@ -16,16 +18,49 @@ interface EditProfileFormProps {
 }
 
 export function EditProfileForm({ initialUser }: EditProfileFormProps) {
+  const router = useRouter()
   const [name, setName] = useState(initialUser.name ?? '')
+  const [email, setEmail] = useState(initialUser.email ?? '')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [defaultServiceLine, setDefaultServiceLine] = useState<ServiceLineType>(
     (initialUser.defaultServiceLine as ServiceLineType) ?? 'ALS',
   )
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(
+    initialUser.pushNotificationsEnabled ?? false,
+  )
+  const [profileImage, setProfileImage] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { setServiceLine } = useServiceLine()
 
   const isAdminUser = initialUser.role === 'admin-team' || initialUser.role === 'content-team'
+
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const uploadResponse = await fetch('/api/media', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image')
+      }
+
+      const uploadData = await uploadResponse.json()
+      return uploadData.doc.id
+    } catch (error) {
+      console.error('Image upload error:', error)
+      return null
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -34,15 +69,52 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
     setErrorMessage(null)
 
     try {
+      // Validate password change if attempted
+      if (newPassword || confirmPassword) {
+        if (!currentPassword) {
+          throw new Error('Current password is required to change your password.')
+        }
+        if (newPassword !== confirmPassword) {
+          throw new Error('New passwords do not match.')
+        }
+        if (newPassword.length < 8) {
+          throw new Error('New password must be at least 8 characters long.')
+        }
+      }
+
+      // Upload profile image if changed
+      let profileImageId = null
+      if (profileImage) {
+        profileImageId = await handleImageUpload(profileImage)
+        if (!profileImageId) {
+          throw new Error('Failed to upload profile image')
+        }
+      }
+
+      // Build update payload
+      const updateData: any = {
+        name,
+        email,
+        defaultServiceLine,
+        pushNotificationsEnabled,
+      }
+
+      if (profileImageId) {
+        updateData.profileImage = profileImageId
+      }
+
+      if (newPassword && currentPassword) {
+        updateData.password = newPassword
+        updateData.currentPassword = currentPassword
+      }
+
       const response = await fetch(`/api/users/${initialUser.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name,
-          defaultServiceLine,
-        }),
+        credentials: 'include',
+        body: JSON.stringify(updateData),
       })
 
       if (!response.ok) {
@@ -52,6 +124,12 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
 
       setSuccessMessage('Profile updated successfully.')
       setServiceLine(defaultServiceLine)
+
+      // Clear password fields
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setProfileImage(null)
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('aircare-service-line', defaultServiceLine)
@@ -63,6 +141,9 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
           }),
         )
       }
+
+      // Refresh page to show updated data
+      router.refresh()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Something went wrong.')
     } finally {
@@ -70,12 +151,43 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    setDeleting(true)
+    setSuccessMessage(null)
+    setErrorMessage(null)
+
+    try {
+      const response = await fetch(`/api/users/${initialUser.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.errors?.[0]?.message || 'Unable to delete your account.')
+      }
+
+      // Log out and redirect
+      await fetch('/api/users/logout', { method: 'POST' })
+      router.push('/login?deleted=true')
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to delete account.')
+      setDeleting(false)
+      setShowDeleteConfirm(false)
+    }
+  }
+
+  const profileImageUrl =
+    typeof initialUser.profileImage === 'object' && initialUser.profileImage !== null
+      ? (initialUser.profileImage as any).url
+      : null
+
   return (
     <div className="min-h-[70vh] bg-neutral-50 dark:bg-neutral-900 py-10 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Manage your display name and service line preference without opening the admin console.
+            Manage your profile, preferences, and account settings.
           </p>
         </div>
 
@@ -95,6 +207,46 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                 {errorMessage}
               </div>
             )}
+
+            {/* Profile Image */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                Profile Image
+              </label>
+              <div className="flex items-center gap-4">
+                {(profileImageUrl || profileImage) && (
+                  <div className="relative h-20 w-20 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-700">
+                    {profileImage ? (
+                      <img
+                        src={URL.createObjectURL(profileImage)}
+                        alt="Profile preview"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <img
+                        src={profileImageUrl}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                )}
+                <label className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-neutral-100 dark:bg-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition">
+                  <Upload className="h-4 w-4" />
+                  {profileImage || profileImageUrl ? 'Change Image' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        setProfileImage(e.target.files[0])
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="flex flex-col gap-2">
@@ -118,10 +270,57 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                 <input
                   id="email"
                   type="email"
-                  value={initialUser.email ?? ''}
-                  readOnly
-                  className="rounded-lg border border-neutral-200 dark:border-neutral-600 bg-neutral-100 dark:bg-neutral-700/70 px-3 py-2 text-neutral-500 dark:text-neutral-300 cursor-not-allowed"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
                 />
+              </div>
+            </div>
+
+            {/* Password Change Section */}
+            <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
+              <h2 className="text-lg font-semibold mb-4">Change Password</h2>
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300" htmlFor="current-password">
+                    Current Password
+                  </label>
+                  <input
+                    id="current-password"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300" htmlFor="new-password">
+                    New Password
+                  </label>
+                  <input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300" htmlFor="confirm-password">
+                    Confirm New Password
+                  </label>
+                  <input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-3 py-2 text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="••••••••"
+                  />
+                </div>
               </div>
             </div>
 
@@ -162,6 +361,40 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
               </div>
             </div>
 
+            {/* Push Notifications Toggle */}
+            <div className="flex items-center justify-between p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50">
+              <div className="flex items-center gap-3">
+                {pushNotificationsEnabled ? (
+                  <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                ) : (
+                  <BellOff className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+                )}
+                <div>
+                  <div className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    Push Notifications
+                  </div>
+                  <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                    Receive updates for protocol changes and announcements
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPushNotificationsEnabled(!pushNotificationsEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                  pushNotificationsEnabled
+                    ? 'bg-blue-600'
+                    : 'bg-neutral-300 dark:bg-neutral-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                    pushNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
             {isAdminUser && (
               <div className="rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20 px-4 py-3 text-sm text-blue-800 dark:text-blue-100">
                 <p className="font-medium">Admin access</p>
@@ -173,7 +406,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
 
             <div className="flex flex-col gap-4 border-t border-neutral-200 dark:border-neutral-700 pt-4">
               <div className="text-sm text-neutral-500 dark:text-neutral-400">
-                Changes apply immediately and sync with your saved service line preference.
+                Changes apply immediately and sync with your saved preferences.
               </div>
               <button
                 type="submit"
@@ -185,6 +418,68 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
             </div>
           </form>
         </div>
+
+        {/* Account Deletion */}
+        <div className="bg-white dark:bg-neutral-800 border border-red-200 dark:border-red-900 rounded-2xl shadow-sm mt-6">
+          <div className="border-b border-red-200 dark:border-red-900 px-6 py-4">
+            <h2 className="text-xl font-semibold text-red-900 dark:text-red-100">Danger Zone</h2>
+          </div>
+          <div className="p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mb-1">
+                  Delete Account
+                </h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-xl max-w-md w-full border border-neutral-200 dark:border-neutral-700">
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+                  Confirm Account Deletion
+                </h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
+                  Are you sure you want to delete your account? This action is permanent and cannot be undone. All
+                  your data will be permanently removed from our servers.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                    className="flex-1 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-600 transition disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                    className="flex-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-60"
+                  >
+                    {deleting ? 'Deleting...' : 'Delete My Account'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

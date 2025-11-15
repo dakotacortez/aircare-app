@@ -168,6 +168,8 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Site pages (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
  */
@@ -237,6 +239,8 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Blog posts (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts".
  */
@@ -287,6 +291,8 @@ export interface Post {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Media library (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -406,6 +412,8 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
+ * Post categories (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -430,6 +438,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * User management - Admin can add/delete, Content team can edit details
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
@@ -452,6 +462,14 @@ export interface User {
    * Default protocol level for this user. Users can still toggle between levels, but this will be their starting preference.
    */
   defaultServiceLine?: ('BLS' | 'ALS' | 'CCT') | null;
+  /**
+   * Opt-in to receive push notifications for protocol updates and announcements
+   */
+  pushNotificationsEnabled?: boolean | null;
+  /**
+   * Upload a profile picture
+   */
+  profileImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1922,6 +1940,8 @@ export interface UsersSelect<T extends boolean = true> {
   approved?: T;
   status?: T;
   defaultServiceLine?: T;
+  pushNotificationsEnabled?: T;
+  profileImage?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2442,6 +2462,8 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Site header configuration (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header".
  */
@@ -2475,6 +2497,8 @@ export interface Header {
   createdAt?: string | null;
 }
 /**
+ * Site footer configuration (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "footer".
  */
@@ -2504,6 +2528,8 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * Site-wide settings and configuration (admin only)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
  */
