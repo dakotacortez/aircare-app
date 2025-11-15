@@ -16,6 +16,12 @@ import { Header } from './Header/config'
 import { SiteSettings } from './globals/SiteSettings/config'
 
 import { Protocols } from './collections/Protocols'
+import { HospitalNetworks } from './collections/HospitalNetworks'
+import { HospitalCapabilities } from './collections/HospitalCapabilities'
+import { Hospitals } from './collections/Hospitals'
+import { HospitalChangeRequests } from './collections/HospitalChangeRequests'
+import { Bases } from './collections/Bases'
+import { Calculators } from './collections/Calculators'
 
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -69,7 +75,20 @@ export default buildConfig({
     },
   }),
 
-  collections: [Pages, Posts, Media, Categories, Users, Protocols],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    Protocols,
+    HospitalNetworks,
+    HospitalCapabilities,
+    Hospitals,
+    HospitalChangeRequests,
+    Bases,
+    Calculators,
+  ],
 
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, SiteSettings],
