@@ -10,7 +10,6 @@ import {
   LexicalNode,
   NodeKey,
   SerializedElementNode,
-  SerializedLexicalNode,
   Spread,
   DOMConversionMap,
   DOMExportOutput,
@@ -32,18 +31,31 @@ export type SerializedCalloutBlockNode = Spread<
   SerializedElementNode
 >
 
-function getColorScheme(color: string): { bg: string; border: string; text: string; header: string } {
-  const colorMap: Record<string, { bg: string; border: string; text: string; header: string }> = {
-    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }, // sky/blue
-    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa' }, // blue
-    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24' }, // amber/yellow
-    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171' }, // red
-    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399' }, // emerald/green
-    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c' }, // orange
-    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8' }, // indigo
+function getColorScheme(
+  color: string,
+): { bg: string; border: string; text: string; header: string; headerText: string } {
+  const colorMap: Record<
+    string,
+    { bg: string; border: string; text: string; header: string; headerText: string }
+  > = {
+    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8', headerText: '#0c4a6e' }, // sky/blue
+    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa', headerText: '#1e3a8a' }, // blue
+    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24', headerText: '#78350f' }, // amber/yellow
+    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171', headerText: '#7f1d1d' }, // red
+    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399', headerText: '#064e3b' }, // emerald/green
+    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c', headerText: '#7c2d12' }, // orange
+    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8', headerText: '#312e81' }, // indigo
   }
 
-  return colorMap[color] || { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }
+  return (
+    colorMap[color] || {
+      bg: '#e0f2fe',
+      border: '#38bdf8',
+      text: '#0c4a6e',
+      header: '#38bdf8',
+      headerText: '#0c4a6e',
+    }
+  )
 }
 
 function applyCalloutStyles(dom: HTMLElement, color: string, variant: CalloutVariant): void {
@@ -53,19 +65,13 @@ function applyCalloutStyles(dom: HTMLElement, color: string, variant: CalloutVar
   dom.style.setProperty('--callout-border-color', colorScheme.border)
   dom.style.setProperty('--callout-text-color', colorScheme.text)
   dom.style.setProperty('--callout-header-bg', colorScheme.header)
-}
+  dom.style.setProperty('--callout-header-text', colorScheme.headerText)
 
-function hexToRgba(hex: string, alpha: number): string {
-  const sanitized = hex.replace('#', '')
-  if (sanitized.length !== 6) {
-    return `rgba(0, 0, 0, ${alpha})`
+  if (variant === 'alert') {
+    dom.classList.add('callout-block--alert')
+  } else {
+    dom.classList.remove('callout-block--alert')
   }
-
-  const r = parseInt(sanitized.substring(0, 2), 16)
-  const g = parseInt(sanitized.substring(2, 4), 16)
-  const b = parseInt(sanitized.substring(4, 6), 16)
-
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
 function renderHeader(

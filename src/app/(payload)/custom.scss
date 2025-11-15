@@ -1,0 +1,19 @@
+ :root {
+   --payload-safe-area-top: env(safe-area-inset-top, 0px);
+   --payload-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+ }
+
+body {
+  padding-top: var(--payload-safe-area-top);
+  padding-bottom: var(--payload-safe-area-bottom);
+}
+
+ body #payload header,
+ body #payload .app-header,
+ body #payload [data-component='app-header'] {
+   padding-top: calc(var(--payload-safe-area-top) + 0.5rem);
+ }
+
+ body #payload .app-header {
+   min-height: calc(3.5rem + var(--payload-safe-area-top));
+ }

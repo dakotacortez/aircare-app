@@ -304,17 +304,25 @@ function renderCertificationLevelNode(
  * Get color scheme CSS variables for callout/alert
  */
 function getColorScheme(color: string) {
-  const colorMap: Record<string, { bg: string; border: string; text: string; header: string }> = {
-    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }, // sky/blue
-    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa' }, // blue
-    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24' }, // amber/yellow
-    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171' }, // red
-    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399' }, // emerald/green
-    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c' }, // orange
-    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8' }, // indigo
+  const colorMap: Record<string, { bg: string; border: string; text: string; header: string; headerText: string }> = {
+    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8', headerText: '#0c4a6e' }, // sky/blue
+    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa', headerText: '#1e3a8a' }, // blue
+    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24', headerText: '#78350f' }, // amber/yellow
+    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171', headerText: '#7f1d1d' }, // red
+    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399', headerText: '#064e3b' }, // emerald/green
+    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c', headerText: '#7c2d12' }, // orange
+    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8', headerText: '#312e81' }, // indigo
   }
 
-  return colorMap[color] || { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8' }
+  return (
+    colorMap[color] || {
+      bg: '#e0f2fe',
+      border: '#38bdf8',
+      text: '#0c4a6e',
+      header: '#38bdf8',
+      headerText: '#0c4a6e',
+    }
+  )
 }
 
 /**
@@ -348,6 +356,7 @@ function renderCalloutBlockNode(
     '--callout-border-color': colorScheme.border,
     '--callout-text-color': colorScheme.text,
     '--callout-header-bg': colorScheme.header,
+    '--callout-header-text': colorScheme.headerText,
   }
 
   if (isAlert) {
@@ -406,22 +415,6 @@ function filterRenderableChildren(nodes: React.ReactNode[]): React.ReactNode[] {
     }
 
     return child !== null && child !== undefined
-  })
-}
-
-function hasMeaningfulContent(children: readonly RichTextSerializedNode[]): boolean {
-  return children.some((child) => {
-    if (!child) return false
-    if (child.type === 'text') {
-      return Boolean(child.text?.trim())
-    }
-
-    const nestedChildren = child.children
-    if (nestedChildren && nestedChildren.length > 0) {
-      return hasMeaningfulContent(nestedChildren)
-    }
-
-    return false
   })
 }
 

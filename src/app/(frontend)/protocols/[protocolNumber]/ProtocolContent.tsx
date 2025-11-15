@@ -76,6 +76,14 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
     return () => { document.body.style.overflow = 'unset' }
   }, [sidebarOpen, toolsOpen, isMobile])
 
+  const toggleToolsDrawer = () => {
+    setToolsOpen((prev) => !prev)
+  }
+
+  const closeToolsDrawer = () => {
+    setToolsOpen(false)
+  }
+
   return (
     <>
       {/* Sub-header with menu button */}
@@ -284,7 +292,8 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
         {/* Right Sidebar - Tools */}
         <ProtocolTools
           isOpen={toolsOpen}
-          onClose={() => setToolsOpen(!toolsOpen)}
+          onToggleDrawer={toggleToolsDrawer}
+          onRequestClose={closeToolsDrawer}
           isCollapsed={toolsCollapsed}
           onToggleCollapse={() => setToolsCollapsed(!toolsCollapsed)}
         />
@@ -295,7 +304,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
             className="fixed inset-0 bg-black/50 z-30" 
             onClick={() => { 
               if (isMobile) setSidebarOpen(false)
-              setToolsOpen(false)
+                closeToolsDrawer()
             }} 
           />
         )}

@@ -7,12 +7,19 @@ import type { CalculationData } from '@/types/referenceCard'
 
 interface ProtocolToolsProps {
   isOpen: boolean
-  onClose: () => void
+  onToggleDrawer: () => void
+  onRequestClose: () => void
   isCollapsed?: boolean
   onToggleCollapse?: () => void
 }
 
-export function ProtocolTools({ isOpen, onClose, isCollapsed = false, onToggleCollapse }: ProtocolToolsProps) {
+export function ProtocolTools({
+  isOpen,
+  onToggleDrawer,
+  onRequestClose,
+  isCollapsed = false,
+  onToggleCollapse,
+}: ProtocolToolsProps) {
   const [weight, setWeight] = useState('')
   const [dose, setDose] = useState('')
 
@@ -59,41 +66,48 @@ export function ProtocolTools({ isOpen, onClose, isCollapsed = false, onToggleCo
         </div>
       )}
 
-      {/* Mobile Bottom Drawer */}
-      <div className={`lg:hidden fixed inset-x-0 bottom-0 z-50 bg-white dark:bg-neutral-800 border-t dark:border-neutral-700 rounded-t-2xl transform transition-transform duration-300 ${
-        isOpen ? 'translate-y-0' : 'translate-y-full'
-      } max-h-[85vh] overflow-auto`}>
-        <div className="sticky top-0 bg-white dark:bg-neutral-800 p-4 border-b dark:border-neutral-700">
-          <div className="w-12 h-1 bg-neutral-300 dark:bg-neutral-600 rounded-full mx-auto mb-3" />
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Quick Tools</h3>
-            <button 
-              onClick={onClose} 
-              className="rounded-lg p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+      {/* Mobile Drawer */}
+      <div
+        className={`lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none transition duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0'
+        }`}
+        aria-hidden={!isOpen}
+      >
+        <div
+          className={`pointer-events-auto mx-4 sm:ml-auto sm:mr-4 sm:w-[min(420px,calc(100vw-2rem))] rounded-2xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xl transform transition duration-300 ${
+            isOpen ? 'translate-y-0' : 'translate-y-4'
+          } max-h-[70vh] flex flex-col`}
+          style={{ marginBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
+        >
+          <div className="sticky top-0 bg-white dark:bg-neutral-800 p-4 border-b dark:border-neutral-700 flex items-center justify-between rounded-t-2xl">
+            <div className="flex items-center gap-2">
+              <Syringe className="h-4 w-4" />
+              <h3 className="font-semibold">Quick Tools</h3>
+            </div>
+            <button
+              onClick={onRequestClose}
+              className="rounded-lg p-1.5 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              aria-label="Close quick tools"
             >
               <X className="h-5 w-5" />
             </button>
           </div>
-        </div>
-        
-        <div className="p-4 space-y-4">
-          <DoseCalculator weight={weight} setWeight={setWeight} dose={dose} calculateDose={calculateDose} />
+
+          <div className="p-4 space-y-4 overflow-auto">
+            <DoseCalculator weight={weight} setWeight={setWeight} dose={dose} calculateDose={calculateDose} />
+          </div>
         </div>
       </div>
 
-      {/* Mobile Tools Button */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white dark:from-neutral-900 pt-8 pb-4 px-4 pointer-events-none">
-        <button 
-          onClick={() => onClose()} 
-          className="w-full rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 px-4 py-3 flex items-center justify-between shadow-lg pointer-events-auto hover:bg-neutral-50 dark:hover:bg-neutral-700"
-        >
-          <span className="font-medium flex items-center gap-2">
-            <Syringe className="h-4 w-4" />
-            Quick Tools
-          </span>
-          <ChevronUp className="h-5 w-5" />
-        </button>
-      </div>
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={onToggleDrawer}
+        className="lg:hidden fixed right-4 z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors"
+        style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
+        aria-label={isOpen ? 'Hide quick tools' : 'Show quick tools'}
+      >
+        {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
+      </button>
     </>
   )
 }
