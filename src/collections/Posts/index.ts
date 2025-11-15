@@ -10,8 +10,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
-import { isContentTeamOrAdmin } from '../../access/isContentTeamOrAdmin'
-import { isAdmin } from '../../access/isAdmin'
+import { isAdmin } from '../../access/roles'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
@@ -31,10 +30,11 @@ import { slugField } from 'payload'
 export const Posts: CollectionConfig<'posts'> = {
   slug: 'posts',
   access: {
-    create: isContentTeamOrAdmin,
+    // Only admin team can manage posts
+    create: isAdmin,
     delete: isAdmin,
     read: authenticatedOrPublished,
-    update: isContentTeamOrAdmin,
+    update: isAdmin,
   },
   // This config controls what's populated by default when a post is referenced
   // https://payloadcms.com/docs/queries/select#defaultpopulate-collection-config-property
@@ -49,6 +49,8 @@ export const Posts: CollectionConfig<'posts'> = {
     },
   },
   admin: {
+    group: 'Administration',
+    description: 'Blog posts (admin only)',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>

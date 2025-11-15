@@ -6,7 +6,7 @@ import config from '@payload-config'
 import { getMeUser } from '@/utilities/getMeUser'
 import Link from 'next/link'
 import { MapPin, Phone, FileText } from 'lucide-react'
-import type { Base } from '@/payload-types'
+import type { Base, Asset } from '@/payload-types'
 
 export default async function BasesPage() {
   // Check authentication - redirect to login if not authenticated
@@ -90,23 +90,28 @@ export default async function BasesPage() {
                 )}
 
                 {/* Assets Preview */}
-                {base.assetsBasedThere && base.assetsBasedThere.length > 0 && (
+                {base.assets && base.assets.length > 0 && (
                   <div className="mt-3 pt-3 border-t dark:border-neutral-700">
                     <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1">
                       Assets:
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {base.assetsBasedThere.slice(0, 3).map((asset, idx) => (
-                        <span
-                          key={idx}
-                          className="inline-block px-2 py-1 text-xs rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
-                        >
-                          {asset.assetName}
-                        </span>
-                      ))}
-                      {base.assetsBasedThere.length > 3 && (
+                      {base.assets.slice(0, 3).map((assetRef, idx) => {
+                        const asset = typeof assetRef === 'object' ? assetRef : null
+                        if (!asset) return null
+
+                        return (
+                          <span
+                            key={idx}
+                            className="inline-block px-2 py-1 text-xs rounded-md bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                          >
+                            {asset.name}
+                          </span>
+                        )
+                      })}
+                      {base.assets.length > 3 && (
                         <span className="inline-block px-2 py-1 text-xs text-neutral-500 dark:text-neutral-400">
-                          +{base.assetsBasedThere.length - 3} more
+                          +{base.assets.length - 3} more
                         </span>
                       )}
                     </div>

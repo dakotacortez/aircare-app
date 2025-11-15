@@ -1,25 +1,20 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
+import { isAdmin, isContentOrAdmin } from '../../access/roles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    // Only Content Team and Admin Team can access the admin panel
-    admin: ({ req: { user } }) => {
-      if (!user) return false
-      return (
-        (user.role === 'content-team' || user.role === 'admin-team') &&
-        user.status === 'active'
-      )
-    },
-    // Allow anyone to create an account (they'll start as pending user)
-    create: () => true,
-    delete: authenticated,
-    read: authenticated,
-    update: authenticated,
+    // Only admin team can create and delete users
+    create: isAdmin,
+    delete: isAdmin,
+    // Content team and admin team can read and update users (to change status, approve, etc.)
+    read: isContentOrAdmin,
+    update: isContentOrAdmin,
   },
   admin: {
+    group: 'Administration',
+    description: 'User management - Admin can add/delete, Content team can edit details',
     defaultColumns: ['name', 'email', 'role', 'status', 'defaultServiceLine'],
     useAsTitle: 'name',
   },

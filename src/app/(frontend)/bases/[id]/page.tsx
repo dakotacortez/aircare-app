@@ -7,7 +7,7 @@ import { getMeUser } from '@/utilities/getMeUser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MapPin, Phone, Key, Truck, FileText, ChevronLeft } from 'lucide-react'
-import type { Base } from '@/payload-types'
+import type { Base, Asset } from '@/payload-types'
 
 interface BaseDetailPageProps {
   params: Promise<{
@@ -151,7 +151,7 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
           )}
 
           {/* Assets Based Here */}
-          {base.assetsBasedThere && base.assetsBasedThere.length > 0 && (
+          {base.assets && base.assets.length > 0 && (
             <div className="p-6 border-b dark:border-neutral-700">
               <div className="flex items-start gap-3">
                 <Truck className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
@@ -160,14 +160,24 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
                     Assets Based Here
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    {base.assetsBasedThere.map((asset, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-sm font-medium text-blue-900 dark:text-blue-100"
-                      >
-                        {asset.assetName}
-                      </span>
-                    ))}
+                    {base.assets.map((assetRef, idx) => {
+                      const asset = typeof assetRef === 'object' ? assetRef : null
+                      if (!asset) return null
+
+                      return (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-sm font-medium text-blue-900 dark:text-blue-100"
+                        >
+                          {asset.name}
+                          {asset.type && asset.type !== 'other' && (
+                            <span className="ml-2 text-xs opacity-75">
+                              ({asset.type.toUpperCase()})
+                            </span>
+                          )}
+                        </span>
+                      )
+                    })}
                   </div>
                 </div>
               </div>

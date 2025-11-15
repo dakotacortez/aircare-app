@@ -7,7 +7,7 @@ import { useField, useFormFields, Select, FieldLabel } from '@payloadcms/ui'
  * Custom field component for selecting hospital capability levels
  * Dynamically loads levels based on the selected capability
  */
-export const CapabilityLevelSelect: React.FC<any> = ({ path, field, admin }) => {
+export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
   const { value, setValue } = useField<string>({ path })
   const capability = useFormFields(([fields]) => fields.capability?.value)
   const [levels, setLevels] = useState<Array<{ label: string; value: string }>>([])
@@ -27,7 +27,7 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field, admin }) => 
 
       try {
         // Get the capability ID
-        const capabilityId = typeof capability === 'object' ? capability.id : capability
+        const capabilityId = typeof capability === 'object' ? (capability as any).id : capability
 
         // Fetch the capability to get its levels
         const response = await fetch(`/api/hospital-capabilities/${capabilityId}`, {
@@ -69,16 +69,16 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field, admin }) => 
 
   return (
     <div className="field-type text">
-      <FieldLabel field={field} />
+      <FieldLabel label={field?.label} required={field?.required} />
       <Select
-        value={value}
+        value={levels.find((option) => option.value === value)}
         onChange={(e: any) => setValue(e.value)}
         options={levels}
         disabled={loading || !capability}
       />
-      {admin?.description && (
+      {field?.admin?.description && (
         <div className="field-description" style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
-          {admin.description}
+          {field.admin.description}
         </div>
       )}
       {error && (
