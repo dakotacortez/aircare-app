@@ -11,6 +11,9 @@ import { notFound } from 'next/navigation'
 
 export const revalidate = 600
 
+// Allow dynamic params to be generated at request time if not statically generated
+export const dynamicParams = true
+
 type Args = {
   params: Promise<{
     pageNumber: string
@@ -70,19 +73,26 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const { totalDocs } = await payload.count({
-    collection: 'posts',
-    overrideAccess: false,
-  })
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const { totalDocs } = await payload.count({
+      collection: 'posts',
+      overrideAccess: false,
+    })
 
-  const totalPages = Math.ceil(totalDocs / 10)
+    const totalPages = Math.ceil(totalDocs / 10)
 
-  const pages: { pageNumber: string }[] = []
+    const pages: { pageNumber: string }[] = []
 
-  for (let i = 1; i <= totalPages; i++) {
-    pages.push({ pageNumber: String(i) })
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push({ pageNumber: String(i) })
+    }
+
+    return pages || []
+  } catch (error) {
+    // If database is not available during build (common in production builds),
+    // return empty array to skip static generation. Pages will be generated on-demand.
+    console.warn('[Build] Database unavailable during generateStaticParams for posts/page/[pageNumber], skipping static generation:', error)
+    return []
   }
-
-  return pages
 }

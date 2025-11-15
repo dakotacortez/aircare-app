@@ -15,24 +15,34 @@ import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
+// Allow dynamic params to be generated at request time if not statically generated
+export const dynamicParams = true
+
 export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const posts = await payload.find({
-    collection: 'posts',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      slug: true,
-    },
-  })
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const posts = await payload.find({
+      collection: 'posts',
+      draft: false,
+      limit: 1000,
+      overrideAccess: false,
+      pagination: false,
+      select: {
+        slug: true,
+      },
+    })
 
-  const params = posts.docs.map(({ slug }) => {
-    return { slug }
-  })
+    const params = posts.docs.map(({ slug }) => {
+      return { slug }
+    })
 
-  return params
+    return params || []
+  } catch (error) {
+    // If database is not available during build (common in production builds),
+    // return empty array to skip static generation. Pages will be generated on-demand.
+    console.warn('[Build] Database unavailable during generateStaticParams for posts/[slug], skipping static generation:', error)
+    return []
+  }
 }
 
 type Args = {
