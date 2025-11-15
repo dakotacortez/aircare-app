@@ -62,6 +62,8 @@ export const ReferenceCardDrawer: React.FC = () => {
 
   const clamp = useCallback((value: number, min: number, max: number) => Math.min(Math.max(value, min), max), [])
 
+  const [isDragging, setIsDragging] = useState(false)
+
   const handleFabPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       if ((event.target as HTMLElement).closest('[data-no-drag="true"]')) {
@@ -70,12 +72,18 @@ export const ReferenceCardDrawer: React.FC = () => {
 
       if (!fabRef.current) return
 
+      // Prevent default behavior and capture pointer for smooth dragging
+      event.preventDefault()
+      event.currentTarget.setPointerCapture(event.pointerId)
+      setIsDragging(true)
+
       const startX = event.clientX
       const startY = event.clientY
       const rect = fabRef.current.getBoundingClientRect()
       const initialPosition = { x: rect.left, y: rect.top }
 
       const handlePointerMove = (moveEvent: PointerEvent) => {
+        moveEvent.preventDefault()
         const deltaX = moveEvent.clientX - startX
         const deltaY = moveEvent.clientY - startY
         const buttonWidth = fabRef.current?.offsetWidth ?? 64
@@ -89,7 +97,11 @@ export const ReferenceCardDrawer: React.FC = () => {
         })
       }
 
-      const handlePointerUp = () => {
+      const handlePointerUp = (upEvent: PointerEvent) => {
+        setIsDragging(false)
+        if (fabRef.current) {
+          fabRef.current.releasePointerCapture(event.pointerId)
+        }
         document.removeEventListener('pointermove', handlePointerMove)
         document.removeEventListener('pointerup', handlePointerUp)
       }
@@ -163,13 +175,22 @@ export const ReferenceCardDrawer: React.FC = () => {
         {savedCount > 0 && !fabDismissed && (
           <div
             ref={fabRef}
-            className="fixed z-50 flex flex-col items-start gap-2 cursor-grab"
-            style={{ left: fabPosition.x, top: fabPosition.y }}
+            className={`fixed z-50 flex flex-col items-start gap-2 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+            style={{
+              left: fabPosition.x,
+              top: fabPosition.y,
+              touchAction: 'none',
+              userSelect: 'none'
+            }}
             onPointerDown={handleFabPointerDown}
           >
           {/* Main FAB */}
           <button
-            onClick={() => setDrawerOpen(!drawerOpen)}
+            onClick={(e) => {
+              if (!isDragging) {
+                setDrawerOpen(!drawerOpen)
+              }
+            }}
             className="relative bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all"
             aria-label={drawerOpen ? 'Close reference cards' : 'Open reference cards'}
           >

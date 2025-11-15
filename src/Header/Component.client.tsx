@@ -168,25 +168,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            {/* Reference Card Button - Mobile/Tablet Only */}
-            {isMobile && (
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="relative rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                aria-label="Open reference cards"
-              >
-                <FolderOpen className="h-4 w-4" />
-                {savedCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full min-w-[1.25rem] h-5 px-1 flex items-center justify-center text-xs font-bold">
-                    {savedCount}
-                  </span>
-                )}
-              </button>
-            )}
-
             <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
                   serviceLine === 'BLS'
                     ? 'bg-green-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
@@ -204,7 +188,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 BLS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
                   serviceLine === 'ALS'
                     ? 'bg-purple-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
@@ -222,7 +206,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 ALS
               </button>
               <button
-                className={`px-2.5 py-1 text-xs rounded-lg transition-colors font-medium ${
+                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
                   serviceLine === 'CCT'
                     ? 'bg-red-600 text-white shadow-sm'
                     : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
@@ -240,6 +224,22 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 CCT
               </button>
             </div>
+
+            {/* Reference Card Button - Mobile/Tablet Only */}
+            {isMobile && (
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="relative rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                aria-label="Open reference cards"
+              >
+                <FolderOpen className="h-4 w-4" />
+                {savedCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full min-w-[1.25rem] h-5 px-1 flex items-center justify-center text-xs font-bold">
+                    {savedCount}
+                  </span>
+                )}
+              </button>
+            )}
 
               {/* User menu - dropdown on mobile/tablet, direct link on desktop */}
               <div className="relative">
