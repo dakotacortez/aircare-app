@@ -13,7 +13,7 @@ import {
 } from 'react'
 
 import { useDeviceType } from './useDeviceType'
-import type { ReferenceCard, CardEntry, CalculationData } from '@/types/referenceCard'
+import type { ReferenceCard, CardEntry, CalculationData, CalculatorValue } from '@/types/referenceCard'
 
 const STORAGE_KEY = 'acmc-reference-cards'
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
@@ -58,8 +58,8 @@ type ReferenceCardContextValue = {
   addEntryToCard: (cardId: string, entry: Omit<CardEntry, 'id' | 'timestamp'>) => void
   saveCalculation: (
     calculatorName: string,
-    inputs: Record<string, any>,
-    outputs: Record<string, any>,
+    inputs: Record<string, CalculatorValue>,
+    outputs: Record<string, CalculatorValue>,
   ) => CalculationData
   deleteCard: (cardId: string) => void
   deleteEntry: (cardId: string, entryId: string) => void
@@ -183,8 +183,8 @@ function useReferenceCardState(): ReferenceCardContextValue {
   const saveCalculation = useCallback(
     (
       calculatorName: string,
-      inputs: Record<string, any>,
-      outputs: Record<string, any>,
+      inputs: Record<string, CalculatorValue>,
+      outputs: Record<string, CalculatorValue>,
     ): CalculationData => {
       return { calculatorName, inputs, outputs }
     },

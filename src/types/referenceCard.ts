@@ -1,3 +1,6 @@
+// Type for calculator input/output values
+export type CalculatorValue = string | number | boolean
+
 export interface ReferenceCard {
   id: string // UUID
   name: string // User-provided or "Card - 14:30"
@@ -13,8 +16,8 @@ export interface CardEntry {
 
   // For calculations
   calculatorName?: string // "Ventilator Settings", "Peds Critical Drugs"
-  inputs?: Record<string, any> // { weight: 80 }
-  outputs?: Record<string, any> // { tidalVolume: "560ml", rate: "12bpm" }
+  inputs?: Record<string, CalculatorValue> // { weight: 80 }
+  outputs?: Record<string, CalculatorValue> // { tidalVolume: "560ml", rate: "12bpm" }
 
   // For notes
   timeAction?: string // "14:30 - Gave fluid bolus"
@@ -26,6 +29,6 @@ export interface CardEntry {
 
 export type CalculationData = {
   calculatorName: string
-  inputs: Record<string, any>
-  outputs: Record<string, any>
+  inputs: Record<string, CalculatorValue>
+  outputs: Record<string, CalculatorValue>
 }
