@@ -8,12 +8,14 @@ import {
   CheckCircle2, Clock, Shield, Zap,
   MapPin, ArrowRight
 } from 'lucide-react';
+import { useIsNativeApp } from '@/hooks/useIsNativeApp';
 
 interface LandingPageProps {
   data: SiteSetting;
 }
 
 export default function LandingPage({ data }: LandingPageProps) {
+  const isNativeApp = useIsNativeApp();
   // Helper to get media URL
   const getMediaUrl = (media?: number | Media | null): string | null => {
     if (!media) return null;
@@ -116,12 +118,14 @@ export default function LandingPage({ data }: LandingPageProps) {
               {data.heroPrimaryButtonText || 'Open Protocols'}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href={data.heroSecondaryButtonLink || '#'}
-              className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 px-6 py-3 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
-            >
-              {data.heroSecondaryButtonText || 'Download App'}
-            </Link>
+              {!isNativeApp && (
+                <Link
+                  href={data.heroSecondaryButtonLink || '#'}
+                  className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 px-6 py-3 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
+                >
+                  {data.heroSecondaryButtonText || 'Download App'}
+                </Link>
+              )}
           </div>
         </div>
       </section>
@@ -193,7 +197,7 @@ export default function LandingPage({ data }: LandingPageProps) {
           <p className="text-lg md:text-xl mb-8 opacity-90">
             {data.ctaSubtitle || 'Access protocols, calculators, and checklists — anywhere, anytime.'}
           </p>
-          <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
             <Link
               href={data.heroPrimaryButtonLink || '/protocols'}
               className="bg-white text-red-600 px-8 py-3 rounded-xl font-semibold hover:bg-neutral-100 transition-colors inline-flex items-center gap-2"
@@ -201,12 +205,14 @@ export default function LandingPage({ data }: LandingPageProps) {
               {data.ctaPrimaryButtonText || 'Open Protocols'}
               <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link
-              href={data.heroSecondaryButtonLink || '#'}
-              className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors"
-            >
-              {data.ctaSecondaryButtonText || 'Download App'}
-            </Link>
+              {!isNativeApp && (
+                <Link
+                  href={data.heroSecondaryButtonLink || '#'}
+                  className="border-2 border-white text-white px-8 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors"
+                >
+                  {data.ctaSecondaryButtonText || 'Download App'}
+                </Link>
+              )}
           </div>
         </div>
       </section>

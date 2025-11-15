@@ -240,27 +240,29 @@ function useReferenceCardState(): ReferenceCardContextValue {
     cards.forEach((card) => {
       output += `${card.name.toUpperCase()}\n\n`
 
-      card.entries.forEach((entry) => {
-        if (entry.type === 'calculation') {
-          output += `[CALCULATED] ${entry.calculatorName}\n`
-          if (entry.inputs) {
-            output += `Inputs: ${JSON.stringify(entry.inputs)}\n`
-          }
-          if (entry.outputs) {
-            Object.entries(entry.outputs).forEach(([key, value]) => {
-              output += `• ${key}: ${value}\n`
-            })
-          }
-          output += '\n'
-        } else {
-          if (entry.timeAction) {
-            output += `[${entry.timeAction}]\n`
+        card.entries.forEach((entry) => {
+          if (entry.type === 'calculation') {
+            output += `[CALCULATED] ${entry.calculatorName}\n`
+            if (entry.inputs && Object.keys(entry.inputs).length > 0) {
+              Object.entries(entry.inputs).forEach(([key, value]) => {
+                output += `  ${key}: ${value}\n`
+              })
+            }
+            if (entry.outputs && Object.keys(entry.outputs).length > 0) {
+              Object.entries(entry.outputs).forEach(([key, value]) => {
+                output += `  • ${key}: ${value}\n`
+              })
+            }
+            output += '\n'
           } else {
-            output += `[NOTE]\n`
+            if (entry.timeAction) {
+              output += `[${entry.timeAction}]\n`
+            } else {
+              output += `[NOTE]\n`
+            }
+            output += `${entry.noteText}\n\n`
           }
-          output += `${entry.noteText}\n\n`
-        }
-      })
+        })
 
       output += '───────────────────────────────────\n\n'
     })

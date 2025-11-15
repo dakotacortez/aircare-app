@@ -8,35 +8,38 @@ import { X, Calculator } from 'lucide-react'
 interface SaveCalculationModalProps {
   calculation: CalculationData
   onClose: () => void
+  onSaved?: () => void
 }
 
 export const SaveCalculationModal: React.FC<SaveCalculationModalProps> = ({
   calculation,
   onClose,
+  onSaved,
 }) => {
   const { cards, createCard, addEntryToCard } = useReferenceCard()
   const [selectedCard, setSelectedCard] = useState<string | null>(null)
   const [newCardName, setNewCardName] = useState('')
   const [mode, setMode] = useState<'existing' | 'new'>(cards.length > 0 ? 'existing' : 'new')
 
-  const handleSave = () => {
-    if (mode === 'existing' && !selectedCard) {
-      alert('Please select a card')
-      return
+    const handleSave = () => {
+      if (mode === 'existing' && !selectedCard) {
+        alert('Please select a card')
+        return
+      }
+
+      const cardId =
+        mode === 'existing' && selectedCard ? selectedCard : createCard(newCardName || undefined)
+
+      addEntryToCard(cardId, {
+        type: 'calculation',
+        calculatorName: calculation.calculatorName,
+        inputs: calculation.inputs,
+        outputs: calculation.outputs,
+      })
+
+      onSaved?.()
+      onClose()
     }
-
-    const cardId =
-      mode === 'existing' && selectedCard ? selectedCard : createCard(newCardName || undefined)
-
-    addEntryToCard(cardId, {
-      type: 'calculation',
-      calculatorName: calculation.calculatorName,
-      inputs: calculation.inputs,
-      outputs: calculation.outputs,
-    })
-
-    onClose()
-  }
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">

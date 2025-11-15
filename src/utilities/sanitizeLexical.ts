@@ -218,34 +218,36 @@ function sanitizeNode(node: unknown, parentType: string, unknownTypes: Set<strin
     }
   }
 
-  if (ALLOWED_NODE_TYPES.has(type)) {
-    const sanitizedNode: LexicalNodeJSON = { ...typedNode } as LexicalNodeJSON
+    if (ALLOWED_NODE_TYPES.has(type)) {
+      const sanitizedNode: LexicalNodeJSON = { ...typedNode } as LexicalNodeJSON
 
-    if (sanitizedChildren.length > 0) {
-      sanitizedNode.children = sanitizedChildren
-    } else if ('children' in sanitizedNode) {
-      delete sanitizedNode.children
-    }
-
-    if (type === 'heading') {
-      sanitizedNode.tag =
-        typeof typedNode.tag === 'string' && HEADING_TAGS.has(typedNode.tag as string)
-          ? (typedNode.tag as string)
-          : 'h2'
-
-      if (sanitizedNode.tag !== typedNode.tag) {
-        changed = true
+      if (sanitizedChildren.length > 0) {
+        sanitizedNode.children = sanitizedChildren
+      } else if ('children' in sanitizedNode) {
+        delete sanitizedNode.children
       }
-    }
 
-    if (type === 'list') {
-      sanitizedNode.listType =
-        typedNode.listType === 'number' || typedNode.listType === 'bullet' ? (typedNode.listType as string) : 'bullet'
+      if (type === 'heading') {
+        sanitizedNode.tag =
+          typeof typedNode.tag === 'string' && HEADING_TAGS.has(typedNode.tag as string)
+            ? (typedNode.tag as string)
+            : 'h2'
 
-      if (sanitizedNode.listType !== typedNode.listType) {
-        changed = true
+        if (sanitizedNode.tag !== typedNode.tag) {
+          changed = true
+        }
       }
-    }
+
+      if (type === 'list') {
+        const allowedListTypes = new Set(['number', 'bullet', 'check'])
+        sanitizedNode.listType = allowedListTypes.has(typedNode.listType as string)
+          ? (typedNode.listType as string)
+          : 'bullet'
+
+        if (sanitizedNode.listType !== typedNode.listType) {
+          changed = true
+        }
+      }
 
     if (type === 'listitem') {
       if (typeof typedNode.value === 'number') {

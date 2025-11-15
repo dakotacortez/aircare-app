@@ -155,13 +155,19 @@
   padding: 0 0.5rem;
   background: var(--callout-header-bg);
   font-weight: 600;
-  color: #1f2937;
+  color: var(--callout-header-text, #0f172a);
   border-bottom-right-radius: 0.375rem;
   font-size: 0.875rem;
   line-height: 1.5;
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+.callout-block__header *,
+.dark .callout-block__header *,
+[data-theme='dark'] .callout-block__header * {
+  color: inherit;
 }
 
 .callout-block__icon {
@@ -193,7 +199,7 @@
 
 .callout-block__body ul,
 .callout-block__body ol {
-  margin-left: 1.5rem;
+  margin-left: 1.25rem;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
