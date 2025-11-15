@@ -88,6 +88,24 @@ export const Calculators: CollectionConfig = {
       },
     },
     {
+      name: 'category',
+      type: 'select',
+      label: 'Category',
+      required: true,
+      options: [
+        { label: 'Neurological Assessment', value: 'neuro' },
+        { label: 'Respiratory & Ventilation', value: 'respiratory' },
+        { label: 'Cardiovascular & Hemodynamics', value: 'cardiovascular' },
+        { label: 'Medications & Dosing', value: 'medications' },
+        { label: 'Pediatric Tools', value: 'pediatric' },
+        { label: 'Trauma & Burns', value: 'trauma' },
+        { label: 'General', value: 'general' },
+      ],
+      admin: {
+        description: 'Primary category for organizing calculators',
+      },
+    },
+    {
       name: 'serviceLines',
       type: 'select',
       label: 'Service Lines',

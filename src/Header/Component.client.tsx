@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { HeartPulse, Sun, Moon, Users, FolderOpen } from 'lucide-react'
 
 import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
@@ -80,6 +81,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
+  const pathname = usePathname()
 
   const navItems = resolveNavItems(data)
   const isAdminUser = user?.role === 'content-team' || user?.role === 'admin-team'
@@ -88,6 +90,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       ? { href: '/admin', label: 'Open Admin' }
       : { href: '/account', label: 'Edit Profile' }
     : null
+  
+  // Only show service line toggle on protocol pages
+  const isProtocolPage = pathname?.startsWith('/protocols')
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -168,62 +173,65 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
-            <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
-              <button
-                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
-                  serviceLine === 'BLS'
-                    ? 'bg-green-600 text-white shadow-sm'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setServiceLine('BLS')
-                }}
-                aria-pressed={serviceLine === 'BLS'}
-                title="Basic Life Support"
-                data-service-line="BLS"
-                type="button"
-              >
-                BLS
-              </button>
-              <button
-                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
-                  serviceLine === 'ALS'
-                    ? 'bg-purple-600 text-white shadow-sm'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setServiceLine('ALS')
-                }}
-                aria-pressed={serviceLine === 'ALS'}
-                title="Advanced Life Support"
-                data-service-line="ALS"
-                type="button"
-              >
-                ALS
-              </button>
-              <button
-                className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
-                  serviceLine === 'CCT'
-                    ? 'bg-red-600 text-white shadow-sm'
-                    : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setServiceLine('CCT')
-                }}
-                aria-pressed={serviceLine === 'CCT'}
-                title="Critical Care Transport"
-                data-service-line="CCT"
-                type="button"
-              >
-                CCT
-              </button>
-            </div>
+            {/* Service Line Toggle - Only on Protocol Pages */}
+            {isProtocolPage && (
+              <div className="rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 p-1 gap-1 flex">
+                <button
+                  className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
+                    serviceLine === 'BLS'
+                      ? 'bg-green-600 text-white shadow-sm'
+                      : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setServiceLine('BLS')
+                  }}
+                  aria-pressed={serviceLine === 'BLS'}
+                  title="Basic Life Support"
+                  data-service-line="BLS"
+                  type="button"
+                >
+                  BLS
+                </button>
+                <button
+                  className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
+                    serviceLine === 'ALS'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setServiceLine('ALS')
+                  }}
+                  aria-pressed={serviceLine === 'ALS'}
+                  title="Advanced Life Support"
+                  data-service-line="ALS"
+                  type="button"
+                >
+                  ALS
+                </button>
+                <button
+                  className={`px-2.5 py-1 text-xs rounded-xl transition-colors font-medium ${
+                    serviceLine === 'CCT'
+                      ? 'bg-red-600 text-white shadow-sm'
+                      : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setServiceLine('CCT')
+                  }}
+                  aria-pressed={serviceLine === 'CCT'}
+                  title="Critical Care Transport"
+                  data-service-line="CCT"
+                  type="button"
+                >
+                  CCT
+                </button>
+              </div>
+            )}
 
             {/* Reference Card Button - Mobile/Tablet Only */}
             {isMobile && (
