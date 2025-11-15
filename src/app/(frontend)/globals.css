@@ -202,7 +202,7 @@ html[data-theme='light'] {
 
       .protocol-content ul,
       .protocol-content ol {
-        margin-left: 0.5rem;
+        margin-left: 0.25rem;
       }
 
       /* Adjust checkbox list items for reduced mobile indent */
@@ -475,6 +475,44 @@ html[data-theme='light'] {
       margin-left: 0.5rem;
       float: right;
       margin-block: 0;
+      position: relative;
+    }
+
+    /* Mobile: show only icon by default, full label on hover/tap */
+    @media (max-width: 640px) {
+      .callout-block--alert {
+        padding: 0.25rem;
+        gap: 0;
+        width: 2rem;
+        height: 2rem;
+        justify-content: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+
+      .callout-block--alert .callout-block__label {
+        position: absolute;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        left: 100%;
+        margin-left: 0.5rem;
+        padding: 0.25rem 0.5rem;
+        background: var(--callout-bg-color);
+        border: 1px solid var(--callout-border-color);
+        border-radius: 0.25rem;
+        z-index: 10;
+        transition: opacity 0.2s ease;
+      }
+
+      .callout-block--alert:hover .callout-block__label,
+      .callout-block--alert:active .callout-block__label {
+        opacity: 1;
+      }
+
+      .callout-block--alert .callout-block__icon {
+        margin: 0;
+      }
     }
 
     /* Collapse containers that only have alert badges to prevent empty space */

@@ -50,7 +50,7 @@ export interface CalloutPreset {
 export const CALLOUT_PRESETS: Record<string, CalloutPreset> = {
   medicalControl: {
     id: 'medicalControl',
-    label: 'Medical Control',
+    label: 'Med Control',
     description: 'Requires online medical direction',
     icon: 'stethoscope',
     color: '#f97316',
