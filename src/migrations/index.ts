@@ -7,6 +7,7 @@ import * as migration_20251111_210353_add_logo_and_site_settings from './2025111
 import * as migration_20251112_000000_add_gradient_settings from './20251112_000000_add_gradient_settings';
 import * as migration_20251116_143000_add_push_notifications_enabled from './20251116_143000_add_push_notifications_enabled';
 import * as migration_20251116_144000_add_profile_image from './20251116_144000_add_profile_image';
+import * as migration_20251116_200500_fix_missing_user_and_assets_columns from './20251116_200500_fix_missing_user_and_assets_columns';
 
 export const migrations = [
   {
@@ -38,19 +39,24 @@ export const migrations = [
     down: migration_20251111_210353_add_logo_and_site_settings.down,
     name: '20251111_210353_add_logo_and_site_settings'
   },
-  {
-    up: migration_20251112_000000_add_gradient_settings.up,
-    down: migration_20251112_000000_add_gradient_settings.down,
-    name: '20251112_000000_add_gradient_settings'
-  },
-  {
-    up: migration_20251116_143000_add_push_notifications_enabled.up,
-    down: migration_20251116_143000_add_push_notifications_enabled.down,
-    name: '20251116_143000_add_push_notifications_enabled'
-  },
-  {
-    up: migration_20251116_144000_add_profile_image.up,
-    down: migration_20251116_144000_add_profile_image.down,
-    name: '20251116_144000_add_profile_image'
-  },
+    {
+      up: migration_20251112_000000_add_gradient_settings.up,
+      down: migration_20251112_000000_add_gradient_settings.down,
+      name: '20251112_000000_add_gradient_settings'
+    },
+    {
+      up: migration_20251116_143000_add_push_notifications_enabled.up,
+      down: migration_20251116_143000_add_push_notifications_enabled.down,
+      name: '20251116_143000_add_push_notifications_enabled'
+    },
+    {
+      up: migration_20251116_144000_add_profile_image.up,
+      down: migration_20251116_144000_add_profile_image.down,
+      name: '20251116_144000_add_profile_image'
+    },
+    {
+      up: migration_20251116_200500_fix_missing_user_and_assets_columns.up,
+      down: migration_20251116_200500_fix_missing_user_and_assets_columns.down,
+      name: '20251116_200500_fix_missing_user_and_assets_columns'
+    },
 ];
