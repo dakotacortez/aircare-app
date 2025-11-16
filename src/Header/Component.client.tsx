@@ -240,51 +240,55 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
               {/* User menu - dropdown */}
               <div className="relative">
-                {user && profileLink ? (
-                  <>
-                    {/* Menu button for all screen sizes */}
-                    <button
-                      onClick={() => setUserMenuOpen((open) => !open)}
-                      className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                      aria-label="User menu"
-                      aria-expanded={userMenuOpen}
-                    >
-                      <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
-                        {getUserInitials(user)}
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-                    aria-label="Login"
-                  >
+                {/* Menu button for all screen sizes */}
+                <button
+                  onClick={() => setUserMenuOpen((open) => !open)}
+                  className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                  aria-label="User menu"
+                  aria-expanded={userMenuOpen}
+                >
+                  {user ? (
+                    <div className="h-6 w-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-semibold">
+                      {getUserInitials(user)}
+                    </div>
+                  ) : (
                     <Users className="h-4 w-4" />
-                  </Link>
-                )}
+                  )}
+                </button>
 
                 {/* User menu dropdown */}
-                {userMenuOpen && user && profileLink && (
+                {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-56 rounded-xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-xl z-50">
                     <div className="p-2">
-                      <Link
-                        href={profileLink.href}
-                        onClick={() => setUserMenuOpen(false)}
-                        className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
-                      >
-                        {profileLink.label}
-                      </Link>
-                      {adminLink && (
+                      {user && profileLink ? (
+                        <>
+                          <Link
+                            href={profileLink.href}
+                            onClick={() => setUserMenuOpen(false)}
+                            className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
+                          >
+                            {profileLink.label}
+                          </Link>
+                          {adminLink && (
+                            <Link
+                              href={adminLink.href}
+                              onClick={() => setUserMenuOpen(false)}
+                              className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
+                            >
+                              {adminLink.label}
+                            </Link>
+                          )}
+                        </>
+                      ) : (
                         <Link
-                          href={adminLink.href}
+                          href="/login"
                           onClick={() => setUserMenuOpen(false)}
                           className="block px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm"
                         >
-                          {adminLink.label}
+                          Login
                         </Link>
                       )}
-                      <div className="px-3 py-2 border-t dark:border-neutral-700">
+                      <div className={`px-3 py-2 ${user ? 'border-t dark:border-neutral-700' : ''}`}>
                         <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">Theme</div>
                         <div className="space-y-1">
                           <button
@@ -292,57 +296,45 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                               setTheme('light')
                               setUserMenuOpen(false)
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
                               theme === 'light'
                                 ? 'bg-neutral-100 dark:bg-neutral-700'
                                 : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                             }`}
+                            title="Light Mode"
                           >
-                            <span className="flex items-center gap-2">
-                              <Sun className="h-4 w-4" />
-                              Light
-                            </span>
-                            {theme === 'light' && (
-                              <span className="text-blue-600 dark:text-blue-400">✓</span>
-                            )}
+                            <Sun className="h-4 w-4" />
+                            <span>Light Mode</span>
                           </button>
                           <button
                             onClick={() => {
                               setTheme('dark')
                               setUserMenuOpen(false)
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
                               theme === 'dark'
                                 ? 'bg-neutral-100 dark:bg-neutral-700'
                                 : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                             }`}
+                            title="Dark Mode"
                           >
-                            <span className="flex items-center gap-2">
-                              <Moon className="h-4 w-4" />
-                              Dark
-                            </span>
-                            {theme === 'dark' && (
-                              <span className="text-blue-600 dark:text-blue-400">✓</span>
-                            )}
+                            <Moon className="h-4 w-4" />
+                            <span>Dark Mode</span>
                           </button>
                           <button
                             onClick={() => {
                               setTheme('system')
                               setUserMenuOpen(false)
                             }}
-                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
                               theme === 'system'
                                 ? 'bg-neutral-100 dark:bg-neutral-700'
                                 : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
                             }`}
+                            title="Auto"
                           >
-                            <span className="flex items-center gap-2">
-                              <Monitor className="h-4 w-4" />
-                              System
-                            </span>
-                            {theme === 'system' && (
-                              <span className="text-blue-600 dark:text-blue-400">✓</span>
-                            )}
+                            <Monitor className="h-4 w-4" />
+                            <span>Auto</span>
                           </button>
                         </div>
                       </div>
@@ -350,49 +342,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                   </div>
                 )}
               </div>
-
-            {/* Theme toggle - desktop only */}
-            <div className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 overflow-hidden">
-              <button
-                onClick={() => setTheme('light')}
-                className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${
-                  theme === 'light'
-                    ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
-                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
-                }`}
-                aria-label="Light theme"
-                title="Light theme"
-              >
-                <Sun className="h-4 w-4" />
-                <span className="text-xs">Light</span>
-              </button>
-              <button
-                onClick={() => setTheme('dark')}
-                className={`px-3 py-2 text-sm flex items-center gap-1.5 border-x dark:border-neutral-700 transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
-                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
-                }`}
-                aria-label="Dark theme"
-                title="Dark theme"
-              >
-                <Moon className="h-4 w-4" />
-                <span className="text-xs">Dark</span>
-              </button>
-              <button
-                onClick={() => setTheme('system')}
-                className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${
-                  theme === 'system'
-                    ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
-                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
-                }`}
-                aria-label="System theme"
-                title="System theme"
-              >
-                <Monitor className="h-4 w-4" />
-                <span className="text-xs">System</span>
-              </button>
-            </div>
           </div>
 
           {mobileOpen && (
