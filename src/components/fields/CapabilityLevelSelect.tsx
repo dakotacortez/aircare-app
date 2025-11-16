@@ -7,7 +7,7 @@ import { useField, useFormFields, Select, FieldLabel } from '@payloadcms/ui'
  * Custom field component for selecting hospital capability levels
  * Dynamically loads levels based on the selected capability
  */
-export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
+const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
   const { value, setValue } = useField<string>({ path })
   const capability = useFormFields(([fields]) => fields.capability?.value)
   const [levels, setLevels] = useState<Array<{ label: string; value: string }>>([])
@@ -89,3 +89,6 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
     </div>
   )
 }
+
+export { CapabilityLevelSelect }
+export default CapabilityLevelSelect
