@@ -15,10 +15,13 @@ export const getMeUser = async (args?: {
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
 
+  const headers: HeadersInit = {}
+  if (token) {
+    headers.Authorization = `JWT ${token}`
+  }
+
   const meUserReq = await fetch(`${getClientSideURL()}/api/users/me`, {
-    headers: {
-      Authorization: `JWT ${token}`,
-    },
+    headers,
   })
 
   const {

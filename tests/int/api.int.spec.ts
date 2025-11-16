@@ -3,9 +3,11 @@ import config from '@/payload.config'
 
 import { describe, it, beforeAll, expect } from 'vitest'
 
+const describeIfDB = process.env.DATABASE_URI ? describe : describe.skip
+
 let payload: Payload
 
-describe('API', () => {
+describeIfDB('API', () => {
   beforeAll(async () => {
     const payloadConfig = await config
     payload = await getPayload({ config: payloadConfig })

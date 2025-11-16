@@ -1,14 +1,34 @@
 import type { CollectionConfig } from 'payload'
 import type { User } from '@/payload-types'
 
-import { isAdmin } from '../../access/roles'
+class AuthBlockedError extends Error {
+  status: number
+
+  constructor(message: string, status = 403) {
+    super(message)
+    this.name = 'AuthBlockedError'
+    this.status = status
+  }
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
-    // Only admin team can create and delete users
-    create: isAdmin,
-    delete: isAdmin,
+    // Allow public self-registration, but only admins can create while logged in
+    create: ({ req: { user } }) => {
+      if (!user) return true
+      return user.role === 'admin-team'
+    },
+    // Admins can delete any user, individuals can delete their own account
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === 'admin-team') return true
+      return {
+        id: {
+          equals: user.id,
+        },
+      }
+    },
     // Users can read and update their own profile, admins/content can read/update all
     read: ({ req: { user } }) => {
       // Admins and content team can read all users
@@ -65,24 +85,30 @@ export const Users: CollectionConfig = {
     },
   },
   hooks: {
-    beforeLogin: [
-      async ({ user }) => {
-        // Admin team members can always login (bypass approval checks)
-        if ((user as User)?.role === 'admin-team') {
-          return user
-        }
+      beforeLogin: [
+        async ({ user }) => {
+          const typedUser = user as User | undefined
 
-        // Check if user is approved and active
-        if (!(user as User)?.approved) {
-          throw new Error('Your account is pending approval. Please contact an administrator.')
-        }
-        if ((user as User)?.status !== 'active') {
-          throw new Error('Your account is not active. Please contact an administrator.')
-        }
+          // Admin team members can always login (bypass approval checks)
+          if (typedUser?.role === 'admin-team') {
+            return typedUser
+          }
 
-        return user
-      },
-    ],
+          // Check if user is approved and active
+          if (!typedUser?.approved) {
+            throw new AuthBlockedError(
+              'Your account is pending approval. Please contact an administrator.',
+            )
+          }
+          if (typedUser?.status !== 'active') {
+            throw new AuthBlockedError(
+              'Your account is not active. Please contact an administrator.',
+            )
+          }
+
+          return typedUser
+        },
+      ],
   },
   fields: [
     {
@@ -172,8 +198,8 @@ export const Users: CollectionConfig = {
         update: ({ req: { user }, id }) => {
           // Users can update their own preference
           if (user && id && user.id === id) return true
-          // Admins can update for anyone
-          return user?.role === 'admin-team'
+          // Admins and content team can update for anyone
+          return user?.role === 'admin-team' || user?.role === 'content-team'
         },
       },
     },
