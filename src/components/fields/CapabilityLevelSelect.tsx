@@ -124,7 +124,7 @@ const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
     <div className="field-type text">
       <FieldLabel label={field?.label} required={field?.required} />
       <Select
-        value={levels.find((option) => option.value === selectedLevel) ?? null}
+        value={levels.find((option) => option.value === selectedLevel) ?? undefined}
         onChange={(option: Option | null) => setSelectedLevel(option?.value || '')}
         options={levels}
         disabled={loading || !capabilityId}
