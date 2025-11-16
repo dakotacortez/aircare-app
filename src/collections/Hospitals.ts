@@ -171,13 +171,28 @@ export const Hospitals: CollectionConfig = {
       },
       fields: [
         {
-          name: 'code',
-          type: 'text',
-          label: 'Door Code',
-          admin: {
-            placeholder: 'e.g., ED door 0911#',
+            type: 'row',
+            fields: [
+              {
+                name: 'label',
+                type: 'text',
+                label: 'Door Label',
+                admin: {
+                  placeholder: 'e.g., ED Entrance',
+                  width: '50%',
+                },
+              },
+              {
+                name: 'code',
+                type: 'text',
+                label: 'Door Code',
+                admin: {
+                  placeholder: 'e.g., 0911#',
+                  width: '50%',
+                },
+              },
+            ],
           },
-        },
       ],
     },
     {
