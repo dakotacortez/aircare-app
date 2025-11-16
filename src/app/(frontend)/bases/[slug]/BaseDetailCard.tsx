@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Base, HospitalNetwork, Asset, Media } from '@/payload-types'
@@ -67,14 +67,18 @@ function formatPhone(phone: string) {
   return phone
 }
 
+// UC Medical Center coordinates as fallback
+const UCMC_COORDS = { lat: 39.1371, lon: -84.5037 }
+
 export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardProps) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
   const [showNavModal, setShowNavModal] = useState(false)
   const [etaState, setEtaState] = useState<{
-    status: 'idle' | 'loading' | 'ready' | 'error'
+    status: 'idle' | 'loading' | 'ready' | 'error' | 'ucmc-fallback'
     etaMinutes?: number
     distanceMiles?: number
     errorMessage?: string
+    usingUCMC?: boolean
   }>({ status: 'idle' })
 
   const addressLines = useMemo(() => {

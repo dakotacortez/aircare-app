@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
@@ -73,14 +73,18 @@ function formatPhone(phone: string) {
   return phone
 }
 
+// UC Medical Center coordinates as fallback
+const UCMC_COORDS = { lat: 39.1371, lon: -84.5037 }
+
 export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalDetailCardProps) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
   const [showNavModal, setShowNavModal] = useState(false)
   const [etaState, setEtaState] = useState<{
-    status: 'idle' | 'loading' | 'ready' | 'error'
+    status: 'idle' | 'loading' | 'ready' | 'error' | 'ucmc-fallback'
     etaMinutes?: number
     distanceMiles?: number
     errorMessage?: string
+    usingUCMC?: boolean
   }>({ status: 'idle' })
 
   const addressLines = useMemo(() => {
@@ -227,13 +231,6 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
   }, [addressLines, capabilityBadges, hospital.name, hospital.squadPhone, network?.name, primaryDoorCode?.code])
 
   const requestEta = useCallback(() => {
-    if (!navigator.geolocation) {
-      setEtaState({
-        status: 'error',
-        errorMessage: 'Location not supported on this device.',
-      })
-      return
-    }
     if (typeof hospital.latitude !== 'number' || typeof hospital.longitude !== 'number') {
       setEtaState({
         status: 'error',
@@ -241,6 +238,25 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
       })
       return
     }
+
+    if (!navigator.geolocation) {
+      // Fallback to UCMC coordinates
+      const distance = calculateDistanceMiles(
+        UCMC_COORDS.lat,
+        UCMC_COORDS.lon,
+        hospital.latitude as number,
+        hospital.longitude as number,
+      )
+      const eta = estimateEtaMinutes(distance)
+      setEtaState({
+        status: 'ucmc-fallback',
+        etaMinutes: eta,
+        distanceMiles: Number.isFinite(distance) ? distance : undefined,
+        usingUCMC: true,
+      })
+      return
+    }
+
     setEtaState({ status: 'loading' })
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -255,13 +271,24 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           status: 'ready',
           etaMinutes: eta,
           distanceMiles: Number.isFinite(distance) ? distance : undefined,
+          usingUCMC: false,
         })
       },
       (error) => {
         console.error('Geolocation error', error)
+        // Fallback to UCMC coordinates
+        const distance = calculateDistanceMiles(
+          UCMC_COORDS.lat,
+          UCMC_COORDS.lon,
+          hospital.latitude as number,
+          hospital.longitude as number,
+        )
+        const eta = estimateEtaMinutes(distance)
         setEtaState({
-          status: 'error',
-          errorMessage: error.message || 'Unable to access location.',
+          status: 'ucmc-fallback',
+          etaMinutes: eta,
+          distanceMiles: Number.isFinite(distance) ? distance : undefined,
+          usingUCMC: true,
         })
       },
       {
@@ -270,6 +297,11 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
       },
     )
   }, [hospital.latitude, hospital.longitude])
+
+  // Auto-request ETA on mount
+  useEffect(() => {
+    requestEta()
+  }, [requestEta])
 
   const handleOpenNavigation = useCallback((provider: 'google' | 'apple' | 'waze') => {
     if (!navigationQuery) {
@@ -383,9 +415,13 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               <button
                 type="button"
                 onClick={requestEta}
-                  className="text-xs font-semibold text-uc-text-light-muted underline-offset-2 hover:text-uc-text-light-default hover:underline dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
+                  className="rounded-full p-1.5 text-uc-text-light-muted transition hover:bg-uc-light-subtle hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:bg-neutral-700 dark:hover:text-uc-text-dark-default"
+                  aria-label="Update location"
+                  title="Update from my location"
               >
-                Update from my location
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
               </button>
             </div>
             {etaState.status === 'loading' ? (
@@ -393,7 +429,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   <div className="h-4 w-28 rounded-full bg-uc-light-border dark:bg-neutral-700" />
                   <div className="h-3 w-40 rounded-full bg-uc-light-subtle dark:bg-neutral-700/80" />
                 </div>
-            ) : etaState.status === 'ready' ? (
+            ) : etaState.status === 'ready' || etaState.status === 'ucmc-fallback' ? (
               <>
                   <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                     <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
@@ -409,7 +445,9 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   )}
                 </p>
                   <p className="mt-1 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                    Based on your current GPS location
+                    {etaState.usingUCMC 
+                      ? 'Based on location to UC Medical Center'
+                      : 'Based on your current GPS location'}
                   </p>
               </>
             ) : etaState.status === 'error' ? (

@@ -14,6 +14,17 @@ interface BaseWithDistance extends Base {
   eta?: number
 }
 
+const formatPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+  if (digits.length === 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  }
+  return phone
+}
+
 const buildAddressSummary = (base: Base) => {
   const city = base.address?.city?.trim()
   const state = base.address?.state?.trim()
