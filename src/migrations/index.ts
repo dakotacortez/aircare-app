@@ -6,6 +6,7 @@ import * as migration_20251111_142444_add_user_roles_and_approval from './202511
 import * as migration_20251111_210353_add_logo_and_site_settings from './20251111_210353_add_logo_and_site_settings';
 import * as migration_20251112_000000_add_gradient_settings from './20251112_000000_add_gradient_settings';
 import * as migration_20251116_143000_add_push_notifications_enabled from './20251116_143000_add_push_notifications_enabled';
+import * as migration_20251116_144000_add_profile_image from './20251116_144000_add_profile_image';
 
 export const migrations = [
   {
@@ -46,5 +47,10 @@ export const migrations = [
     up: migration_20251116_143000_add_push_notifications_enabled.up,
     down: migration_20251116_143000_add_push_notifications_enabled.down,
     name: '20251116_143000_add_push_notifications_enabled'
+  },
+  {
+    up: migration_20251116_144000_add_profile_image.up,
+    down: migration_20251116_144000_add_profile_image.down,
+    name: '20251116_144000_add_profile_image'
   },
 ];
