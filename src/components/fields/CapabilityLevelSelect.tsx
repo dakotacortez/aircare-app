@@ -7,7 +7,7 @@ import { useField, Select, FieldLabel } from '@payloadcms/ui'
  * Custom field component for selecting hospital capability levels
  * Dynamically loads levels based on the selected capability
  */
-type Option = {
+type LevelOption = {
   label: string
   value: string
 }
@@ -16,7 +16,7 @@ const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
   const { value: selectedLevel, setValue: setSelectedLevel } = useField<string>({ path })
   const capabilityPath = useMemo(() => path.replace(/\.level$/, '.capability'), [path])
   const { value: capabilityValue } = useField<unknown>({ path: capabilityPath })
-  const [levels, setLevels] = useState<Option[]>([])
+  const [levels, setLevels] = useState<LevelOption[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const selectedLevelRef = useRef(selectedLevel)
@@ -90,7 +90,7 @@ const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
           clearSelectedLevel()
         } else {
           // Map levels to options
-          const options: Option[] = capabilityData.levels.map((levelObj: { level: string }) => ({
+          const options: LevelOption[] = capabilityData.levels.map((levelObj: { level: string }) => ({
             label: levelObj.level,
             value: levelObj.level,
           }))
@@ -125,7 +125,13 @@ const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
       <FieldLabel label={field?.label} required={field?.required} />
       <Select
         value={levels.find((option) => option.value === selectedLevel) ?? undefined}
-        onChange={(option: Option | null) => setSelectedLevel(option?.value || '')}
+        onChange={(option) => {
+          if (option && !Array.isArray(option) && 'value' in option) {
+            setSelectedLevel(String(option.value) || '')
+          } else {
+            setSelectedLevel('')
+          }
+        }}
         options={levels}
         disabled={loading || !capabilityId}
       />
