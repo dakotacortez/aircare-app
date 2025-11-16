@@ -6,9 +6,9 @@ import config from '@payload-config'
 import { getMeUser } from '@/utilities/getMeUser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { MapPin, Phone, Key, Truck, FileText, ChevronLeft } from 'lucide-react'
-import type { Base, Asset } from '@/payload-types'
-import { DoorCodeList } from '@/components/door-code-list'
+import { ChevronLeft } from 'lucide-react'
+import type { Base, HospitalNetwork, Media } from '@/payload-types'
+import { BaseDetailCard } from './BaseDetailCard'
 
 interface BaseDetailPageProps {
   params: Promise<{
@@ -20,7 +20,7 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
   const { slug } = await params
 
   // Check authentication
-  const { user } = await getMeUser({
+  await getMeUser({
     nullUserRedirect: `/login?unauthorized=bases&redirect=${encodeURIComponent(`/bases/${slug}`)}`,
   })
 
@@ -36,6 +36,7 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
           equals: slug,
         },
       },
+      depth: 2,
       limit: 1,
     })
     
@@ -52,167 +53,36 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
     notFound()
   }
 
+  const network =
+    typeof base.network === 'object' ? (base.network as HospitalNetwork) : null
+  const networkLogo = base.networkLogoOverride
+    ? typeof base.networkLogoOverride === 'object'
+      ? (base.networkLogoOverride as Media)
+      : null
+    : network?.logo && typeof network.logo === 'object'
+      ? (network.logo as Media)
+      : null
+
+  const hydratedBase = JSON.parse(JSON.stringify(base)) as Base
+  const hydratedNetwork = network ? (JSON.parse(JSON.stringify(network)) as HospitalNetwork) : null
+  const hydratedLogo = networkLogo ? (JSON.parse(JSON.stringify(networkLogo)) as Media) : null
+
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
+    <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default transition-colors dark:bg-neutral-900 dark:text-uc-text-dark-default">
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href="/bases"
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 mb-6"
+          className="inline-flex items-center gap-2 text-sm text-uc-text-light-muted transition hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Bases
         </Link>
 
-        {/* Base Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
-            {base.name}
-          </h1>
-        </div>
-
-          {/* Main Content Card */}
-          <div className="rounded-3xl border border-neutral-200/70 dark:border-neutral-800/70 bg-white/80 dark:bg-neutral-900/60 shadow-xl shadow-neutral-900/5 dark:shadow-black/40 backdrop-blur-sm overflow-hidden">
-          {/* Address Section */}
-          {base.address && (
-              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                    Address
-                  </h2>
-                  <div className="text-neutral-600 dark:text-neutral-400">
-                    {base.address.line1 && <div>{base.address.line1}</div>}
-                    {base.address.line2 && <div>{base.address.line2}</div>}
-                    {(base.address.city || base.address.state || base.address.zip) && (
-                      <div>
-                        {base.address.city}
-                        {base.address.city && base.address.state && ', '}
-                        {base.address.state} {base.address.zip}
-                      </div>
-                    )}
-                  </div>
-                  {(base.latitude || base.longitude) && (
-                    <div className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                      Coordinates: {base.latitude}, {base.longitude}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Contact Information */}
-          {base.contactInfo && base.contactInfo.length > 0 && (
-              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
-              <div className="flex items-start gap-3">
-                <Phone className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                    Contact Information
-                  </h2>
-                  <div className="space-y-2">
-                    {base.contactInfo.map((contact, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-900"
-                      >
-                        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                          {contact.label}
-                        </span>
-                        <a
-                          href={`tel:${contact.phoneNumber}`}
-                          className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                        >
-                          {contact.phoneNumber}
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Door Codes */}
-          {base.doorCodes && base.doorCodes.length > 0 && (
-              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
-              <div className="flex items-start gap-3">
-                <Key className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                    Door Codes
-                  </h2>
-                    <DoorCodeList doorCodes={base.doorCodes} />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Assets Based Here */}
-          {base.assets && base.assets.length > 0 && (
-              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
-              <div className="flex items-start gap-3">
-                <Truck className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
-                    Assets Based Here
-                  </h2>
-                  <div className="flex flex-wrap gap-2">
-                    {base.assets.map((assetRef, idx) => {
-                      const asset = typeof assetRef === 'object' ? assetRef : null
-                      if (!asset) return null
-
-                      return (
-                        <span
-                          key={idx}
-                          className="inline-flex items-center px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-sm font-medium text-blue-900 dark:text-blue-100"
-                        >
-                          {asset.name}
-                          {asset.type && asset.type !== 'other' && (
-                            <span className="ml-2 text-xs opacity-75">
-                              ({asset.type.toUpperCase()})
-                            </span>
-                          )}
-                        </span>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Notes */}
-          {base.notes && (
-            <div className="p-6">
-              <div className="flex items-start gap-3">
-                <FileText className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
-                    Notes
-                  </h2>
-                  <p className="text-neutral-600 dark:text-neutral-400 whitespace-pre-wrap">
-                    {base.notes}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Timestamps */}
-        {(base.createdAt || base.updatedAt) && (
-          <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
-            {base.createdAt && (
-              <span>Created: {new Date(base.createdAt).toLocaleDateString()}</span>
-            )}
-            {base.updatedAt && (
-              <span>Updated: {new Date(base.updatedAt).toLocaleDateString()}</span>
-            )}
-          </div>
-        )}
+        <BaseDetailCard
+          base={hydratedBase}
+          network={hydratedNetwork}
+          networkLogo={hydratedLogo}
+        />
       </div>
     </div>
   )

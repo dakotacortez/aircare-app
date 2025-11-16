@@ -64,6 +64,25 @@ export const Bases: CollectionConfig = {
       },
     },
     {
+      name: 'network',
+      type: 'relationship',
+      relationTo: 'hospital-networks',
+      label: 'Hospital Network',
+      admin: {
+        description: 'Parent network/system this base belongs to (e.g., UC Health)',
+      },
+    },
+    {
+      name: 'networkLogoOverride',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Network Logo Override',
+      admin: {
+        description: 'Override the network logo with a base-specific logo',
+        condition: (data) => !!data.network,
+      },
+    },
+    {
       name: 'address',
       type: 'group',
       label: 'Address',
@@ -159,11 +178,20 @@ export const Bases: CollectionConfig = {
       },
     },
     {
+      name: 'squadPhone',
+      type: 'text',
+      label: 'Squad Phone',
+      admin: {
+        description: 'Primary squad/base contact number',
+        placeholder: '(734) 555-1234',
+      },
+    },
+    {
       name: 'contactInfo',
       type: 'array',
-      label: 'Contact Information',
+      label: 'Other Contact Information',
       admin: {
-        description: 'Phone numbers and contact methods',
+        description: 'Additional phone numbers and contact methods',
       },
       fields: [
         {
@@ -171,7 +199,7 @@ export const Bases: CollectionConfig = {
           type: 'text',
           label: 'Label',
           admin: {
-            placeholder: 'e.g., Base Phone, Duty Phone, Supervisor',
+            placeholder: 'e.g., Charge Nurse, Security, Supervisor',
           },
         },
         {
@@ -180,6 +208,16 @@ export const Bases: CollectionConfig = {
           label: 'Phone Number',
           admin: {
             placeholder: '(734) 555-1234',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Description',
+          admin: {
+            rows: 2,
+            description: 'Short description of when to use this contact',
+            placeholder: 'e.g., For direct report/bed control',
           },
         },
       ],
@@ -268,12 +306,39 @@ export const Bases: CollectionConfig = {
       }) as any,
     },
     {
+      name: 'hazards',
+      type: 'array',
+      label: 'Notes & Hazards',
+      admin: {
+        description: 'Important notes and hazards for EMS crews',
+      },
+      fields: [
+        {
+          name: 'note',
+          type: 'textarea',
+          label: 'Hazard / Note',
+          required: true,
+          admin: {
+            rows: 2,
+          },
+        },
+      ],
+    },
+    {
       name: 'notes',
       type: 'textarea',
-      label: 'Notes',
+      label: 'General Notes',
       admin: {
         description: 'Additional information about this base',
         rows: 5,
+      },
+    },
+    {
+      name: 'sourceAttribution',
+      type: 'text',
+      label: 'Source Attribution',
+      admin: {
+        description: 'Shown at bottom of page (e.g., "Air Care & Mobile Care education team")',
       },
     },
   ],
