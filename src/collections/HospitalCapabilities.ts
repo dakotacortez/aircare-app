@@ -20,7 +20,8 @@ export const HospitalCapabilities: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'category'],
     group: 'Hospitals',
-    description: 'Define capability types and their certification levels (e.g., Trauma with levels I-IV)',
+    description:
+      'Define capability types and their certification levels (e.g., Trauma with levels I-IV)',
   },
   access: {
     // Any logged in user can read
@@ -62,7 +63,8 @@ export const HospitalCapabilities: CollectionConfig = {
       label: 'Certification Levels',
       required: true,
       admin: {
-        description: 'Define all possible certification levels for this capability. These levels will appear as options when assigning this capability to hospitals.',
+        description:
+          'Define all possible certification levels for this capability. These levels will appear as options when assigning this capability to hospitals.',
       },
       fields: [
         {
@@ -71,8 +73,20 @@ export const HospitalCapabilities: CollectionConfig = {
           required: true,
           label: 'Level Name',
           admin: {
-            description: 'Enter the level name exactly as it should appear (e.g., "Level I", "Level 2 - Moderate Risk")',
+            description:
+              'Enter the level name exactly as it should appear (e.g., "Level I", "Level 2 - Moderate Risk")',
             placeholder: 'e.g., Level I, Level 2 - Moderate Risk, I - Basic/Low Risk',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Level Description',
+          admin: {
+            description:
+              'Provide a short summary of what this level includes so hospital cards and selectors can explain it.',
+            placeholder: 'e.g., Full neuro capability with 24/7 education support',
+            rows: 3,
           },
         },
       ],

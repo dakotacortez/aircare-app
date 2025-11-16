@@ -26,7 +26,7 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
 
   // Fetch the hospital
   const payload = await getPayload({ config })
-  
+
   let hospital: Hospital | null = null
   try {
     const result = await payload.findByID({
@@ -43,10 +43,15 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
     notFound()
   }
 
-  const network = typeof hospital.network === 'object' ? hospital.network as HospitalNetwork : null
-  const networkLogo = hospital.networkLogoOverride 
-    ? (typeof hospital.networkLogoOverride === 'object' ? hospital.networkLogoOverride as Media : null)
-    : network?.logo && typeof network.logo === 'object' ? network.logo as Media : null
+  const network =
+    typeof hospital.network === 'object' ? (hospital.network as HospitalNetwork) : null
+  const networkLogo = hospital.networkLogoOverride
+    ? typeof hospital.networkLogoOverride === 'object'
+      ? (hospital.networkLogoOverride as Media)
+      : null
+    : network?.logo && typeof network.logo === 'object'
+      ? (network.logo as Media)
+      : null
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
@@ -206,8 +211,21 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {hospital.capabilities.map((cap, idx) => {
-                      const capability = typeof cap.capability === 'object' ? cap.capability as HospitalCapability : null
+                      const capability =
+                        typeof cap.capability === 'object'
+                          ? (cap.capability as HospitalCapability)
+                          : null
                       if (!capability) return null
+
+                      const normalizedLevel = cap.level ? cap.level.toLowerCase().trim() : null
+                      const levelDetails =
+                        normalizedLevel && capability.levels
+                          ? capability.levels.find((levelOption) => {
+                              if (!levelOption.level) return false
+                              return levelOption.level.toLowerCase().trim() === normalizedLevel
+                            })
+                          : null
+                      const levelDescription = levelDetails?.description?.trim()
 
                       return (
                         <div
@@ -220,6 +238,11 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
                           {cap.level && (
                             <div className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
                               {cap.level}
+                            </div>
+                          )}
+                          {levelDescription && (
+                            <div className="text-sm text-emerald-600 dark:text-emerald-200/90 mt-0.5">
+                              {levelDescription}
                             </div>
                           )}
                         </div>

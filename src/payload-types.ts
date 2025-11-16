@@ -1107,6 +1107,10 @@ export interface HospitalCapability {
      * Enter the level name exactly as it should appear (e.g., "Level I", "Level 2 - Moderate Risk")
      */
     level: string;
+    /**
+     * Provide a short summary of what this level includes so hospital cards and selectors can explain it.
+     */
+    description?: string | null;
     id?: string | null;
   }[];
   updatedAt: string;
@@ -2017,6 +2021,7 @@ export interface HospitalCapabilitiesSelect<T extends boolean = true> {
     | T
     | {
         level?: T;
+        description?: T;
         id?: T;
       };
   updatedAt?: T;
