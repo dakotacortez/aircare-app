@@ -6,7 +6,6 @@ import { HeartPulse, Sun, Moon, Users, FolderOpen, Monitor } from 'lucide-react'
 
 import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
 import { useTheme } from '@/providers/Theme'
-import { getImplicitPreference } from '@/providers/Theme/shared'
 import { useServiceLine } from '@/providers/ServiceLine'
 import { useReferenceCard } from '@/hooks/useReferenceCard'
 
@@ -80,7 +79,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
-  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>('light')
   const pathname = usePathname()
 
   const navItems = resolveNavItems(data)
@@ -107,17 +105,6 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
     }
     checkAuth()
   }, [])
-
-  useEffect(() => {
-    // Update effective theme when theme changes or on mount
-    if (theme === 'system' || theme === null || theme === undefined) {
-      const preference = getImplicitPreference()
-      const current: 'light' | 'dark' = preference === 'dark' ? 'dark' : 'light'
-      setEffectiveTheme(current)
-    } else if (theme === 'light' || theme === 'dark') {
-      setEffectiveTheme(theme)
-    }
-  }, [theme])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -297,53 +284,115 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                           {adminLink.label}
                         </Link>
                       )}
-                      <button
-                        onClick={() => {
-                          const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
-                          setTheme(nextTheme)
-                          setUserMenuOpen(false)
-                        }}
-                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 text-sm flex items-center gap-2"
-                      >
-                        {theme === 'system' ? (
-                          <>
-                            <Monitor className="h-4 w-4" />
-                            System Theme
-                          </>
-                        ) : effectiveTheme === 'dark' ? (
-                          <>
-                            <Moon className="h-4 w-4" />
-                            Dark Mode
-                          </>
-                        ) : (
-                          <>
-                            <Sun className="h-4 w-4" />
-                            Light Mode
-                          </>
-                        )}
-                      </button>
+                      <div className="px-3 py-2 border-t dark:border-neutral-700">
+                        <div className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">Theme</div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => {
+                              setTheme('light')
+                              setUserMenuOpen(false)
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                              theme === 'light'
+                                ? 'bg-neutral-100 dark:bg-neutral-700'
+                                : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Sun className="h-4 w-4" />
+                              Light
+                            </span>
+                            {theme === 'light' && (
+                              <span className="text-blue-600 dark:text-blue-400">✓</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setTheme('dark')
+                              setUserMenuOpen(false)
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                              theme === 'dark'
+                                ? 'bg-neutral-100 dark:bg-neutral-700'
+                                : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Moon className="h-4 w-4" />
+                              Dark
+                            </span>
+                            {theme === 'dark' && (
+                              <span className="text-blue-600 dark:text-blue-400">✓</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setTheme('system')
+                              setUserMenuOpen(false)
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${
+                              theme === 'system'
+                                ? 'bg-neutral-100 dark:bg-neutral-700'
+                                : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/50'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              <Monitor className="h-4 w-4" />
+                              System
+                            </span>
+                            {theme === 'system' && (
+                              <span className="text-blue-600 dark:text-blue-400">✓</span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
             {/* Theme toggle - desktop only */}
-            <button
-              onClick={() => {
-                const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'
-                setTheme(nextTheme)
-              }}
-              className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              aria-label="Toggle theme"
-            >
-              {theme === 'system' ? (
-                <Monitor className="h-4 w-4" />
-              ) : effectiveTheme === 'dark' ? (
+            <div className="hidden xl:inline-flex rounded-xl border dark:border-neutral-700 overflow-hidden">
+              <button
+                onClick={() => setTheme('light')}
+                className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${
+                  theme === 'light'
+                    ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
+                }`}
+                aria-label="Light theme"
+                title="Light theme"
+              >
                 <Sun className="h-4 w-4" />
-              ) : (
+                <span className="text-xs">Light</span>
+              </button>
+              <button
+                onClick={() => setTheme('dark')}
+                className={`px-3 py-2 text-sm flex items-center gap-1.5 border-x dark:border-neutral-700 transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
+                }`}
+                aria-label="Dark theme"
+                title="Dark theme"
+              >
                 <Moon className="h-4 w-4" />
-              )}
-            </button>
+                <span className="text-xs">Dark</span>
+              </button>
+              <button
+                onClick={() => setTheme('system')}
+                className={`px-3 py-2 text-sm flex items-center gap-1.5 transition-colors ${
+                  theme === 'system'
+                    ? 'bg-neutral-100 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100'
+                    : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/50 text-neutral-600 dark:text-neutral-400'
+                }`}
+                aria-label="System theme"
+                title="System theme"
+              >
+                <Monitor className="h-4 w-4" />
+                <span className="text-xs">System</span>
+              </button>
+            </div>
           </div>
 
           {mobileOpen && (
