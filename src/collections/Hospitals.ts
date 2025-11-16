@@ -162,39 +162,32 @@ export const Hospitals: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'doorCodes',
-      type: 'array',
-      label: 'Door Codes',
-      admin: {
-        description: 'Entry codes for EMS access',
-      },
-      fields: [
-        {
-            type: 'row',
-            fields: [
-              {
-                name: 'label',
-                type: 'text',
-                label: 'Door Label',
-                admin: {
-                  placeholder: 'e.g., ED Entrance',
-                  width: '50%',
-                },
-              },
-              {
-                name: 'code',
-                type: 'text',
-                label: 'Door Code',
-                admin: {
-                  placeholder: 'e.g., 0911#',
-                  width: '50%',
-                },
-              },
-            ],
+      {
+        name: 'doorCodes',
+        type: 'array',
+        label: 'Door Codes',
+        admin: {
+          description: 'Entry codes for EMS access',
+        },
+        fields: [
+          {
+            name: 'label',
+            type: 'text',
+            label: 'Door Label',
+            admin: {
+              placeholder: 'e.g., ED Entrance',
+            },
           },
-      ],
-    },
+          {
+            name: 'code',
+            type: 'text',
+            label: 'Door Code',
+            admin: {
+              placeholder: 'e.g., 0911#',
+            },
+          },
+        ],
+      },
     {
       name: 'capabilities',
       type: 'array',
@@ -211,6 +204,7 @@ export const Hospitals: CollectionConfig = {
           label: 'Capability Type',
           admin: {
             description: 'Select a capability type (e.g., Trauma, PCI, Stroke)',
+            allowCreate: false,
           },
         },
         {
