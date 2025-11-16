@@ -49,11 +49,11 @@ export const Users: CollectionConfig = {
       sameSite: 'Lax',
     },
     forgotPassword: {
-      generateEmailHTML: ({ token, user }) => {
-        const resetURL = `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/reset-password?token=${token}`
+      generateEmailHTML: (args) => {
+        const resetURL = `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/reset-password?token=${args?.token || ''}`
         return `
           <h2>Reset Your Password</h2>
-          <p>Hi ${user.name || user.email},</p>
+          <p>Hi ${args?.user?.name || args?.user?.email || 'there'},</p>
           <p>You requested to reset your password. Click the link below to reset it:</p>
           <p><a href="${resetURL}">${resetURL}</a></p>
           <p>This link will expire in 1 hour.</p>
@@ -62,7 +62,10 @@ export const Users: CollectionConfig = {
       },
       generateEmailSubject: () => 'Reset Your Password - Air Care & Mobile Care',
     },
-    verify: async ({ user }) => {
+    verify: async (args) => {
+      const user = args?.user
+      if (!user) return false
+
       // Admin team members can always login (bypass approval checks)
       if (user.role === 'admin-team') {
         return true
