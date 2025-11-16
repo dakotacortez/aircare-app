@@ -111,9 +111,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   useEffect(() => {
     // Update effective theme when theme changes or on mount
     if (theme === 'system' || theme === null || theme === undefined) {
-      const current = getImplicitPreference() || 'light'
+      const preference = getImplicitPreference()
+      const current: 'light' | 'dark' = preference === 'dark' ? 'dark' : 'light'
       setEffectiveTheme(current)
-    } else {
+    } else if (theme === 'light' || theme === 'dark') {
       setEffectiveTheme(theme)
     }
   }, [theme])

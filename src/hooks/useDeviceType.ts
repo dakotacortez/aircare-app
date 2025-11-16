@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react'
 
+// Extend Navigator interface to include iOS standalone property
+interface NavigatorStandalone extends Navigator {
+  standalone?: boolean
+}
+
 /**
  * Hook to detect if device is mobile/tablet/PWA (not desktop)
  * Used to conditionally show reference card features
@@ -18,7 +23,7 @@ export function useDeviceType() {
       const isSmallScreen = window.innerWidth < 1024 // tablets and phones
       const standaloneMedia = window.matchMedia('(display-mode: standalone)')
       const isStandalonePWA =
-        standaloneMedia.matches || (window.navigator as any).standalone === true
+        standaloneMedia.matches || (window.navigator as NavigatorStandalone).standalone === true
 
       // Consider it mobile if touch-capable, small screen, or running as an installed PWA
       setIsMobile(isTouchDevice || isSmallScreen || isStandalonePWA)
