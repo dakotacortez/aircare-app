@@ -58,6 +58,34 @@ export const Assets: CollectionConfig = {
       },
     },
     {
+      name: 'emoji',
+      type: 'text',
+      label: 'Display Emoji',
+      admin: {
+        description: 'Emoji to display with this asset (e.g., 🚑, 🚁, 🚓)',
+        placeholder: '🚑',
+      },
+    },
+    {
+      name: 'unitId',
+      type: 'text',
+      label: 'Unit ID',
+      admin: {
+        description: 'Internal unit identifier',
+        placeholder: 'e.g., M7-231, CCT-3, SUP-1',
+      },
+    },
+    {
+      name: 'licensePlate',
+      type: 'text',
+      label: 'License Plate',
+      admin: {
+        description: 'Vehicle license plate number',
+        placeholder: 'e.g., EMS-7123',
+        condition: (data) => data.type !== 'helicopter',
+      },
+    },
+    {
       name: 'tailNumber',
       type: 'text',
       label: 'Tail Number',
@@ -68,13 +96,22 @@ export const Assets: CollectionConfig = {
       },
     },
     {
+      name: 'capabilities',
+      type: 'textarea',
+      label: 'Detailed Capabilities',
+      admin: {
+        description: 'Detailed description of equipment and capabilities (shown in tooltip on hover)',
+        placeholder: 'e.g., Bariatric-capable cot, ventilator on board, IABP not mountable',
+        rows: 3,
+      },
+    },
+    {
       name: 'notes',
       type: 'textarea',
-      label: 'Notes',
+      label: 'Internal Notes',
       admin: {
-        description: 'Additional details about this asset (equipment, capabilities, etc.)',
-        placeholder: 'e.g., Stryker cot, balloon pump capable',
-        rows: 3,
+        description: 'Additional internal notes about this asset',
+        rows: 2,
       },
     },
   ],

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
 import { capabilityColors } from './capabilityColors'
@@ -178,7 +177,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   const capabilityFilterLabel = capabilityFilter ? capabilityNameById.get(capabilityFilter) : null
 
   return (
-    <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default dark:bg-uc-dark-bg dark:text-uc-text-dark-default">
+    <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default dark:bg-neutral-900 dark:text-uc-text-dark-default">
       <div className="mx-auto max-w-5xl px-4 py-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -193,7 +192,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               <select
                 value={sortOption}
                 onChange={(event) => setSortOption(event.target.value as SortOption)}
-                className="h-8 rounded-full border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-uc-dark-border dark:bg-uc-dark-card dark:text-uc-text-dark-muted"
+                  className="h-8 rounded-full border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-muted"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -201,14 +200,11 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
-                ▼
-              </span>
             </div>
           </div>
         </div>
 
-        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span className="text-base">🧪</span>
@@ -221,7 +217,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   onChange={(event) =>
                     setCapabilityFilter(event.target.value === '' ? null : Number(event.target.value))
                   }
-                  className="h-9 min-w-[10rem] rounded-full border border-uc-light-border bg-uc-light-subtle pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-uc-dark-border dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted dark:focus:bg-uc-dark-card"
+                  className="h-9 min-w-[10rem] rounded-full border border-uc-light-border bg-uc-light-subtle pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-700 dark:text-uc-text-dark-muted dark:focus:bg-neutral-800"
                 >
                   <option value="">All capabilities</option>
                   {capabilities.map((capability) => (
@@ -230,15 +226,12 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                     </option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
-                  ▼
-                </span>
               </div>
               {capabilityFilter && (
                 <button
                   type="button"
                   onClick={() => setCapabilityFilter(null)}
-                  className="rounded-full border border-uc-light-border bg-white px-2 py-1 text-xs font-medium text-uc-text-light-muted transition hover:bg-uc-light-subtle dark:border-uc-dark-border dark:bg-uc-dark-card dark:text-uc-text-dark-muted"
+                  className="rounded-full border border-uc-light-border bg-white px-2 py-1 text-xs font-medium text-uc-text-light-muted transition hover:bg-uc-light-subtle dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-muted"
                 >
                   Clear
                 </button>
@@ -261,7 +254,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
         )}
 
         {filteredAndSorted.length === 0 ? (
-          <div className="rounded-2xl border-2 border-dashed border-uc-light-border bg-uc-light-subtle p-8 text-center text-sm text-uc-text-light-muted dark:border-uc-dark-border dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
+          <div className="rounded-2xl border-2 border-dashed border-uc-light-border bg-uc-light-subtle p-8 text-center text-sm text-uc-text-light-muted dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-muted">
             No hospitals match this capability filter yet.
           </div>
         ) : (
@@ -276,11 +269,9 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               const cardKey = `${hospital.id}`
 
               return (
-                <Link key={cardKey} href={`/hospitals/${hospital.id ?? ''}`} className="block">
-                  <motion.article
-                    whileHover={{ y: -2, scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition dark:bg-uc-dark-card dark:shadow-uc-card-dark dark:ring-uc-dark-border"
+                <Link key={cardKey} href={`/hospitals/${hospital.slug ?? hospital.id ?? ''}`} className="block">
+                  <article
+                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
@@ -288,10 +279,10 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           <img
                             src={networkLogo.url}
                             alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
-                            className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-uc-dark-card dark:ring-uc-dark-border"
+                            className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-neutral-800 dark:ring-neutral-700"
                           />
                         ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
                             <span className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
                               {hospital.name?.[0]?.toUpperCase() ?? '🏥'}
                             </span>
@@ -301,7 +292,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           <div className="mb-1 flex items-center gap-2">
                             <h2 className="text-base font-semibold">{hospital.name}</h2>
                             {network?.name && (
-                              <span className="rounded-full bg-uc-light-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-uc-text-light-muted dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
+                              <span className="rounded-full bg-uc-light-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
                                 {network.name}
                               </span>
                             )}
@@ -326,11 +317,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                             {typeof hospital.eta === 'number' ? `~${hospital.eta} min` : 'ETA pending'}
                           </p>
                         </div>
-                        <motion.span
-                          initial={{ x: 0 }}
-                          whileHover={{ x: 4 }}
-                          className="flex items-center text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle"
-                        >
+                        <span className="flex items-center text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -341,11 +328,11 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                           </svg>
-                        </motion.span>
+                        </span>
                       </div>
                     </div>
 
-                    <div className="my-3 h-px bg-uc-light-border dark:bg-uc-dark-border" />
+                    <div className="my-3 h-px bg-uc-light-border dark:bg-neutral-700" />
 
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <div className="flex items-center gap-1 text-uc-text-light-muted dark:text-uc-text-dark-muted">
@@ -354,23 +341,32 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {badgesToDisplay.map((badge) => (
-                          <span
+                          <button
                             key={badge.id}
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${badge.color.pill}`}
-                            title={badge.description ?? undefined}
+                            type="button"
+                            className={`group relative inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${badge.color.pill}`}
                           >
-                            {badge.name}
-                            {badge.level ? ` • ${badge.level}` : ''}
-                          </span>
+                            <span className={badge.color.text}>
+                              {badge.name}
+                              {badge.level ? ` • ${badge.level}` : ''}
+                            </span>
+                            {badge.description && (
+                              <span
+                                className={`pointer-events-none absolute left-0 top-full z-10 mt-1 w-56 rounded-lg ${badge.color.tooltip} px-3 py-2 text-[11px] font-normal opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100`}
+                              >
+                                {badge.description}
+                              </span>
+                            )}
+                          </button>
                         ))}
                         {moreCount > 0 && (
-                          <span className="rounded-full bg-uc-light-subtle px-2 py-0.5 text-[11px] font-medium text-uc-text-light-muted ring-1 ring-uc-light-border dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted dark:ring-uc-dark-border">
+                          <span className="rounded-full bg-uc-light-subtle px-2 py-0.5 text-[11px] font-medium text-uc-text-light-muted ring-1 ring-uc-light-border dark:bg-neutral-700 dark:text-uc-text-dark-muted dark:ring-neutral-600">
                             +{moreCount} more
                           </span>
                         )}
                       </div>
                     </div>
-                  </motion.article>
+                  </article>
                 </Link>
               )
             })}

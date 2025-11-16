@@ -14,7 +14,7 @@ export const Bases: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'address.city'],
+    defaultColumns: ['name', 'slug', 'address.city'],
     group: 'Operations',
     description: 'EMS base locations and station information',
   },
@@ -34,6 +34,52 @@ export const Bases: CollectionConfig = {
       label: 'Base Name',
       admin: {
         placeholder: 'e.g., Station 1, Headquarters',
+      },
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'URL Slug',
+      admin: {
+        description: 'URL-friendly identifier (auto-generated from name)',
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, operation }) => {
+            // Auto-generate slug from name on create or if slug is empty
+            if ((operation === 'create' || !value) && data?.name) {
+              return data.name
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+            }
+            return value
+          },
+        ],
+      },
+    },
+    {
+      name: 'network',
+      type: 'relationship',
+      relationTo: 'hospital-networks',
+      label: 'Hospital Network',
+      admin: {
+        description: 'Parent network/system this base belongs to (e.g., UC Health)',
+      },
+    },
+    {
+      name: 'networkLogoOverride',
+      type: 'upload',
+      relationTo: 'media',
+      label: 'Network Logo Override',
+      admin: {
+        description: 'Override the network logo with a base-specific logo',
+        condition: (data) => !!data.network,
       },
     },
     {
@@ -69,32 +115,83 @@ export const Bases: CollectionConfig = {
       ],
     },
     {
-      type: 'row',
-      fields: [
-        {
-          name: 'latitude',
-          type: 'number',
-          label: 'Latitude',
-          admin: {
-            description: 'For mapping and routing',
+      name: 'coordinates',
+      type: 'text',
+      label: 'Coordinates (Latitude, Longitude)',
+      admin: {
+        description: 'Paste from Google Maps (e.g., "39.136774, -84.502021"). We\'ll parse it automatically.',
+        placeholder: '39.136774, -84.502021',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, siblingData }) => {
+            if (!value) return value
+            
+            // Parse various coordinate formats
+            const coordStr = String(value).trim()
+            
+            // Try to extract two numbers from the string
+            // Handles: "lat,lng" "lat, lng" "lat lng" "lat, -lng" etc.
+            const matches = coordStr.match(/-?\d+\.?\d*/g)
+            
+            if (matches && matches.length >= 2) {
+              const lat = parseFloat(matches[0])
+              const lng = parseFloat(matches[1])
+              
+              if (!isNaN(lat) && !isNaN(lng)) {
+                // Store parsed values in sibling fields
+                siblingData.latitude = lat
+                siblingData.longitude = lng
+              }
+            }
+            
+            return value
           },
-        },
-        {
-          name: 'longitude',
-          type: 'number',
-          label: 'Longitude',
-          admin: {
-            description: 'For mapping and routing',
+        ],
+        afterRead: [
+          ({ data }) => {
+            // Reconstruct the display value from lat/lng
+            if (data?.latitude && data?.longitude) {
+              return `${data.latitude}, ${data.longitude}`
+            }
+            return ''
           },
-        },
-      ],
+        ],
+      },
+    },
+    {
+      name: 'latitude',
+      type: 'number',
+      label: 'Latitude',
+      admin: {
+        hidden: true,
+        description: 'Auto-populated from coordinates field',
+      },
+    },
+    {
+      name: 'longitude',
+      type: 'number',
+      label: 'Longitude',
+      admin: {
+        hidden: true,
+        description: 'Auto-populated from coordinates field',
+      },
+    },
+    {
+      name: 'squadPhone',
+      type: 'text',
+      label: 'Squad Phone',
+      admin: {
+        description: 'Primary squad/base contact number',
+        placeholder: '(734) 555-1234',
+      },
     },
     {
       name: 'contactInfo',
       type: 'array',
-      label: 'Contact Information',
+      label: 'Other Contact Information',
       admin: {
-        description: 'Phone numbers and contact methods',
+        description: 'Additional phone numbers and contact methods',
       },
       fields: [
         {
@@ -102,7 +199,7 @@ export const Bases: CollectionConfig = {
           type: 'text',
           label: 'Label',
           admin: {
-            placeholder: 'e.g., Base Phone, Duty Phone, Supervisor',
+            placeholder: 'e.g., Charge Nurse, Security, Supervisor',
           },
         },
         {
@@ -111,6 +208,16 @@ export const Bases: CollectionConfig = {
           label: 'Phone Number',
           admin: {
             placeholder: '(734) 555-1234',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Description',
+          admin: {
+            rows: 2,
+            description: 'Short description of when to use this contact',
+            placeholder: 'e.g., For direct report/bed control',
           },
         },
       ],
@@ -199,12 +306,39 @@ export const Bases: CollectionConfig = {
       }) as any,
     },
     {
+      name: 'hazards',
+      type: 'array',
+      label: 'Notes & Hazards',
+      admin: {
+        description: 'Important notes and hazards for EMS crews',
+      },
+      fields: [
+        {
+          name: 'note',
+          type: 'textarea',
+          label: 'Hazard / Note',
+          required: true,
+          admin: {
+            rows: 2,
+          },
+        },
+      ],
+    },
+    {
       name: 'notes',
       type: 'textarea',
-      label: 'Notes',
+      label: 'General Notes',
       admin: {
         description: 'Additional information about this base',
         rows: 5,
+      },
+    },
+    {
+      name: 'sourceAttribution',
+      type: 'text',
+      label: 'Source Attribution',
+      admin: {
+        description: 'Shown at bottom of page (e.g., "Air Care & Mobile Care education team")',
       },
     },
   ],

@@ -301,7 +301,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
   const lastUpdated = hospital.updatedAt ? new Date(hospital.updatedAt) : null
 
   return (
-    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:text-uc-text-dark-default dark:shadow-uc-card-dark dark:ring-uc-dark-border">
+    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:text-uc-text-dark-default dark:shadow-uc-card-dark dark:ring-neutral-700">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -311,10 +311,10 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
                 width={48}
                 height={48}
-                className="h-12 w-12 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-uc-dark-card dark:ring-uc-dark-border"
+                className="h-12 w-12 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-neutral-800 dark:ring-neutral-700"
               />
             ) : (
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
                   <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
                   {hospital.name?.[0]?.toUpperCase() ?? '🏥'}
                 </span>
@@ -333,7 +333,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             <button
               type="button"
               onClick={handleCopyAllInfo}
-              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-uc-dark-subtle/80 dark:text-uc-text-dark-muted dark:ring-uc-dark-border"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📋
@@ -342,7 +342,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             </button>
             <a
               href={`mailto:?subject=Hospital info update: ${encodeURIComponent(hospital.name ?? '')}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-uc-dark-subtle/80 dark:text-uc-text-dark-muted dark:ring-uc-dark-border"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📝
@@ -353,7 +353,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
         </div>
 
         <div className="mb-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span role="img" aria-hidden="true">
                 📍
@@ -372,7 +372,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">Address coming soon</p>
             )}
           </div>
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
@@ -390,8 +390,8 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             </div>
             {etaState.status === 'loading' ? (
                 <div className="animate-pulse space-y-2">
-                  <div className="h-4 w-28 rounded-full bg-uc-light-border dark:bg-uc-dark-subtle" />
-                  <div className="h-3 w-40 rounded-full bg-uc-light-subtle dark:bg-uc-dark-subtle/80" />
+                  <div className="h-4 w-28 rounded-full bg-uc-light-border dark:bg-neutral-700" />
+                  <div className="h-3 w-40 rounded-full bg-uc-light-subtle dark:bg-neutral-700/80" />
                 </div>
             ) : etaState.status === 'ready' ? (
               <>
@@ -434,7 +434,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 }
               }}
               disabled={!hospital.squadPhone}
-              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-uc-dark-card"
+              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-neutral-800"
             >
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
@@ -446,7 +446,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigationQuery && setShowNavModal(true)}
-                className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-sky-500/40 dark:bg-sky-600 dark:hover:bg-sky-500 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-uc-dark-card"
+                className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-sky-500/40 dark:bg-sky-600 dark:hover:bg-sky-500 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-neutral-800"
               disabled={!navigationQuery}
             >
               <span aria-hidden="true">🧭</span>
@@ -465,7 +465,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   navigator.clipboard?.writeText(primaryDoorCode.code).catch(() => null)
                 }
               }}
-              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-uc-dark-card"
+              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-800"
             >
               <span aria-hidden="true">🔑</span>
               <div className="flex flex-col leading-tight">
@@ -478,7 +478,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
 
         <div className="space-y-4">
           {capabilityBadges.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🏥
@@ -511,7 +511,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {hospital.helipad && (hospital.helipad.identifier || hospital.helipad.preferredApproach || hospital.helipad.notes) && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🚁
@@ -544,7 +544,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               </span>
               Campus maps
             </h2>
-              <div className="mb-3 inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
+              <div className="mb-3 inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
               {campusTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -552,7 +552,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   onClick={() => setActiveMapTab(tab.id)}
                   className={`rounded-full px-3 py-1 transition ${
                     activeMapTab === tab.id
-                        ? 'bg-uc-light-card text-uc-text-light-default shadow-sm dark:bg-uc-dark-card dark:text-uc-text-dark-default'
+                        ? 'bg-uc-light-card text-uc-text-light-default shadow-sm dark:bg-neutral-800 dark:text-uc-text-dark-default'
                         : 'text-uc-text-light-muted hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default'
                   }`}
                 >
@@ -560,7 +560,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 </button>
               ))}
             </div>
-              <div className="flex h-48 items-center justify-center overflow-hidden rounded-xl bg-uc-light-subtle text-xs text-uc-text-light-muted dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
+              <div className="flex h-48 items-center justify-center overflow-hidden rounded-xl bg-uc-light-subtle text-xs text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
               {campusTabs.map((tab) => {
                 if (tab.id !== activeMapTab) return null
                 const emoji = 'mapType' in tab ? mapTypeEmoji[tab.mapType as string] ?? '🗺️' : '🗺️'
@@ -595,7 +595,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           </div>
 
           {otherContacts.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ☎️
@@ -606,7 +606,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   {otherContacts.map((contact, idx) => (
                     <div
                       key={`${contact?.label}-${idx}`}
-                      className="flex flex-col gap-2 rounded-xl ring-1 ring-uc-light-border bg-uc-light-subtle px-3 py-2 dark:ring-uc-dark-border dark:bg-uc-dark-subtle"
+                      className="flex flex-col gap-2 rounded-xl ring-1 ring-uc-light-border bg-uc-light-subtle px-3 py-2 dark:ring-neutral-700 dark:bg-neutral-700"
                     >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
@@ -629,7 +629,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {(hazards.length > 0 || hospital.notes) && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ⚠️
@@ -646,7 +646,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {doorCodes.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🔑
@@ -666,13 +666,13 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
         <AnimatePresence>
           {showNavModal && navigationQuery && (
             <motion.div
-              className="fixed inset-0 z-30 flex items-center justify-center bg-uc-dark-card/40 p-4"
+              className="fixed inset-0 z-30 flex items-center justify-center bg-neutral-800/40 p-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border"
+                className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700"
                 initial={{ scale: 0.95, y: 10, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
                 exit={{ scale: 0.95, y: 10, opacity: 0 }}
@@ -681,7 +681,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   <h3 className="text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">Open navigation</h3>
                   <button
                     onClick={() => setShowNavModal(false)}
-                    className="rounded-full p-1 text-uc-text-light-subtle hover:bg-uc-light-subtle hover:text-uc-text-light-default dark:text-uc-text-dark-subtle dark:hover:bg-uc-dark-subtle dark:hover:text-uc-text-dark-default"
+                    className="rounded-full p-1 text-uc-text-light-subtle hover:bg-uc-light-subtle hover:text-uc-text-light-default dark:text-uc-text-dark-subtle dark:hover:bg-neutral-700 dark:hover:text-uc-text-dark-default"
                   >
                     ✕
                   </button>
@@ -692,7 +692,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 <div className="space-y-2 text-sm">
                   <button
                     onClick={() => handleOpenNavigation('google')}
-                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-uc-dark-border dark:hover:bg-uc-dark-subtle"
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-neutral-700 dark:hover:bg-neutral-700"
                   >
                     <span className="flex items-center gap-2">
                       <span>🟢</span>
@@ -702,26 +702,26 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   </button>
                   <button
                     onClick={() => handleOpenNavigation('apple')}
-                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-uc-dark-border dark:hover:bg-uc-dark-subtle"
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-neutral-700 dark:hover:bg-neutral-700"
                   >
                     <span>🍎</span>
                     <span>Apple Maps</span>
                   </button>
                   <button
                     onClick={() => handleOpenNavigation('waze')}
-                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-uc-dark-border dark:hover:bg-uc-dark-subtle"
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-neutral-700 dark:hover:bg-neutral-700"
                   >
                     <span>🚘</span>
                     <span>Waze</span>
                   </button>
                 </div>
-                <div className="mt-4 border-t border-uc-light-border pt-3 dark:border-uc-dark-border">
+                <div className="mt-4 border-t border-uc-light-border pt-3 dark:border-neutral-700">
                   <p className="mb-2 text-xs font-medium uppercase tracking-wide text-uc-text-light-muted dark:text-uc-text-dark-muted">
                     Share with crew
                   </p>
                   <button
                     onClick={handleCopyAllInfo}
-                    className="flex w-full items-center gap-2 rounded-xl bg-uc-dark-card px-3 py-2 text-xs font-medium text-white hover:bg-black dark:bg-uc-light-card dark:text-uc-text-light-default"
+                    className="flex w-full items-center gap-2 rounded-xl bg-neutral-800 px-3 py-2 text-xs font-medium text-white hover:bg-black dark:bg-uc-light-card dark:text-uc-text-light-default"
                   >
                     <span>📤</span>
                     <span>Share location &amp; address</span>

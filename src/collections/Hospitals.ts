@@ -18,7 +18,7 @@ export const Hospitals: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'address.city', 'network'],
+    defaultColumns: ['name', 'slug', 'address.city', 'network'],
     group: 'Hospitals',
     description: 'Hospital directory with contact info, capabilities, and EMS notes',
   },
@@ -53,6 +53,33 @@ export const Hospitals: CollectionConfig = {
       label: 'Hospital Name',
       admin: {
         placeholder: 'e.g., St. Joseph Mercy Ann Arbor',
+      },
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'URL Slug',
+      admin: {
+        description: 'URL-friendly identifier (auto-generated from name)',
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, operation }) => {
+            // Auto-generate slug from name on create or if slug is empty
+            if ((operation === 'create' || !value) && data?.name) {
+              return data.name
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+            }
+            return value
+          },
+        ],
       },
     },
     {
@@ -110,25 +137,67 @@ export const Hospitals: CollectionConfig = {
       ],
     },
     {
-      type: 'row',
-      fields: [
-        {
-          name: 'latitude',
-          type: 'number',
-          label: 'Latitude',
-          admin: {
-            description: 'For mapping and routing',
+      name: 'coordinates',
+      type: 'text',
+      label: 'Coordinates (Latitude, Longitude)',
+      admin: {
+        description: 'Paste from Google Maps (e.g., "39.136774, -84.502021"). We\'ll parse it automatically.',
+        placeholder: '39.136774, -84.502021',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, siblingData }) => {
+            if (!value) return value
+            
+            // Parse various coordinate formats
+            const coordStr = String(value).trim()
+            
+            // Try to extract two numbers from the string
+            // Handles: "lat,lng" "lat, lng" "lat lng" "lat, -lng" etc.
+            const matches = coordStr.match(/-?\d+\.?\d*/g)
+            
+            if (matches && matches.length >= 2) {
+              const lat = parseFloat(matches[0])
+              const lng = parseFloat(matches[1])
+              
+              if (!isNaN(lat) && !isNaN(lng)) {
+                // Store parsed values in sibling fields
+                siblingData.latitude = lat
+                siblingData.longitude = lng
+              }
+            }
+            
+            return value
           },
-        },
-        {
-          name: 'longitude',
-          type: 'number',
-          label: 'Longitude',
-          admin: {
-            description: 'For mapping and routing',
+        ],
+        afterRead: [
+          ({ data }) => {
+            // Reconstruct the display value from lat/lng
+            if (data?.latitude && data?.longitude) {
+              return `${data.latitude}, ${data.longitude}`
+            }
+            return ''
           },
-        },
-      ],
+        ],
+      },
+    },
+    {
+      name: 'latitude',
+      type: 'number',
+      label: 'Latitude',
+      admin: {
+        hidden: true,
+        description: 'Auto-populated from coordinates field',
+      },
+    },
+    {
+      name: 'longitude',
+      type: 'number',
+      label: 'Longitude',
+      admin: {
+        hidden: true,
+        description: 'Auto-populated from coordinates field',
+      },
     },
     {
       name: 'squadPhone',
