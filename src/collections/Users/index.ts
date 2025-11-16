@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import type { User } from '@/payload-types'
 
 import { isAdmin } from '../../access/roles'
 
@@ -62,24 +63,26 @@ export const Users: CollectionConfig = {
       },
       generateEmailSubject: () => 'Reset Your Password - Air Care & Mobile Care',
     },
-    verify: async (args) => {
-      const user = args?.user
-      if (!user) return false
+  },
+  hooks: {
+    beforeLogin: [
+      async ({ user }) => {
+        // Admin team members can always login (bypass approval checks)
+        if ((user as User)?.role === 'admin-team') {
+          return user
+        }
 
-      // Admin team members can always login (bypass approval checks)
-      if (user.role === 'admin-team') {
-        return true
-      }
+        // Check if user is approved and active
+        if (!(user as User)?.approved) {
+          throw new Error('Your account is pending approval. Please contact an administrator.')
+        }
+        if ((user as User)?.status !== 'active') {
+          throw new Error('Your account is not active. Please contact an administrator.')
+        }
 
-      // Check if user is approved and active
-      if (!user.approved) {
-        throw new Error('Your account is pending approval. Please contact an administrator.')
-      }
-      if (user.status !== 'active') {
-        throw new Error('Your account is not active. Please contact an administrator.')
-      }
-      return true
-    },
+        return user
+      },
+    ],
   },
   fields: [
     {
