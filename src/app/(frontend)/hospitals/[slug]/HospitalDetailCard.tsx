@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { DoorCodeList } from '@/components/door-code-list'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors } from '../capabilityColors'
 
 interface HospitalDetailCardProps {
@@ -230,7 +231,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
     handleError()
   }, [addressLines, capabilityBadges, hospital.name, hospital.squadPhone, network?.name, primaryDoorCode?.code])
 
-  const requestEta = useCallback(() => {
+  const requestEta = useCallback(async () => {
     if (typeof hospital.latitude !== 'number' || typeof hospital.longitude !== 'number') {
       setEtaState({
         status: 'error',
@@ -239,7 +240,27 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
       return
     }
 
-    if (!navigator.geolocation) {
+    setEtaState({ status: 'loading' })
+
+    // Try to get device location
+    const location = await getDeviceLocation()
+
+    if (location) {
+      // Successfully got user's location
+      const distance = calculateDistanceMiles(
+        location.lat,
+        location.lon,
+        hospital.latitude as number,
+        hospital.longitude as number,
+      )
+      const eta = estimateEtaMinutes(distance)
+      setEtaState({
+        status: 'ready',
+        etaMinutes: eta,
+        distanceMiles: Number.isFinite(distance) ? distance : undefined,
+        usingUCMC: false,
+      })
+    } else {
       // Fallback to UCMC coordinates
       const distance = calculateDistanceMiles(
         UCMC_COORDS.lat,
@@ -254,48 +275,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
         distanceMiles: Number.isFinite(distance) ? distance : undefined,
         usingUCMC: true,
       })
-      return
     }
-
-    setEtaState({ status: 'loading' })
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const distance = calculateDistanceMiles(
-          position.coords.latitude,
-          position.coords.longitude,
-          hospital.latitude as number,
-          hospital.longitude as number,
-        )
-        const eta = estimateEtaMinutes(distance)
-        setEtaState({
-          status: 'ready',
-          etaMinutes: eta,
-          distanceMiles: Number.isFinite(distance) ? distance : undefined,
-          usingUCMC: false,
-        })
-      },
-      (error) => {
-        console.error('Geolocation error', error)
-        // Fallback to UCMC coordinates
-        const distance = calculateDistanceMiles(
-          UCMC_COORDS.lat,
-          UCMC_COORDS.lon,
-          hospital.latitude as number,
-          hospital.longitude as number,
-        )
-        const eta = estimateEtaMinutes(distance)
-        setEtaState({
-          status: 'ucmc-fallback',
-          etaMinutes: eta,
-          distanceMiles: Number.isFinite(distance) ? distance : undefined,
-          usingUCMC: true,
-        })
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      },
-    )
   }, [hospital.latitude, hospital.longitude])
 
   // Auto-request ETA on mount

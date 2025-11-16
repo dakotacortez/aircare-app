@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors } from './capabilityColors'
 
 type SortOption = 'distanceAsc' | 'distanceDesc' | 'alpha'
@@ -105,21 +106,17 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   useEffect(() => {
     if (!isMobile) return
 
-    if (!('geolocation' in navigator)) {
-      setLocationError('Location not supported on this device')
-      return
+    const fetchLocation = async () => {
+      const location = await getDeviceLocation()
+      if (location) {
+        setUserLocation(location)
+        setLocationError(null)
+      } else {
+        setLocationError('Location access denied')
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({ lat: position.coords.latitude, lon: position.coords.longitude })
-        setLocationError(null)
-      },
-      (error) => {
-        console.error('Geolocation error:', error)
-        setLocationError(error.message || 'Location access denied')
-      },
-    )
+    fetchLocation()
   }, [isMobile])
 
   const capabilityNameById = useMemo(() => {

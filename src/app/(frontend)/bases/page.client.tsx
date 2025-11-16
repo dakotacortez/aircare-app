@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import type { Base } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { getDeviceLocation } from '@/utilities/geolocation'
 
 interface BasesClientProps {
   bases: Base[]
@@ -49,21 +50,17 @@ export function BasesClient({ bases }: BasesClientProps) {
   useEffect(() => {
     if (!isMobile) return
 
-    if (!('geolocation' in navigator)) {
-      setLocationError('Location not supported on this device')
-      return
+    const fetchLocation = async () => {
+      const location = await getDeviceLocation()
+      if (location) {
+        setUserLocation(location)
+        setLocationError(null)
+      } else {
+        setLocationError('Location access denied')
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({ lat: position.coords.latitude, lon: position.coords.longitude })
-        setLocationError(null)
-      },
-      (error) => {
-        console.error('Geolocation error:', error)
-        setLocationError(error.message || 'Location access denied')
-      },
-    )
+    fetchLocation()
   }, [isMobile])
 
   const basesWithDistance = useMemo<BaseWithDistance[]>(() => {
