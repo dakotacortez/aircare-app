@@ -256,7 +256,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                   </>
                 ) : (
                   <Link
-                    href="/admin/login"
+                    href="/login"
                     className="rounded-xl border dark:border-neutral-700 px-3 py-2 text-sm inline-flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700"
                     aria-label="Login"
                   >
