@@ -213,6 +213,11 @@ export const HospitalChangeRequests: CollectionConfig = {
           type: 'array',
           label: 'Door Codes',
           fields: [
+              {
+                name: 'label',
+                type: 'text',
+                label: 'Door Label',
+              },
             {
               name: 'code',
               type: 'text',

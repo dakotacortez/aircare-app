@@ -1160,6 +1160,7 @@ export interface Hospital {
    */
   doorCodes?:
     | {
+        label?: string | null;
         code?: string | null;
         id?: string | null;
       }[]
@@ -1233,6 +1234,7 @@ export interface HospitalChangeRequest {
       | null;
     doorCodes?:
       | {
+          label?: string | null;
           code?: string | null;
           id?: string | null;
         }[]
@@ -1304,6 +1306,7 @@ export interface Base {
    */
   doorCodes?:
     | {
+        label?: string | null;
         code?: string | null;
         id?: string | null;
       }[]
@@ -2049,6 +2052,7 @@ export interface HospitalsSelect<T extends boolean = true> {
   doorCodes?:
     | T
     | {
+        label?: T;
         code?: T;
         id?: T;
       };
@@ -2096,6 +2100,7 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
         doorCodes?:
           | T
           | {
+              label?: T;
               code?: T;
               id?: T;
             };
@@ -2142,6 +2147,7 @@ export interface BasesSelect<T extends boolean = true> {
   doorCodes?:
     | T
     | {
+        label?: T;
         code?: T;
         id?: T;
       };
