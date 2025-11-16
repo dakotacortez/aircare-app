@@ -47,51 +47,55 @@ export default buildConfig({
       // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
     },
-    navigation: ({ defaultNav }) => {
-      const adminCollections = new Set<string>()
-
-      const navWithoutAdminCollections = defaultNav
-        .map((group) => {
-          if (!group.collections || group.collections.length === 0) return group
-
-          const remainingCollections = group.collections.filter((collection) => {
-            const slug = typeof collection === 'string' ? collection : collection.slug
-            if (ADMIN_COLLECTION_SLUGS.includes(slug as (typeof ADMIN_COLLECTION_SLUGS)[number])) {
-              adminCollections.add(slug)
-              return false
-            }
-            return true
-          })
-
-          if (remainingCollections.length === group.collections.length) {
-            return group
-          }
-
-          if (remainingCollections.length === 0 && !(group.items && group.items.length > 0)) {
-            return null
-          }
-
-          return {
-            ...group,
-            collections: remainingCollections,
-          }
-        })
-        .filter((group): group is NonNullable<typeof group> => Boolean(group))
-
-      const adminGroupCollections = ADMIN_COLLECTION_SLUGS.filter((slug) => adminCollections.has(slug))
-
-      if (!adminGroupCollections.length) {
-        return defaultNav
-      }
-
-      return [
-        ...navWithoutAdminCollections,
-        {
-          label: 'Administration',
-          collections: adminGroupCollections,
-        },
-      ]
-    },
+    // TODO: In Payload v3, the `navigation` property has been removed from admin config.
+    // To customize navigation, we need to create a custom Nav component and use admin.components.Nav
+    // See: https://payloadcms.com/docs/custom-components/root-components
+    // Previous functionality: Grouped admin collections (redirects, forms, etc.) under "Administration" label
+    // navigation: ({ defaultNav }) => {
+    //   const adminCollections = new Set<string>()
+    //
+    //   const navWithoutAdminCollections = defaultNav
+    //     .map((group) => {
+    //       if (!group.collections || group.collections.length === 0) return group
+    //
+    //       const remainingCollections = group.collections.filter((collection) => {
+    //         const slug = typeof collection === 'string' ? collection : collection.slug
+    //         if (ADMIN_COLLECTION_SLUGS.includes(slug as (typeof ADMIN_COLLECTION_SLUGS)[number])) {
+    //           adminCollections.add(slug)
+    //           return false
+    //         }
+    //         return true
+    //       })
+    //
+    //       if (remainingCollections.length === group.collections.length) {
+    //         return group
+    //       }
+    //
+    //       if (remainingCollections.length === 0 && !(group.items && group.items.length > 0)) {
+    //         return null
+    //       }
+    //
+    //       return {
+    //         ...group,
+    //         collections: remainingCollections,
+    //       }
+    //     })
+    //     .filter((group): group is NonNullable<typeof group> => Boolean(group))
+    //
+    //   const adminGroupCollections = ADMIN_COLLECTION_SLUGS.filter((slug) => adminCollections.has(slug))
+    //
+    //   if (!adminGroupCollections.length) {
+    //     return defaultNav
+    //   }
+    //
+    //   return [
+    //     ...navWithoutAdminCollections,
+    //     {
+    //       label: 'Administration',
+    //       collections: adminGroupCollections,
+    //     },
+    //   ]
+    // },
     importMap: {
       baseDir: path.resolve(dirname),
     },
