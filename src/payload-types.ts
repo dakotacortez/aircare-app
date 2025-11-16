@@ -1126,6 +1126,10 @@ export interface Hospital {
   id: number;
   name: string;
   /**
+   * URL-friendly identifier (auto-generated from name)
+   */
+  slug: string;
+  /**
    * Parent network/system this hospital belongs to
    */
   network?: (number | null) | HospitalNetwork;
@@ -1141,11 +1145,15 @@ export interface Hospital {
     zip?: string | null;
   };
   /**
-   * For mapping and routing
+   * Paste from Google Maps (e.g., "39.136774, -84.502021"). We'll parse it automatically.
+   */
+  coordinates?: string | null;
+  /**
+   * Auto-populated from coordinates field
    */
   latitude?: number | null;
   /**
-   * For mapping and routing
+   * Auto-populated from coordinates field
    */
   longitude?: number | null;
   /**
@@ -1369,6 +1377,18 @@ export interface HospitalChangeRequest {
 export interface Base {
   id: number;
   name: string;
+  /**
+   * URL-friendly identifier (auto-generated from name)
+   */
+  slug: string;
+  /**
+   * Parent network/system this base belongs to (e.g., UC Health)
+   */
+  network?: (number | null) | HospitalNetwork;
+  /**
+   * Override the network logo with a base-specific logo
+   */
+  networkLogoOverride?: (number | null) | Media;
   address?: {
     line1?: string | null;
     line2?: string | null;
@@ -1377,20 +1397,32 @@ export interface Base {
     zip?: string | null;
   };
   /**
-   * For mapping and routing
+   * Paste from Google Maps (e.g., "39.136774, -84.502021"). We'll parse it automatically.
+   */
+  coordinates?: string | null;
+  /**
+   * Auto-populated from coordinates field
    */
   latitude?: number | null;
   /**
-   * For mapping and routing
+   * Auto-populated from coordinates field
    */
   longitude?: number | null;
   /**
-   * Phone numbers and contact methods
+   * Primary squad/base contact number
+   */
+  squadPhone?: string | null;
+  /**
+   * Additional phone numbers and contact methods
    */
   contactInfo?:
     | {
         label?: string | null;
         phoneNumber?: string | null;
+        /**
+         * Short description of when to use this contact
+         */
+        description?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1409,9 +1441,22 @@ export interface Base {
    */
   assets?: (number | Asset)[] | null;
   /**
+   * Important notes and hazards for EMS crews
+   */
+  hazards?:
+    | {
+        note: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Additional information about this base
    */
   notes?: string | null;
+  /**
+   * Shown at bottom of page (e.g., "Air Care & Mobile Care education team")
+   */
+  sourceAttribution?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1432,11 +1477,27 @@ export interface Asset {
    */
   type: 'bls' | 'als' | 'micu' | 'cct' | 'helicopter' | 'chase' | 'support' | 'other';
   /**
+   * Emoji to display with this asset (e.g., 🚑, 🚁, 🚓)
+   */
+  emoji?: string | null;
+  /**
+   * Internal unit identifier
+   */
+  unitId?: string | null;
+  /**
+   * Vehicle license plate number
+   */
+  licensePlate?: string | null;
+  /**
    * Aircraft tail number (helicopters only)
    */
   tailNumber?: string | null;
   /**
-   * Additional details about this asset (equipment, capabilities, etc.)
+   * Detailed description of equipment and capabilities (shown in tooltip on hover)
+   */
+  capabilities?: string | null;
+  /**
+   * Additional internal notes about this asset
    */
   notes?: string | null;
   updatedAt: string;
@@ -2122,6 +2183,7 @@ export interface HospitalCapabilitiesSelect<T extends boolean = true> {
  */
 export interface HospitalsSelect<T extends boolean = true> {
   name?: T;
+  slug?: T;
   network?: T;
   networkLogoOverride?: T;
   address?:
@@ -2133,6 +2195,7 @@ export interface HospitalsSelect<T extends boolean = true> {
         state?: T;
         zip?: T;
       };
+  coordinates?: T;
   latitude?: T;
   longitude?: T;
   squadPhone?: T;
@@ -2280,6 +2343,9 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
  */
 export interface BasesSelect<T extends boolean = true> {
   name?: T;
+  slug?: T;
+  network?: T;
+  networkLogoOverride?: T;
   address?:
     | T
     | {
@@ -2289,13 +2355,16 @@ export interface BasesSelect<T extends boolean = true> {
         state?: T;
         zip?: T;
       };
+  coordinates?: T;
   latitude?: T;
   longitude?: T;
+  squadPhone?: T;
   contactInfo?:
     | T
     | {
         label?: T;
         phoneNumber?: T;
+        description?: T;
         id?: T;
       };
   doorCodes?:
@@ -2306,7 +2375,14 @@ export interface BasesSelect<T extends boolean = true> {
         id?: T;
       };
   assets?: T;
+  hazards?:
+    | T
+    | {
+        note?: T;
+        id?: T;
+      };
   notes?: T;
+  sourceAttribution?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2317,7 +2393,11 @@ export interface BasesSelect<T extends boolean = true> {
 export interface AssetsSelect<T extends boolean = true> {
   name?: T;
   type?: T;
+  emoji?: T;
+  unitId?: T;
+  licensePlate?: T;
   tailNumber?: T;
+  capabilities?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;

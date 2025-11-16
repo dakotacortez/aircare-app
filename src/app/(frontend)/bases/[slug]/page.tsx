@@ -45,7 +45,7 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
     } else {
       notFound()
     }
-  } catch (error) {
+  } catch (_error) {
     notFound()
   }
 

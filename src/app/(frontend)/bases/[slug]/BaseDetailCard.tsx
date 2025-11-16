@@ -106,8 +106,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
 
   const doorCodes = useMemo(() => base.doorCodes ?? [], [base.doorCodes])
   const primaryDoorCode = useMemo(() => {
-    const prioritized = doorCodes.find((code) => code?.isPrimary)
-    return (prioritized ?? doorCodes[0]) ?? null
+    return doorCodes[0] ?? null
   }, [doorCodes])
 
   const otherContacts = (base.contactInfo ?? []).filter(
@@ -122,10 +121,10 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
       .map((assetRef) => {
         const asset = typeof assetRef === 'object' ? (assetRef as Asset) : null
         if (!asset) return null
-        
+
         const type = asset.type ?? 'other'
         const color = assetColorsByType[type] ?? assetColorsByType.other
-        
+
         return {
           id: asset.id,
           name: asset.name,
@@ -135,7 +134,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
           color,
         }
       })
-      .filter(Boolean)
+      .filter((item): item is NonNullable<typeof item> => item !== null)
   }, [base.assets])
 
   const handleCopyAllInfo = useCallback(() => {
@@ -379,7 +378,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
               <p className="text-xs text-amber-600">{etaState.errorMessage}</p>
             ) : (
               <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                Tap "Update from my location" to calculate ETA.
+                Tap &ldquo;Update from my location&rdquo; to calculate ETA.
               </p>
             )}
           </div>
