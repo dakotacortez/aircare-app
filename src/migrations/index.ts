@@ -12,6 +12,7 @@ import * as migration_20251116_231200_create_bases_rels from './20251116_231200_
 import * as migration_20251116_232000_fix_door_codes_label from './20251116_232000_fix_door_codes_label';
 import * as migration_20251116_235500_update_door_codes_schema from './20251116_235500_update_door_codes_schema';
 import * as migration_20251117_000100_add_hospital_capability_level_description from './20251117_000100_add_hospital_capability_level_description';
+import * as migration_20251117_010500_expand_hospital_info_card from './20251117_010500_expand_hospital_info_card';
 
 export const migrations = [
   {
@@ -83,4 +84,9 @@ export const migrations = [
           down: migration_20251117_000100_add_hospital_capability_level_description.down,
           name: '20251117_000100_add_hospital_capability_level_description'
         },
+    {
+      up: migration_20251117_010500_expand_hospital_info_card.up,
+      down: migration_20251117_010500_expand_hospital_info_card.down,
+      name: '20251117_010500_expand_hospital_info_card'
+    },
 ];

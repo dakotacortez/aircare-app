@@ -206,6 +206,14 @@ export const HospitalChangeRequests: CollectionConfig = {
               type: 'text',
               label: 'Phone Number',
             },
+              {
+                name: 'description',
+                type: 'textarea',
+                label: 'Description / Notes',
+                admin: {
+                  rows: 2,
+                },
+              },
           ],
         },
         {
@@ -223,8 +231,102 @@ export const HospitalChangeRequests: CollectionConfig = {
               type: 'text',
               label: 'Door Code',
             },
+              {
+                name: 'notes',
+                type: 'textarea',
+                label: 'Notes / Instructions',
+                admin: {
+                  rows: 2,
+                },
+              },
+              {
+                name: 'isPrimary',
+                type: 'checkbox',
+                label: 'Primary ED Access Code',
+              },
+              {
+                name: 'colorTheme',
+                type: 'select',
+                label: 'Accent Color',
+                options: [
+                  { label: 'Sunset (Amber)', value: 'sunset' },
+                  { label: 'Slate', value: 'slate' },
+                  { label: 'Sky', value: 'sky' },
+                  { label: 'Emerald', value: 'emerald' },
+                  { label: 'Violet', value: 'violet' },
+                  { label: 'Rose', value: 'rose' },
+                ],
+              },
           ],
         },
+          {
+            name: 'helipad',
+            type: 'group',
+            label: 'Helipad Information',
+            fields: [
+              {
+                name: 'identifier',
+                type: 'text',
+                label: 'Helipad Identifier',
+              },
+              {
+                name: 'nightOperations',
+                type: 'checkbox',
+                label: 'Night Operations Supported',
+              },
+              {
+                name: 'preferredApproach',
+                type: 'text',
+                label: 'Preferred Approach',
+              },
+              {
+                name: 'notes',
+                type: 'textarea',
+                label: 'Additional Helipad Notes',
+                admin: { rows: 3 },
+              },
+            ],
+          },
+          {
+            name: 'campusMaps',
+            type: 'array',
+            label: 'Campus Maps',
+            fields: [
+              {
+                name: 'label',
+                type: 'text',
+                required: true,
+                label: 'Tab Label',
+              },
+              {
+                name: 'slug',
+                type: 'text',
+                label: 'Tab Identifier',
+              },
+              {
+                name: 'mapType',
+                type: 'text',
+                label: 'Map Type',
+              },
+              {
+                name: 'description',
+                type: 'textarea',
+                label: 'Description',
+                admin: { rows: 3 },
+              },
+              {
+                name: 'mapMedia',
+                type: 'upload',
+                relationTo: 'media',
+                label: 'Map Media',
+              },
+              {
+                name: 'externalUrl',
+                type: 'text',
+                label: 'External Link',
+              },
+            ],
+          },
         {
           name: 'capabilities',
           type: 'array',
@@ -248,6 +350,24 @@ export const HospitalChangeRequests: CollectionConfig = {
           type: 'textarea',
           label: 'Notes',
         },
+          {
+            name: 'hazards',
+            type: 'array',
+            label: 'Notes & Hazards',
+            fields: [
+              {
+                name: 'note',
+                type: 'textarea',
+                label: 'Hazard / Note',
+                admin: { rows: 2 },
+              },
+            ],
+          },
+          {
+            name: 'sourceAttribution',
+            type: 'text',
+            label: 'Source Attribution',
+          },
       ],
     },
     {

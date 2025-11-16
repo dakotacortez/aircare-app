@@ -139,29 +139,41 @@ export const Hospitals: CollectionConfig = {
         placeholder: '(734) 555-1234',
       },
     },
-    {
-      name: 'otherPhones',
-      type: 'array',
-      label: 'Other Phone Numbers',
-      fields: [
-        {
-          name: 'label',
-          type: 'text',
-          label: 'Label',
-          admin: {
-            placeholder: 'e.g., OB Charge Nurse, Cath Lab',
-          },
+      {
+        name: 'otherPhones',
+        type: 'array',
+        label: 'Other Phone Numbers',
+        admin: {
+          description: 'Secondary contacts such as charge nurses, security, etc.',
         },
-        {
-          name: 'phoneNumber',
-          type: 'text',
-          label: 'Phone Number',
-          admin: {
-            placeholder: '(734) 555-1234',
+        fields: [
+          {
+            name: 'label',
+            type: 'text',
+            label: 'Label',
+            admin: {
+              placeholder: 'e.g., OB Charge Nurse, Cath Lab',
+            },
           },
-        },
-      ],
-    },
+          {
+            name: 'phoneNumber',
+            type: 'text',
+            label: 'Phone Number',
+            admin: {
+              placeholder: '(734) 555-1234',
+            },
+          },
+          {
+            name: 'description',
+            type: 'textarea',
+            label: 'Description / Notes',
+            admin: {
+              rows: 2,
+              description: 'Short context for when to call this contact.',
+            },
+          },
+        ],
+      },
       {
         name: 'doorCodes',
         type: 'array',
@@ -184,6 +196,146 @@ export const Hospitals: CollectionConfig = {
             label: 'Door Code',
             admin: {
               placeholder: 'e.g., 0911#',
+            },
+          },
+            {
+              name: 'notes',
+              type: 'textarea',
+              label: 'Notes / Instructions',
+              admin: {
+                rows: 2,
+                description: 'Optional context such as time restrictions or access notes.',
+              },
+            },
+            {
+              name: 'isPrimary',
+              type: 'checkbox',
+              label: 'Primary ED Access Code',
+              admin: {
+                description: 'Displayed in quick actions for rapid access.',
+              },
+            },
+            {
+              name: 'colorTheme',
+              type: 'select',
+              label: 'Accent Color',
+              defaultValue: 'sunset',
+              options: [
+                { label: 'Sunset (Amber)', value: 'sunset' },
+                { label: 'Slate', value: 'slate' },
+                { label: 'Sky', value: 'sky' },
+                { label: 'Emerald', value: 'emerald' },
+                { label: 'Violet', value: 'violet' },
+                { label: 'Rose', value: 'rose' },
+              ],
+              admin: {
+                description: 'Purely visual – helps differentiate door cards in the UI.',
+              },
+            },
+        ],
+      },
+      {
+        name: 'helipad',
+        type: 'group',
+        label: 'Helipad Information',
+        admin: {
+          description: 'Details for air medical operations.',
+        },
+        fields: [
+          {
+            name: 'identifier',
+            type: 'text',
+            label: 'Helipad Identifier',
+            admin: {
+              placeholder: 'e.g., UCMC H1',
+            },
+          },
+          {
+            name: 'nightOperations',
+            type: 'checkbox',
+            label: 'Night Operations Supported',
+            defaultValue: false,
+          },
+          {
+            name: 'preferredApproach',
+            type: 'text',
+            label: 'Preferred Approach',
+            admin: {
+              placeholder: 'e.g., From the north, avoid overflying main tower',
+            },
+          },
+          {
+            name: 'notes',
+            type: 'textarea',
+            label: 'Additional Helipad Notes',
+            admin: {
+              rows: 3,
+            },
+          },
+        ],
+      },
+      {
+        name: 'campusMaps',
+        type: 'array',
+        label: 'Campus Maps',
+        labels: {
+          singular: 'Map Tab',
+          plural: 'Map Tabs',
+        },
+        admin: {
+          description: 'Upload or link to common approach maps (ambulance route, bays, interior, etc.)',
+        },
+        fields: [
+          {
+            name: 'label',
+            type: 'text',
+            label: 'Tab Label',
+            required: true,
+            admin: {
+              placeholder: 'e.g., Ambulance Route',
+            },
+          },
+          {
+            name: 'slug',
+            type: 'text',
+            label: 'Tab Identifier',
+            admin: {
+              description: 'Optional stable ID used for deep-linking tabs. Defaults to a slugified label if blank.',
+            },
+          },
+          {
+            name: 'mapType',
+            type: 'select',
+            label: 'Map Type',
+            defaultValue: 'custom',
+            options: [
+              { label: 'Ambulance Route', value: 'ambulance' },
+              { label: 'Interior Layout', value: 'interior' },
+              { label: 'Parking & Bays', value: 'parking' },
+              { label: 'Landing Zone', value: 'lz' },
+              { label: 'Custom', value: 'custom' },
+            ],
+          },
+          {
+            name: 'description',
+            type: 'textarea',
+            label: 'Description or Instructions',
+            admin: {
+              rows: 3,
+            },
+          },
+          {
+            name: 'mapMedia',
+            type: 'upload',
+            relationTo: 'media',
+            label: 'Map Image / PDF',
+          },
+          {
+            name: 'externalUrl',
+            type: 'text',
+            label: 'External Map Link',
+            admin: {
+              description: 'Optional link to open in Google Maps, PDF, etc.',
             },
           },
         ],
@@ -272,6 +424,33 @@ export const Hospitals: CollectionConfig = {
         rows: 5,
       },
     },
+      {
+        name: 'hazards',
+        type: 'array',
+        label: 'Notes & Hazards',
+        admin: {
+          description: 'Callouts that should surface in the card UI.',
+        },
+        fields: [
+          {
+            name: 'note',
+            type: 'textarea',
+            label: 'Hazard / Note',
+            required: true,
+            admin: {
+              rows: 2,
+            },
+          },
+        ],
+      },
+      {
+        name: 'sourceAttribution',
+        type: 'text',
+        label: 'Source Attribution',
+        admin: {
+          description: 'Shown under the card (e.g., “Air Care & Mobile Care education team”).',
+        },
+      },
     {
       name: 'createdBy',
       type: 'relationship',
