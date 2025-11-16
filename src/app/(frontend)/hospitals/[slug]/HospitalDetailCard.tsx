@@ -446,7 +446,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigationQuery && setShowNavModal(true)}
-                className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-sky-500/40 dark:bg-sky-600 dark:hover:bg-sky-500 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-neutral-800"
+                className="flex w-full items-center gap-3 rounded-xl bg-neutral-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-neutral-600/40 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:focus-visible:ring-neutral-500 dark:focus-visible:ring-offset-neutral-800"
               disabled={!navigationQuery}
             >
               <span aria-hidden="true">🧭</span>

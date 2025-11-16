@@ -112,10 +112,10 @@ const config = {
               border: '#e5e7eb',
             },
             dark: {
-              bg: '#0b0f19',
-              card: '#111827',
-              subtle: '#1f2937',
-              border: '#374151',
+              bg: '#171717',
+              card: '#262626',
+              subtle: '#404040',
+              border: '#525252',
             },
             text: {
               light: {
