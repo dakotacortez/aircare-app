@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
 import { capabilityColors } from './capabilityColors'
@@ -201,9 +200,6 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
-                ▼
-              </span>
             </div>
           </div>
         </div>
@@ -230,9 +226,6 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                     </option>
                   ))}
                 </select>
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
-                  ▼
-                </span>
               </div>
               {capabilityFilter && (
                 <button
@@ -277,10 +270,8 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
 
               return (
                 <Link key={cardKey} href={`/hospitals/${hospital.id ?? ''}`} className="block">
-                  <motion.article
-                    whileHover={{ y: -2, scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700"
+                  <article
+                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
@@ -288,7 +279,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           <img
                             src={networkLogo.url}
                             alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
-                            className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-uc-dark-card dark:ring-uc-dark-border"
+                            className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-neutral-800 dark:ring-neutral-700"
                           />
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
@@ -326,11 +317,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                             {typeof hospital.eta === 'number' ? `~${hospital.eta} min` : 'ETA pending'}
                           </p>
                         </div>
-                        <motion.span
-                          initial={{ x: 0 }}
-                          whileHover={{ x: 4 }}
-                          className="flex items-center text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle"
-                        >
+                        <span className="flex items-center text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -341,7 +328,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                           </svg>
-                        </motion.span>
+                        </span>
                       </div>
                     </div>
 
@@ -379,7 +366,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                         )}
                       </div>
                     </div>
-                  </motion.article>
+                  </article>
                 </Link>
               )
             })}
