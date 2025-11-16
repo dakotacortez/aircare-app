@@ -165,7 +165,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           externalUrl: tab?.externalUrl?.trim(),
         }
       })
-      .filter(Boolean)
+      .filter((tab): tab is NonNullable<typeof tab> => tab !== null)
 
     if (!tabs.length) {
       return fallbackMapTabs

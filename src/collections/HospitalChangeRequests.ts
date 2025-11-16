@@ -248,6 +248,7 @@ export const HospitalChangeRequests: CollectionConfig = {
                 name: 'colorTheme',
                 type: 'select',
                 label: 'Accent Color',
+                dbName: 'theme',
                 options: [
                   { label: 'Sunset (Amber)', value: 'sunset' },
                   { label: 'Slate', value: 'slate' },

@@ -220,6 +220,7 @@ export const Hospitals: CollectionConfig = {
               type: 'select',
               label: 'Accent Color',
               defaultValue: 'sunset',
+              dbName: 'theme',
               options: [
                 { label: 'Sunset (Amber)', value: 'sunset' },
                 { label: 'Slate', value: 'slate' },

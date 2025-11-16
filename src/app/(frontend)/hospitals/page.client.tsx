@@ -303,7 +303,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                       color,
                     }
                   })
-                  .filter(Boolean) ?? []
+                  .filter((badge): badge is NonNullable<typeof badge> => badge !== null) ?? []
               const badgesToDisplay = capabilityBadges.slice(0, 3)
               const moreCapabilities = Math.max(capabilityBadges.length - badgesToDisplay.length, 0)
               const primaryDoorCode = getPrimaryDoorCode(hospital)

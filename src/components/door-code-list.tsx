@@ -14,16 +14,28 @@ const colorThemes: Record<
     wrapper: string
   }
 > = {
-  sunset:
-    'from-amber-50/90 via-white to-orange-50 border-amber-100 text-amber-900 dark:from-amber-950/20 dark:via-black/20 dark:to-amber-900/10 dark:border-amber-900/40',
-  slate:
-    'from-slate-50 via-white to-slate-100 border-slate-200 text-slate-900 dark:from-slate-900/30 dark:via-black/20 dark:to-slate-900/20 dark:border-slate-800',
-  sky: 'from-sky-50 via-white to-cyan-50 border-sky-100 text-sky-900 dark:from-sky-950/20 dark:border-sky-900/50',
-  emerald:
-    'from-emerald-50 via-white to-emerald-100 border-emerald-100 text-emerald-900 dark:from-emerald-950/20 dark:border-emerald-900/40',
-  violet:
-    'from-violet-50 via-white to-fuchsia-50 border-violet-100 text-violet-900 dark:from-violet-950/20 dark:border-violet-900/40',
-  rose: 'from-rose-50 via-white to-rose-100 border-rose-100 text-rose-900 dark:from-rose-950/20 dark:border-rose-900/40',
+  sunset: {
+    wrapper:
+      'from-amber-50/90 via-white to-orange-50 border-amber-100 text-amber-900 dark:from-amber-950/20 dark:via-black/20 dark:to-amber-900/10 dark:border-amber-900/40',
+  },
+  slate: {
+    wrapper:
+      'from-slate-50 via-white to-slate-100 border-slate-200 text-slate-900 dark:from-slate-900/30 dark:via-black/20 dark:to-slate-900/20 dark:border-slate-800',
+  },
+  sky: {
+    wrapper: 'from-sky-50 via-white to-cyan-50 border-sky-100 text-sky-900 dark:from-sky-950/20 dark:border-sky-900/50',
+  },
+  emerald: {
+    wrapper:
+      'from-emerald-50 via-white to-emerald-100 border-emerald-100 text-emerald-900 dark:from-emerald-950/20 dark:border-emerald-900/40',
+  },
+  violet: {
+    wrapper:
+      'from-violet-50 via-white to-fuchsia-50 border-violet-100 text-violet-900 dark:from-violet-950/20 dark:border-violet-900/40',
+  },
+  rose: {
+    wrapper: 'from-rose-50 via-white to-rose-100 border-rose-100 text-rose-900 dark:from-rose-950/20 dark:border-rose-900/40',
+  },
 }
 
 interface DoorCodeListProps {
