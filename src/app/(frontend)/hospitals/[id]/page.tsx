@@ -6,9 +6,10 @@ import config from '@payload-config'
 import { getMeUser } from '@/utilities/getMeUser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { MapPin, Phone, Key, Award, FileText, ChevronLeft, Building2 } from 'lucide-react'
+import { MapPin, Phone, Key, Award, FileText, ChevronLeft } from 'lucide-react'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import Image from 'next/image'
+import { DoorCodeList } from '@/components/door-code-list'
 
 interface HospitalDetailPageProps {
   params: Promise<{
@@ -90,11 +91,11 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
           </div>
         </div>
 
-        {/* Main Content Card */}
-        <div className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm overflow-hidden">
+          {/* Main Content Card */}
+          <div className="rounded-3xl border border-neutral-200/70 dark:border-neutral-800/70 bg-white/80 dark:bg-neutral-900/60 shadow-xl shadow-neutral-900/5 dark:shadow-black/40 backdrop-blur-sm overflow-hidden">
           {/* Address Section */}
           {hospital.address && (
-            <div className="p-6 border-b dark:border-neutral-700">
+              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div>
@@ -124,7 +125,7 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
 
           {/* Squad Phone */}
           {hospital.squadPhone && (
-            <div className="p-6 border-b dark:border-neutral-700">
+              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
               <div className="flex items-start gap-3">
                 <Phone className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -144,7 +145,7 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
 
           {/* Other Phone Numbers */}
           {hospital.otherPhones && hospital.otherPhones.length > 0 && (
-            <div className="p-6 border-b dark:border-neutral-700">
+              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
               <div className="flex items-start gap-3">
                 <Phone className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -176,25 +177,14 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
 
           {/* Door Codes */}
           {hospital.doorCodes && hospital.doorCodes.length > 0 && (
-            <div className="p-6 border-b dark:border-neutral-700">
+              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
               <div className="flex items-start gap-3">
                 <Key className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-3">
                     Door Codes
                   </h2>
-                  <div className="space-y-2">
-                    {hospital.doorCodes.map((doorCode, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800"
-                      >
-                        <code className="text-sm font-mono text-amber-900 dark:text-amber-100">
-                          {doorCode.code}
-                        </code>
-                      </div>
-                    ))}
-                  </div>
+                    <DoorCodeList doorCodes={hospital.doorCodes} />
                 </div>
               </div>
             </div>
@@ -202,7 +192,7 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
 
           {/* Capabilities */}
           {hospital.capabilities && hospital.capabilities.length > 0 && (
-            <div className="p-6 border-b dark:border-neutral-700">
+              <div className="p-6 border-b border-neutral-100/70 dark:border-neutral-800/70">
               <div className="flex items-start gap-3">
                 <Award className="h-5 w-5 text-neutral-500 dark:text-neutral-400 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
