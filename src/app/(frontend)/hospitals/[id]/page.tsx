@@ -55,13 +55,13 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
   const hydratedNetwork = network ? (JSON.parse(JSON.stringify(network)) as HospitalNetwork) : null
   const hydratedLogo = networkLogo ? (JSON.parse(JSON.stringify(networkLogo)) as Media) : null
 
-  return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950">
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        <Link
-          href="/hospitals"
-          className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
-        >
+    return (
+      <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default transition-colors dark:bg-uc-dark-bg dark:text-uc-text-dark-default">
+        <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+          <Link
+            href="/hospitals"
+            className="inline-flex items-center gap-2 text-sm text-uc-text-light-muted transition hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
+          >
           <ChevronLeft className="h-4 w-4" />
           Back to Hospitals
         </Link>

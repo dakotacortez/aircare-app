@@ -301,7 +301,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
   const lastUpdated = hospital.updatedAt ? new Date(hospital.updatedAt) : null
 
   return (
-    <div className="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 rounded-3xl shadow-xl shadow-slate-900/5 ring-1 ring-slate-100 dark:ring-slate-900/70">
+    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:text-uc-text-dark-default dark:shadow-uc-card-dark dark:ring-uc-dark-border">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -311,25 +311,29 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
                 width={48}
                 height={48}
-                className="h-12 w-12 rounded-full bg-white p-0.5 ring-1 ring-slate-200 object-cover"
+                className="h-12 w-12 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-uc-dark-card dark:ring-uc-dark-border"
               />
             ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-slate-200">
-                <span className="text-lg font-semibold text-slate-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border">
+                  <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
                   {hospital.name?.[0]?.toUpperCase() ?? '🏥'}
                 </span>
               </div>
             )}
             <div className="flex flex-col leading-tight">
               <h1 className="text-2xl font-bold">{hospital.name}</h1>
-              {network?.name && <span className="text-xs font-medium text-slate-500">{network.name}</span>}
+                {network?.name && (
+                  <span className="text-xs font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                    {network.name}
+                  </span>
+                )}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={handleCopyAllInfo}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200 shadow-sm transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-uc-dark-subtle/80 dark:text-uc-text-dark-muted dark:ring-uc-dark-border"
             >
               <span role="img" aria-hidden="true">
                 📋
@@ -338,7 +342,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             </button>
             <a
               href={`mailto:?subject=Hospital info update: ${encodeURIComponent(hospital.name ?? '')}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200 shadow-sm transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-800"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-uc-dark-subtle/80 dark:text-uc-text-dark-muted dark:ring-uc-dark-border"
             >
               <span role="img" aria-hidden="true">
                 📝
@@ -349,15 +353,15 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
         </div>
 
         <div className="mb-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-            <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span role="img" aria-hidden="true">
                 📍
               </span>
               Address
             </h2>
             {addressLines.length ? (
-              <p className="text-sm text-slate-700 dark:text-slate-200">
+                <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                 {addressLines.map((line, idx) => (
                   <span key={`${line}-${idx}`} className="block">
                     {line}
@@ -365,12 +369,12 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 ))}
               </p>
             ) : (
-              <p className="text-sm text-slate-500">Address coming soon</p>
+                <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">Address coming soon</p>
             )}
           </div>
-          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🕒
                 </span>
@@ -379,43 +383,47 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               <button
                 type="button"
                 onClick={requestEta}
-                className="text-xs font-semibold text-slate-500 underline-offset-2 hover:underline"
+                  className="text-xs font-semibold text-uc-text-light-muted underline-offset-2 hover:text-uc-text-light-default hover:underline dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
               >
                 Update from my location
               </button>
             </div>
             {etaState.status === 'loading' ? (
-              <div className="animate-pulse space-y-2">
-                <div className="h-4 w-28 rounded-full bg-slate-200" />
-                <div className="h-3 w-40 rounded-full bg-slate-100" />
-              </div>
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 w-28 rounded-full bg-uc-light-border dark:bg-uc-dark-subtle" />
+                  <div className="h-3 w-40 rounded-full bg-uc-light-subtle dark:bg-uc-dark-subtle/80" />
+                </div>
             ) : etaState.status === 'ready' ? (
               <>
-                <p className="text-sm text-slate-700 dark:text-slate-200">
-                  <span className="text-lg font-semibold text-slate-900 dark:text-white">
+                  <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
+                    <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
                     {etaState.etaMinutes} min
                   </span>
                   {etaState.distanceMiles && (
                     <>
-                      <span className="mx-1 text-slate-400">•</span>
-                      <span className="text-sm text-slate-600">
+                        <span className="mx-1 text-uc-text-light-subtle dark:text-uc-text-dark-subtle">•</span>
+                        <span className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
                         {etaState.distanceMiles.toFixed(1)} mi
                       </span>
                     </>
                   )}
                 </p>
-                <p className="mt-1 text-xs text-slate-500">Based on your current GPS location</p>
+                  <p className="mt-1 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                    Based on your current GPS location
+                  </p>
               </>
             ) : etaState.status === 'error' ? (
-              <p className="text-xs text-amber-600">{etaState.errorMessage}</p>
+                <p className="text-xs text-amber-600">{etaState.errorMessage}</p>
             ) : (
-              <p className="text-sm text-slate-500">Tap “Update from my location” to calculate ETA.</p>
+                <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                  Tap “Update from my location” to calculate ETA.
+                </p>
             )}
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-          <h2 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-200">Quick actions</h2>
+        <div className="mb-6 rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+          <h2 className="mb-3 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">Quick actions</h2>
           <div className="grid gap-3 md:grid-cols-3">
             <motion.button
               whileHover={{ scale: 1.02, y: -2 }}
@@ -426,7 +434,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 }
               }}
               disabled={!hospital.squadPhone}
-              className="flex w-full items-center gap-3 rounded-xl bg-red-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-400"
+              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-uc-dark-card"
             >
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
@@ -434,17 +442,17 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 <span className="text-sm">{hospital.squadPhone ?? 'Not set'}</span>
               </div>
             </motion.button>
-            <motion.button
+              <motion.button
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigationQuery && setShowNavModal(true)}
-              className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-sky-500/40 dark:bg-sky-600 dark:hover:bg-sky-500 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-uc-dark-card"
               disabled={!navigationQuery}
             >
               <span aria-hidden="true">🧭</span>
               <div className="flex flex-col leading-tight">
                 <span className="text-sm">Navigate</span>
-                <span className="text-xs text-sky-100">
+                  <span className="text-xs text-white/80">
                   {navigationQuery ? 'Open preferred maps app' : 'Add address / coordinates'}
                 </span>
               </div>
@@ -457,7 +465,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   navigator.clipboard?.writeText(primaryDoorCode.code).catch(() => null)
                 }
               }}
-              className="flex w-full items-center gap-3 rounded-xl bg-orange-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-orange-600"
+              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-uc-dark-card"
             >
               <span aria-hidden="true">🔑</span>
               <div className="flex flex-col leading-tight">
@@ -470,8 +478,8 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
 
         <div className="space-y-4">
           {capabilityBadges.length > 0 && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🏥
                 </span>
@@ -503,40 +511,40 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {hospital.helipad && (hospital.helipad.identifier || hospital.helipad.preferredApproach || hospital.helipad.notes) && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🚁
                 </span>
                 Helipad
               </h2>
               {hospital.helipad.identifier && (
-                <p className="text-sm text-slate-700 dark:text-slate-200">
+                <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                   Helipad: <span className="font-medium">{hospital.helipad.identifier}</span>
                 </p>
               )}
-              <p className="text-sm text-slate-700 dark:text-slate-200">
+              <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                 Night operations: {hospital.helipad.nightOperations ? 'Yes' : 'No'}
               </p>
               {hospital.helipad.preferredApproach && (
-                <p className="text-sm text-slate-700 dark:text-slate-200">
+                <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                   Preferred approach: {hospital.helipad.preferredApproach}
                 </p>
               )}
               {hospital.helipad.notes && (
-                <p className="text-sm text-slate-700 dark:text-slate-200">{hospital.helipad.notes}</p>
+                <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">{hospital.helipad.notes}</p>
               )}
             </div>
           )}
 
-          <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+          <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+            <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span role="img" aria-hidden="true">
                 🗺️
               </span>
               Campus maps
             </h2>
-            <div className="mb-3 inline-flex flex-wrap rounded-full bg-slate-100 p-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <div className="mb-3 inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
               {campusTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -544,15 +552,15 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   onClick={() => setActiveMapTab(tab.id)}
                   className={`rounded-full px-3 py-1 transition ${
                     activeMapTab === tab.id
-                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
-                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
+                        ? 'bg-uc-light-card text-uc-text-light-default shadow-sm dark:bg-uc-dark-card dark:text-uc-text-dark-default'
+                        : 'text-uc-text-light-muted hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default'
                   }`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
-            <div className="flex h-48 items-center justify-center overflow-hidden rounded-xl bg-slate-100 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+              <div className="flex h-48 items-center justify-center overflow-hidden rounded-xl bg-uc-light-subtle text-xs text-uc-text-light-muted dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
               {campusTabs.map((tab) => {
                 if (tab.id !== activeMapTab) return null
                 const emoji = 'mapType' in tab ? mapTypeEmoji[tab.mapType as string] ?? '🗺️' : '🗺️'
@@ -569,7 +577,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                       {tab.externalUrl && (
                         <button
                           onClick={() => window.open(tab.externalUrl, '_blank', 'noopener')}
-                          className="absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-slate-800 shadow"
+                          className="absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-uc-text-light-default shadow"
                         >
                           Open full map
                         </button>
@@ -587,30 +595,30 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           </div>
 
           {otherContacts.length > 0 && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ☎️
                 </span>
                 Other contacts
               </h2>
               <div className="space-y-3 text-sm">
-                {otherContacts.map((contact, idx) => (
-                  <div
-                    key={`${contact?.label}-${idx}`}
-                    className="flex flex-col gap-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900"
-                  >
+                  {otherContacts.map((contact, idx) => (
+                    <div
+                      key={`${contact?.label}-${idx}`}
+                      className="flex flex-col gap-2 rounded-xl ring-1 ring-uc-light-border bg-uc-light-subtle px-3 py-2 dark:ring-uc-dark-border dark:bg-uc-dark-subtle"
+                    >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
-                        <p className="font-medium text-slate-800 dark:text-white">{contact?.label}</p>
+                        <p className="font-medium text-uc-text-light-default dark:text-uc-text-dark-default">{contact?.label}</p>
                         {contact?.description && (
-                          <p className="text-xs text-slate-500 dark:text-slate-300">{contact.description}</p>
+                          <p className="text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">{contact.description}</p>
                         )}
                       </div>
-                      <a
-                        href={`tel:${contact?.phoneNumber}`}
-                        className="text-sm font-semibold text-slate-800 underline hover:text-slate-600 dark:text-white"
-                      >
+                        <a
+                          href={`tel:${contact?.phoneNumber}`}
+                          className="text-sm font-semibold text-uc-text-light-default underline decoration-uc-light-border underline-offset-2 hover:text-uc-red-700 dark:text-uc-text-dark-default dark:hover:text-uc-red-300"
+                        >
                         {formatPhone(contact?.phoneNumber ?? '')}
                       </a>
                     </div>
@@ -621,14 +629,14 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {(hazards.length > 0 || hospital.notes) && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ⚠️
                 </span>
                 Notes & hazards
               </h2>
-              <ul className="ml-4 list-disc space-y-1 text-sm text-slate-700 dark:text-slate-200">
+              <ul className="ml-4 list-disc space-y-1 text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                 {hospital.notes && <li>{hospital.notes}</li>}
                 {hazards.map((hazard, idx) => (
                   <li key={`${hazard?.note}-${idx}`}>{hazard?.note}</li>
@@ -638,8 +646,8 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {doorCodes.length > 0 && (
-            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 dark:bg-slate-900 dark:ring-slate-800">
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🔑
                 </span>
@@ -650,79 +658,79 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
         </div>
 
-        <p className="mt-4 text-xs text-slate-500 dark:text-slate-300">
+        <p className="mt-4 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
           {lastUpdated && `Last updated ${lastUpdated.toLocaleDateString()} • `} {sourceAttribution}
         </p>
       </div>
 
-      <AnimatePresence>
-        {showNavModal && navigationQuery && (
-          <motion.div
-            className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
+        <AnimatePresence>
+          {showNavModal && navigationQuery && (
             <motion.div
-              className="w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl ring-1 ring-slate-200 dark:bg-slate-900"
-              initial={{ scale: 0.95, y: 10, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.95, y: 10, opacity: 0 }}
+              className="fixed inset-0 z-30 flex items-center justify-center bg-uc-dark-card/40 p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-medium text-slate-800 dark:text-white">Open navigation</h3>
-                <button
-                  onClick={() => setShowNavModal(false)}
-                  className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="mb-3 text-xs text-slate-500 dark:text-slate-300">
-                Choose how you want to open directions to {hospital.name}.
-              </p>
-              <div className="space-y-2 text-sm">
-                <button
-                  onClick={() => handleOpenNavigation('google')}
-                  className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
-                  <span className="flex items-center gap-2">
-                    <span>🟢</span>
-                    <span>Google Maps</span>
-                  </span>
-                  <span className="text-xs text-slate-400">Default</span>
-                </button>
-                <button
-                  onClick={() => handleOpenNavigation('apple')}
-                  className="flex w-full items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-left hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
-                  <span>🍎</span>
-                  <span>Apple Maps</span>
-                </button>
-                <button
-                  onClick={() => handleOpenNavigation('waze')}
-                  className="flex w-full items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-left hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
-                  <span>🚘</span>
-                  <span>Waze</span>
-                </button>
-              </div>
-              <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-700">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-300">
-                  Share with crew
+              <motion.div
+                className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border"
+                initial={{ scale: 0.95, y: 10, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.95, y: 10, opacity: 0 }}
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">Open navigation</h3>
+                  <button
+                    onClick={() => setShowNavModal(false)}
+                    className="rounded-full p-1 text-uc-text-light-subtle hover:bg-uc-light-subtle hover:text-uc-text-light-default dark:text-uc-text-dark-subtle dark:hover:bg-uc-dark-subtle dark:hover:text-uc-text-dark-default"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="mb-3 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                  Choose how you want to open directions to {hospital.name}.
                 </p>
-                <button
-                  onClick={handleCopyAllInfo}
-                  className="flex w-full items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-black dark:bg-white dark:text-slate-900"
-                >
-                  <span>📤</span>
-                  <span>Share location &amp; address</span>
-                </button>
-              </div>
+                <div className="space-y-2 text-sm">
+                  <button
+                    onClick={() => handleOpenNavigation('google')}
+                    className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-uc-dark-border dark:hover:bg-uc-dark-subtle"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>🟢</span>
+                      <span>Google Maps</span>
+                    </span>
+                    <span className="text-xs text-uc-text-light-subtle dark:text-uc-text-dark-subtle">Default</span>
+                  </button>
+                  <button
+                    onClick={() => handleOpenNavigation('apple')}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-uc-dark-border dark:hover:bg-uc-dark-subtle"
+                  >
+                    <span>🍎</span>
+                    <span>Apple Maps</span>
+                  </button>
+                  <button
+                    onClick={() => handleOpenNavigation('waze')}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle dark:ring-uc-dark-border dark:hover:bg-uc-dark-subtle"
+                  >
+                    <span>🚘</span>
+                    <span>Waze</span>
+                  </button>
+                </div>
+                <div className="mt-4 border-t border-uc-light-border pt-3 dark:border-uc-dark-border">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wide text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                    Share with crew
+                  </p>
+                  <button
+                    onClick={handleCopyAllInfo}
+                    className="flex w-full items-center gap-2 rounded-xl bg-uc-dark-card px-3 py-2 text-xs font-medium text-white hover:bg-black dark:bg-uc-light-card dark:text-uc-text-light-default"
+                  >
+                    <span>📤</span>
+                    <span>Share location &amp; address</span>
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
     </div>
   )
 }
