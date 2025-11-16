@@ -4,3 +4,5 @@ node_modules/
 .env.local
 pnpm-lock.yaml
 tsconfig.tsbuildinfo
+*.log
+dev.log

@@ -48,6 +48,35 @@ export const Users: CollectionConfig = {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Lax',
     },
+    forgotPassword: {
+      generateEmailHTML: ({ token, user }) => {
+        const resetURL = `${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/reset-password?token=${token}`
+        return `
+          <h2>Reset Your Password</h2>
+          <p>Hi ${user.name || user.email},</p>
+          <p>You requested to reset your password. Click the link below to reset it:</p>
+          <p><a href="${resetURL}">${resetURL}</a></p>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        `
+      },
+      generateEmailSubject: () => 'Reset Your Password - Air Care & Mobile Care',
+    },
+    verify: async ({ user }) => {
+      // Admin team members can always login (bypass approval checks)
+      if (user.role === 'admin-team') {
+        return true
+      }
+
+      // Check if user is approved and active
+      if (!user.approved) {
+        throw new Error('Your account is pending approval. Please contact an administrator.')
+      }
+      if (user.status !== 'active') {
+        throw new Error('Your account is not active. Please contact an administrator.')
+      }
+      return true
+    },
   },
   fields: [
     {

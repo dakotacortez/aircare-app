@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import type { User } from '@/payload-types'
 import type { ServiceLineType } from '@/providers/ServiceLine'
 import { useServiceLine } from '@/providers/ServiceLine'
@@ -217,16 +218,22 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                 {(profileImageUrl || profileImage) && (
                   <div className="relative h-20 w-20 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-700">
                     {profileImage ? (
-                      <img
+                      <Image
                         src={URL.createObjectURL(profileImage)}
                         alt="Profile preview"
                         className="h-full w-full object-cover"
+                        width={80}
+                        height={80}
+                        unoptimized
                       />
                     ) : (
-                      <img
+                      <Image
                         src={profileImageUrl}
                         alt="Profile"
                         className="h-full w-full object-cover"
+                        width={80}
+                        height={80}
+                        unoptimized
                       />
                     )}
                   </div>
