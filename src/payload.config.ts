@@ -30,6 +30,11 @@ import { getServerSideURL } from './utilities/getURL'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const payloadSecret = process.env.PAYLOAD_SECRET
+
+if (!payloadSecret && process.env.NODE_ENV === 'production') {
+  throw new Error('PAYLOAD_SECRET must be defined in production environments.')
+}
 
 export default buildConfig({
   admin: {
@@ -98,8 +103,8 @@ export default buildConfig({
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
-  ],
-  secret: process.env.PAYLOAD_SECRET,
+    ],
+    secret: payloadSecret || 'development-secret',
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

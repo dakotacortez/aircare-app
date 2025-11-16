@@ -84,8 +84,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   const navItems = resolveNavItems(data)
   const isAdminUser = user?.role === 'content-team' || user?.role === 'admin-team'
   const profileLink = user ? { href: '/account', label: 'Edit Profile' } : null
-  const adminLink = isAdminUser ? { href: '/admin', label: 'Admin / CMS' } : null
-  
+  const adminLink = isAdminUser ? { href: '/admin', label: 'Dashboard' } : null
+
   // Only show service line toggle on protocol pages
   const isProtocolPage = pathname?.startsWith('/protocols')
 

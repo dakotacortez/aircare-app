@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { isLoggedIn, isContentOrAdmin } from '../access/roles'
+import { anyone } from '../access/anyone'
+import { isContentOrAdmin } from '../access/roles'
 
 /**
  * Calculators Collection
@@ -26,9 +27,9 @@ export const Calculators: CollectionConfig = {
     group: 'Clinical Content',
     description: 'Clinical calculators and quick tools metadata',
   },
-  access: {
-    // Any logged in user can read
-    read: isLoggedIn,
+    access: {
+      // Calculators must be visible to guests for landing/tools pages
+      read: anyone,
     // Only content team or admin can create, update, delete
     create: isContentOrAdmin,
     update: isContentOrAdmin,
