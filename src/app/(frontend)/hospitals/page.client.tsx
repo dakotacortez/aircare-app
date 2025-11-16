@@ -269,7 +269,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               const cardKey = `${hospital.id}`
 
               return (
-                <Link key={cardKey} href={`/hospitals/${hospital.id ?? ''}`} className="block">
+                <Link key={cardKey} href={`/hospitals/${hospital.slug ?? hospital.id ?? ''}`} className="block">
                   <article
                     className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
                   >

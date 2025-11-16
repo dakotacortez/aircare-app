@@ -14,7 +14,7 @@ export const Bases: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'address.city'],
+    defaultColumns: ['name', 'slug', 'address.city'],
     group: 'Operations',
     description: 'EMS base locations and station information',
   },
@@ -34,6 +34,33 @@ export const Bases: CollectionConfig = {
       label: 'Base Name',
       admin: {
         placeholder: 'e.g., Station 1, Headquarters',
+      },
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'URL Slug',
+      admin: {
+        description: 'URL-friendly identifier (auto-generated from name)',
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, operation }) => {
+            // Auto-generate slug from name on create or if slug is empty
+            if ((operation === 'create' || !value) && data?.name) {
+              return data.name
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+            }
+            return value
+          },
+        ],
       },
     },
     {

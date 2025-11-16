@@ -18,7 +18,7 @@ export const Hospitals: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'address.city', 'network'],
+    defaultColumns: ['name', 'slug', 'address.city', 'network'],
     group: 'Hospitals',
     description: 'Hospital directory with contact info, capabilities, and EMS notes',
   },
@@ -53,6 +53,33 @@ export const Hospitals: CollectionConfig = {
       label: 'Hospital Name',
       admin: {
         placeholder: 'e.g., St. Joseph Mercy Ann Arbor',
+      },
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'URL Slug',
+      admin: {
+        description: 'URL-friendly identifier (auto-generated from name)',
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data, operation }) => {
+            // Auto-generate slug from name on create or if slug is empty
+            if ((operation === 'create' || !value) && data?.name) {
+              return data.name
+                .toLowerCase()
+                .trim()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+            }
+            return value
+          },
+        ],
       },
     },
     {

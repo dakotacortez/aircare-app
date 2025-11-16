@@ -12,27 +12,37 @@ import { HospitalDetailCard } from './HospitalDetailCard'
 
 interface HospitalDetailPageProps {
   params: Promise<{
-    id: string
+    slug: string
   }>
 }
 
 export default async function HospitalDetailPage({ params }: HospitalDetailPageProps) {
-  const { id } = await params
+  const { slug } = await params
 
   await getMeUser({
-    nullUserRedirect: `/login?unauthorized=hospitals&redirect=${encodeURIComponent(`/hospitals/${id}`)}`,
+    nullUserRedirect: `/login?unauthorized=hospitals&redirect=${encodeURIComponent(`/hospitals/${slug}`)}`,
   })
 
   const payload = await getPayload({ config })
 
   let hospital: Hospital | null = null
   try {
-    const result = await payload.findByID({
+    const result = await payload.find({
       collection: 'hospitals',
-      id,
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
       depth: 2,
+      limit: 1,
     })
-    hospital = result as Hospital
+    
+    if (result.docs.length > 0) {
+      hospital = result.docs[0] as Hospital
+    } else {
+      notFound()
+    }
   } catch (_error) {
     notFound()
   }
