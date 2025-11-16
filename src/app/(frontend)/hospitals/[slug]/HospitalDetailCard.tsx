@@ -562,7 +562,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 </p>
               )}
               <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
-                Night operations: {hospital.helipad.nightOperations ? 'Yes' : 'No'}
+                IFR Approach: {hospital.helipad.nightOperations ? 'Yes' : 'No'}
               </p>
               {hospital.helipad.preferredApproach && (
                 <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
@@ -582,7 +582,23 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               </span>
               Campus maps
             </h2>
-              <div className="mb-3 inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
+              {/* Dropdown for small screens */}
+              <div className="mb-3 sm:hidden">
+                <select
+                  value={activeMapTab}
+                  onChange={(e) => setActiveMapTab(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-uc-light-border bg-uc-light-card px-3 py-2 text-sm font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
+                >
+                  {campusTabs.map((tab) => (
+                    <option key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Tabs for larger screens */}
+              <div className="mb-3 hidden sm:inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
               {campusTabs.map((tab) => (
                 <button
                   key={tab.id}
