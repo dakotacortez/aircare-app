@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors } from './capabilityColors'
 
 type SortOption = 'distanceAsc' | 'distanceDesc' | 'alpha'
@@ -23,6 +24,17 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'distanceDesc', label: 'Farthest first' },
   { value: 'alpha', label: 'A–Z' },
 ]
+
+const formatPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+  if (digits.length === 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  }
+  return phone
+}
 
 const buildAddressSummary = (hospital: Hospital) => {
   const city = hospital.address?.city?.trim()
@@ -94,21 +106,17 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   useEffect(() => {
     if (!isMobile) return
 
-    if (!('geolocation' in navigator)) {
-      setLocationError('Location not supported on this device')
-      return
+    const fetchLocation = async () => {
+      const location = await getDeviceLocation()
+      if (location) {
+        setUserLocation(location)
+        setLocationError(null)
+      } else {
+        setLocationError('Location access denied')
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({ lat: position.coords.latitude, lon: position.coords.longitude })
-        setLocationError(null)
-      },
-      (error) => {
-        console.error('Geolocation error:', error)
-        setLocationError(error.message || 'Location access denied')
-      },
-    )
+    fetchLocation()
   }, [isMobile])
 
   const capabilityNameById = useMemo(() => {
@@ -192,7 +200,8 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               <select
                 value={sortOption}
                 onChange={(event) => setSortOption(event.target.value as SortOption)}
-                  className="h-8 rounded-full border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-muted"
+                  className="h-9 appearance-none rounded-lg border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -204,10 +213,12 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
           </div>
         </div>
 
-        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
-              <span className="text-base">🧪</span>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
               <span>Filter by capability</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -217,7 +228,8 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   onChange={(event) =>
                     setCapabilityFilter(event.target.value === '' ? null : Number(event.target.value))
                   }
-                  className="h-9 min-w-[10rem] rounded-full border border-uc-light-border bg-uc-light-subtle pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-700 dark:text-uc-text-dark-muted dark:focus:bg-neutral-800"
+                  className="h-9 min-w-[10rem] appearance-none rounded-lg border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
                 >
                   <option value="">All capabilities</option>
                   {capabilities.map((capability) => (
@@ -271,7 +283,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               return (
                 <Link key={cardKey} href={`/hospitals/${hospital.slug ?? hospital.id ?? ''}`} className="block">
                   <article
-                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
+                    className="rounded-2xl bg-uc-light-card p-4 text-left ring-1 ring-uc-light-border transition dark:bg-neutral-800 dark:ring-neutral-700"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">

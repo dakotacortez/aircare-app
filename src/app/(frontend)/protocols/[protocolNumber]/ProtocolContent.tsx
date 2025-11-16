@@ -131,7 +131,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
       </div>
 
       {/* 3-Column Layout */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden relative bg-white dark:bg-neutral-800">
         {/* Left Sidebar - Protocol Tree */}
         <ProtocolTree
           protocols={allProtocols}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import type { Base } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { getDeviceLocation } from '@/utilities/geolocation'
 
 interface BasesClientProps {
   bases: Base[]
@@ -12,6 +13,17 @@ interface BasesClientProps {
 interface BaseWithDistance extends Base {
   distance?: number
   eta?: number
+}
+
+const formatPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+  if (digits.length === 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  }
+  return phone
 }
 
 const buildAddressSummary = (base: Base) => {
@@ -38,21 +50,17 @@ export function BasesClient({ bases }: BasesClientProps) {
   useEffect(() => {
     if (!isMobile) return
 
-    if (!('geolocation' in navigator)) {
-      setLocationError('Location not supported on this device')
-      return
+    const fetchLocation = async () => {
+      const location = await getDeviceLocation()
+      if (location) {
+        setUserLocation(location)
+        setLocationError(null)
+      } else {
+        setLocationError('Location access denied')
+      }
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({ lat: position.coords.latitude, lon: position.coords.longitude })
-        setLocationError(null)
-      },
-      (error) => {
-        console.error('Geolocation error:', error)
-        setLocationError(error.message || 'Location access denied')
-      },
-    )
+    fetchLocation()
   }, [isMobile])
 
   const basesWithDistance = useMemo<BaseWithDistance[]>(() => {
@@ -118,7 +126,7 @@ export function BasesClient({ bases }: BasesClientProps) {
               return (
                 <Link key={cardKey} href={`/bases/${base.slug ?? base.id ?? ''}`} className="block">
                   <article
-                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
+                    className="rounded-2xl bg-uc-light-card p-4 text-left ring-1 ring-uc-light-border transition dark:bg-neutral-800 dark:ring-neutral-700"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>

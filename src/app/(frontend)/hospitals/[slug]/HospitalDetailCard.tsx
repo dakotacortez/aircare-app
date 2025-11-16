@@ -1,11 +1,12 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { DoorCodeList } from '@/components/door-code-list'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors } from '../capabilityColors'
 
 interface HospitalDetailCardProps {
@@ -73,14 +74,18 @@ function formatPhone(phone: string) {
   return phone
 }
 
+// UC Medical Center coordinates as fallback
+const UCMC_COORDS = { lat: 39.1371, lon: -84.5037 }
+
 export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalDetailCardProps) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle')
   const [showNavModal, setShowNavModal] = useState(false)
   const [etaState, setEtaState] = useState<{
-    status: 'idle' | 'loading' | 'ready' | 'error'
+    status: 'idle' | 'loading' | 'ready' | 'error' | 'ucmc-fallback'
     etaMinutes?: number
     distanceMiles?: number
     errorMessage?: string
+    usingUCMC?: boolean
   }>({ status: 'idle' })
 
   const addressLines = useMemo(() => {
@@ -226,14 +231,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
     handleError()
   }, [addressLines, capabilityBadges, hospital.name, hospital.squadPhone, network?.name, primaryDoorCode?.code])
 
-  const requestEta = useCallback(() => {
-    if (!navigator.geolocation) {
-      setEtaState({
-        status: 'error',
-        errorMessage: 'Location not supported on this device.',
-      })
-      return
-    }
+  const requestEta = useCallback(async () => {
     if (typeof hospital.latitude !== 'number' || typeof hospital.longitude !== 'number') {
       setEtaState({
         status: 'error',
@@ -241,35 +239,49 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
       })
       return
     }
+
     setEtaState({ status: 'loading' })
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const distance = calculateDistanceMiles(
-          position.coords.latitude,
-          position.coords.longitude,
-          hospital.latitude as number,
-          hospital.longitude as number,
-        )
-        const eta = estimateEtaMinutes(distance)
-        setEtaState({
-          status: 'ready',
-          etaMinutes: eta,
-          distanceMiles: Number.isFinite(distance) ? distance : undefined,
-        })
-      },
-      (error) => {
-        console.error('Geolocation error', error)
-        setEtaState({
-          status: 'error',
-          errorMessage: error.message || 'Unable to access location.',
-        })
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      },
-    )
+
+    // Try to get device location
+    const location = await getDeviceLocation()
+
+    if (location) {
+      // Successfully got user's location
+      const distance = calculateDistanceMiles(
+        location.lat,
+        location.lon,
+        hospital.latitude as number,
+        hospital.longitude as number,
+      )
+      const eta = estimateEtaMinutes(distance)
+      setEtaState({
+        status: 'ready',
+        etaMinutes: eta,
+        distanceMiles: Number.isFinite(distance) ? distance : undefined,
+        usingUCMC: false,
+      })
+    } else {
+      // Fallback to UCMC coordinates
+      const distance = calculateDistanceMiles(
+        UCMC_COORDS.lat,
+        UCMC_COORDS.lon,
+        hospital.latitude as number,
+        hospital.longitude as number,
+      )
+      const eta = estimateEtaMinutes(distance)
+      setEtaState({
+        status: 'ucmc-fallback',
+        etaMinutes: eta,
+        distanceMiles: Number.isFinite(distance) ? distance : undefined,
+        usingUCMC: true,
+      })
+    }
   }, [hospital.latitude, hospital.longitude])
+
+  // Auto-request ETA on mount
+  useEffect(() => {
+    requestEta()
+  }, [requestEta])
 
   const handleOpenNavigation = useCallback((provider: 'google' | 'apple' | 'waze') => {
     if (!navigationQuery) {
@@ -301,7 +313,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
   const lastUpdated = hospital.updatedAt ? new Date(hospital.updatedAt) : null
 
   return (
-    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:text-uc-text-dark-default dark:shadow-uc-card-dark dark:ring-neutral-700">
+    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default ring-1 ring-uc-light-border dark:bg-neutral-800 dark:text-uc-text-dark-default dark:ring-neutral-700">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -333,7 +345,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             <button
               type="button"
               onClick={handleCopyAllInfo}
-              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📋
@@ -342,7 +354,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             </button>
             <a
               href={`mailto:?subject=Hospital info update: ${encodeURIComponent(hospital.name ?? '')}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📝
@@ -353,7 +365,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
         </div>
 
         <div className="mb-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span role="img" aria-hidden="true">
                 📍
@@ -372,7 +384,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">Address coming soon</p>
             )}
           </div>
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <div className="mb-2 flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
@@ -383,9 +395,13 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               <button
                 type="button"
                 onClick={requestEta}
-                  className="text-xs font-semibold text-uc-text-light-muted underline-offset-2 hover:text-uc-text-light-default hover:underline dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
+                  className="rounded-full p-1.5 text-uc-text-light-muted transition hover:bg-uc-light-subtle hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:bg-neutral-700 dark:hover:text-uc-text-dark-default"
+                  aria-label="Update location"
+                  title="Update from my location"
               >
-                Update from my location
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
               </button>
             </div>
             {etaState.status === 'loading' ? (
@@ -393,7 +409,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   <div className="h-4 w-28 rounded-full bg-uc-light-border dark:bg-neutral-700" />
                   <div className="h-3 w-40 rounded-full bg-uc-light-subtle dark:bg-neutral-700/80" />
                 </div>
-            ) : etaState.status === 'ready' ? (
+            ) : etaState.status === 'ready' || etaState.status === 'ucmc-fallback' ? (
               <>
                   <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
                     <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
@@ -409,7 +425,9 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   )}
                 </p>
                   <p className="mt-1 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                    Based on your current GPS location
+                    {etaState.usingUCMC 
+                      ? 'Based on location to UC Medical Center'
+                      : 'Based on your current GPS location'}
                   </p>
               </>
             ) : etaState.status === 'error' ? (
@@ -422,7 +440,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+        <div className="mb-6 rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border">
           <h2 className="mb-3 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">Quick actions</h2>
           <div className="grid gap-3 md:grid-cols-3">
             <motion.button
@@ -434,7 +452,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 }
               }}
               disabled={!hospital.squadPhone}
-              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-neutral-800"
+              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-neutral-800"
             >
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
@@ -446,7 +464,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigationQuery && setShowNavModal(true)}
-                className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-sky-500/40 dark:bg-sky-600 dark:hover:bg-sky-500 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-neutral-800"
+                className="flex w-full items-center gap-3 rounded-xl bg-neutral-600 px-4 py-3 text-left font-semibold text-white transition hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-neutral-600/40 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:focus-visible:ring-neutral-500 dark:focus-visible:ring-offset-neutral-800"
               disabled={!navigationQuery}
             >
               <span aria-hidden="true">🧭</span>
@@ -465,7 +483,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   navigator.clipboard?.writeText(primaryDoorCode.code).catch(() => null)
                 }
               }}
-              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-800"
+              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-800"
             >
               <span aria-hidden="true">🔑</span>
               <div className="flex flex-col leading-tight">
@@ -478,7 +496,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
 
         <div className="space-y-4">
           {capabilityBadges.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🏥
@@ -511,7 +529,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {hospital.helipad && (hospital.helipad.identifier || hospital.helipad.preferredApproach || hospital.helipad.notes) && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🚁
@@ -524,7 +542,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 </p>
               )}
               <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
-                Night operations: {hospital.helipad.nightOperations ? 'Yes' : 'No'}
+                IFR Approach: {hospital.helipad.nightOperations ? 'Yes' : 'No'}
               </p>
               {hospital.helipad.preferredApproach && (
                 <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
@@ -537,14 +555,30 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             </div>
           )}
 
-          <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+          <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border">
             <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span role="img" aria-hidden="true">
                 🗺️
               </span>
               Campus maps
             </h2>
-              <div className="mb-3 inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
+              {/* Dropdown for small screens */}
+              <div className="mb-3 sm:hidden">
+                <select
+                  value={activeMapTab}
+                  onChange={(e) => setActiveMapTab(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-uc-light-border bg-uc-light-card px-3 py-2 text-sm font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
+                >
+                  {campusTabs.map((tab) => (
+                    <option key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Tabs for larger screens */}
+              <div className="mb-3 hidden sm:inline-flex flex-wrap rounded-full bg-uc-light-subtle p-1 text-xs font-medium text-uc-text-light-muted dark:bg-neutral-700 dark:text-uc-text-dark-muted">
               {campusTabs.map((tab) => (
                 <button
                   key={tab.id}
@@ -552,7 +586,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   onClick={() => setActiveMapTab(tab.id)}
                   className={`rounded-full px-3 py-1 transition ${
                     activeMapTab === tab.id
-                        ? 'bg-uc-light-card text-uc-text-light-default shadow-sm dark:bg-neutral-800 dark:text-uc-text-dark-default'
+                        ? 'bg-uc-light-card text-uc-text-light-default dark:bg-neutral-800 dark:text-uc-text-dark-default'
                         : 'text-uc-text-light-muted hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default'
                   }`}
                 >
@@ -577,7 +611,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                       {tab.externalUrl && (
                         <button
                           onClick={() => window.open(tab.externalUrl, '_blank', 'noopener')}
-                          className="absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-uc-text-light-default shadow"
+                          className="absolute bottom-3 right-3 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-uc-text-light-default"
                         >
                           Open full map
                         </button>
@@ -595,7 +629,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           </div>
 
           {otherContacts.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ☎️
@@ -629,7 +663,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {(hazards.length > 0 || hospital.notes) && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ⚠️
@@ -646,7 +680,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
           )}
 
           {doorCodes.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🔑
@@ -672,7 +706,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700"
+                className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700"
                 initial={{ scale: 0.95, y: 10, opacity: 0 }}
                 animate={{ scale: 1, y: 0, opacity: 1 }}
                 exit={{ scale: 0.95, y: 10, opacity: 0 }}
