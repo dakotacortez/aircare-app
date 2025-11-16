@@ -53,7 +53,7 @@ export default async function BasesPage() {
             {bases.map((base) => (
               <Link
                 key={base.id}
-                href={`/bases/${base.id}`}
+                href={`/bases/${base.slug}`}
                 className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow"
               >
                 {/* Base Name */}

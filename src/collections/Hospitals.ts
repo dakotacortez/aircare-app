@@ -56,6 +56,31 @@ export const Hospitals: CollectionConfig = {
       },
     },
     {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'URL Slug',
+      admin: {
+        position: 'sidebar',
+        description: 'Auto-generated from hospital name. Used in URLs.',
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data }) => {
+            if (!value && data?.name) {
+              // Auto-generate slug from name
+              return data.name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '')
+            }
+            return value
+          },
+        ],
+      },
+    },
+    {
       name: 'network',
       type: 'relationship',
       relationTo: 'hospital-networks',

@@ -11,28 +11,33 @@ import type { Base, Asset } from '@/payload-types'
 
 interface BaseDetailPageProps {
   params: Promise<{
-    id: string
+    slug: string
   }>
 }
 
 export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
-  const { id } = await params
+  const { slug } = await params
 
   // Check authentication
   const { user } = await getMeUser({
-    nullUserRedirect: `/login?unauthorized=bases&redirect=${encodeURIComponent(`/bases/${id}`)}`,
+    nullUserRedirect: `/login?unauthorized=bases&redirect=${encodeURIComponent(`/bases/${slug}`)}`,
   })
 
-  // Fetch the base
+  // Fetch the base by slug
   const payload = await getPayload({ config })
-  
+
   let base: Base | null = null
   try {
-    const result = await payload.findByID({
+    const result = await payload.find({
       collection: 'bases',
-      id,
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
+      limit: 1,
     })
-    base = result as Base
+    base = result.docs[0] as Base || null
   } catch (error) {
     notFound()
   }

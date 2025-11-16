@@ -12,29 +12,34 @@ import Image from 'next/image'
 
 interface HospitalDetailPageProps {
   params: Promise<{
-    id: string
+    slug: string
   }>
 }
 
 export default async function HospitalDetailPage({ params }: HospitalDetailPageProps) {
-  const { id } = await params
+  const { slug } = await params
 
   // Check authentication
   const { user } = await getMeUser({
-    nullUserRedirect: `/login?unauthorized=hospitals&redirect=${encodeURIComponent(`/hospitals/${id}`)}`,
+    nullUserRedirect: `/login?unauthorized=hospitals&redirect=${encodeURIComponent(`/hospitals/${slug}`)}`,
   })
 
-  // Fetch the hospital
+  // Fetch the hospital by slug
   const payload = await getPayload({ config })
-  
+
   let hospital: Hospital | null = null
   try {
-    const result = await payload.findByID({
+    const result = await payload.find({
       collection: 'hospitals',
-      id,
+      where: {
+        slug: {
+          equals: slug,
+        },
+      },
       depth: 2, // Include network, capabilities, and media
+      limit: 1,
     })
-    hospital = result as Hospital
+    hospital = result.docs[0] as Hospital || null
   } catch (error) {
     notFound()
   }

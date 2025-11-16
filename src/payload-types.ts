@@ -1122,6 +1122,10 @@ export interface Hospital {
   id: number;
   name: string;
   /**
+   * Auto-generated from hospital name. Used in URLs.
+   */
+  slug: string;
+  /**
    * Parent network/system this hospital belongs to
    */
   network?: (number | null) | HospitalNetwork;
@@ -1160,6 +1164,7 @@ export interface Hospital {
    */
   doorCodes?:
     | {
+        label?: string | null;
         code?: string | null;
         id?: string | null;
       }[]
@@ -1274,6 +1279,10 @@ export interface HospitalChangeRequest {
 export interface Base {
   id: number;
   name: string;
+  /**
+   * Auto-generated from base name. Used in URLs.
+   */
+  slug: string;
   address?: {
     line1?: string | null;
     line2?: string | null;
@@ -1304,6 +1313,7 @@ export interface Base {
    */
   doorCodes?:
     | {
+        label?: string | null;
         code?: string | null;
         id?: string | null;
       }[]
@@ -2025,6 +2035,7 @@ export interface HospitalCapabilitiesSelect<T extends boolean = true> {
  */
 export interface HospitalsSelect<T extends boolean = true> {
   name?: T;
+  slug?: T;
   network?: T;
   networkLogoOverride?: T;
   address?:
@@ -2049,6 +2060,7 @@ export interface HospitalsSelect<T extends boolean = true> {
   doorCodes?:
     | T
     | {
+        label?: T;
         code?: T;
         id?: T;
       };
@@ -2121,6 +2133,7 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
  */
 export interface BasesSelect<T extends boolean = true> {
   name?: T;
+  slug?: T;
   address?:
     | T
     | {
@@ -2142,6 +2155,7 @@ export interface BasesSelect<T extends boolean = true> {
   doorCodes?:
     | T
     | {
+        label?: T;
         code?: T;
         id?: T;
       };

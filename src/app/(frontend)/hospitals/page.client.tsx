@@ -278,7 +278,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               return (
                 <Link
                   key={hospital.id}
-                  href={`/hospitals/${hospital.id}`}
+                  href={`/hospitals/${hospital.slug}`}
                   className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col"
                 >
                   {/* Distance/ETA Badge (Mobile Only) */}
