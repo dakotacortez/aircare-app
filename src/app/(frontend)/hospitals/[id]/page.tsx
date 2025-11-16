@@ -6,7 +6,7 @@ import config from '@payload-config'
 import { getMeUser } from '@/utilities/getMeUser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { MapPin, Phone, Key, Award, FileText, ChevronLeft, Building2 } from 'lucide-react'
+import { MapPin, Phone, Key, Award, FileText, ChevronLeft } from 'lucide-react'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import Image from 'next/image'
 
@@ -20,7 +20,7 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
   const { id } = await params
 
   // Check authentication
-  const { user } = await getMeUser({
+  await getMeUser({
     nullUserRedirect: `/login?unauthorized=hospitals&redirect=${encodeURIComponent(`/hospitals/${id}`)}`,
   })
 
@@ -35,7 +35,7 @@ export default async function HospitalDetailPage({ params }: HospitalDetailPageP
       depth: 2, // Include network, capabilities, and media
     })
     hospital = result as Hospital
-  } catch (error) {
+  } catch {
     notFound()
   }
 

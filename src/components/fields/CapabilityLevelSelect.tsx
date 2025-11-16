@@ -7,18 +7,70 @@ import { useField, useFormFields, Select, FieldLabel } from '@payloadcms/ui'
  * Custom field component for selecting hospital capability levels
  * Dynamically loads levels based on the selected capability
  */
-export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
+type CapabilityFormValue =
+  | { id?: string | number }
+  | string
+  | number
+  | null
+  | undefined
+
+type SelectOption = {
+  label: string
+  value: string
+}
+
+type CapabilityLevelSelectProps = {
+  path: string
+  field?: {
+    label?: string
+    required?: boolean
+    admin?: {
+      description?: string
+    }
+  }
+}
+
+type CapabilityResponse = {
+  levels?: { level: string }[]
+}
+
+const RESOLVED_CAPABILITY_PLACEHOLDER = {
+  label: 'Please select a capability type first',
+  value: '',
+}
+
+export const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, field }) => {
   const { value, setValue } = useField<string>({ path })
-  const capability = useFormFields(([fields]) => fields.capability?.value)
-  const [levels, setLevels] = useState<Array<{ label: string; value: string }>>([])
+  const capability = useFormFields(
+    ([fields]) => fields.capability?.value as CapabilityFormValue | undefined,
+  )
+  const [levels, setLevels] = useState<SelectOption[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const resolveCapabilityId = (capabilityValue: CapabilityFormValue): string | number | null => {
+    if (typeof capabilityValue === 'object' && capabilityValue !== null) {
+      return capabilityValue.id ?? null
+    }
+
+    if (capabilityValue === undefined || capabilityValue === null) {
+      return null
+    }
+
+    return capabilityValue
+  }
 
   // Fetch levels when capability changes
   useEffect(() => {
     const fetchLevels = async () => {
       if (!capability) {
-        setLevels([{ label: 'Please select a capability type first', value: '' }])
+        setLevels([RESOLVED_CAPABILITY_PLACEHOLDER])
+        return
+      }
+
+      const capabilityId = resolveCapabilityId(capability)
+      if (!capabilityId) {
+        setLevels([RESOLVED_CAPABILITY_PLACEHOLDER])
         return
       }
 
@@ -26,9 +78,6 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
       setError(null)
 
       try {
-        // Get the capability ID
-        const capabilityId = typeof capability === 'object' ? (capability as any).id : capability
-
         // Fetch the capability to get its levels
         const response = await fetch(`/api/hospital-capabilities/${capabilityId}`, {
           credentials: 'include',
@@ -38,7 +87,7 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
           throw new Error('Failed to fetch capability levels')
         }
 
-        const capabilityData = await response.json()
+        const capabilityData = (await response.json()) as CapabilityResponse
 
         if (!capabilityData?.levels || capabilityData.levels.length === 0) {
           setLevels([
@@ -49,7 +98,7 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
           ])
         } else {
           // Map levels to options
-          const options = capabilityData.levels.map((levelObj: { level: string }) => ({
+          const options = capabilityData.levels.map((levelObj) => ({
             label: levelObj.level,
             value: levelObj.level,
           }))
@@ -72,7 +121,7 @@ export const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
       <FieldLabel label={field?.label} required={field?.required} />
       <Select
         value={levels.find((option) => option.value === value)}
-        onChange={(e: any) => setValue(e.value)}
+        onChange={(selected: SelectOption | null) => setValue(selected?.value ?? '')}
         options={levels}
         disabled={loading || !capability}
       />

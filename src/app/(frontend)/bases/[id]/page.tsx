@@ -7,7 +7,7 @@ import { getMeUser } from '@/utilities/getMeUser'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MapPin, Phone, Key, Truck, FileText, ChevronLeft } from 'lucide-react'
-import type { Base, Asset } from '@/payload-types'
+import type { Base } from '@/payload-types'
 
 interface BaseDetailPageProps {
   params: Promise<{
@@ -19,13 +19,13 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
   const { id } = await params
 
   // Check authentication
-  const { user } = await getMeUser({
+  await getMeUser({
     nullUserRedirect: `/login?unauthorized=bases&redirect=${encodeURIComponent(`/bases/${id}`)}`,
   })
 
   // Fetch the base
   const payload = await getPayload({ config })
-  
+
   let base: Base | null = null
   try {
     const result = await payload.findByID({
@@ -33,7 +33,7 @@ export default async function BaseDetailPage({ params }: BaseDetailPageProps) {
       id,
     })
     base = result as Base
-  } catch (error) {
+  } catch {
     notFound()
   }
 

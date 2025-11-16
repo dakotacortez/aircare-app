@@ -1,4 +1,4 @@
-import type { CollectionConfig, FieldHook, PayloadRequest } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { isLoggedIn, isContentOrAdmin } from '../access/roles'
 
 /**
@@ -209,7 +209,7 @@ export const Hospitals: CollectionConfig = {
               Field: '@/components/fields/CapabilityLevelSelect',
             },
           },
-          validate: async (value: unknown, { siblingData, req }: any) => {
+            validate: async (value: unknown, { siblingData, req }) => {
             if (!value) {
               return 'Certification level is required'
             }

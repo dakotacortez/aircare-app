@@ -97,7 +97,7 @@ export const ReferenceCardDrawer: React.FC = () => {
         })
       }
 
-      const handlePointerUp = (upEvent: PointerEvent) => {
+      const handlePointerUp = () => {
         setIsDragging(false)
         if (fabRef.current) {
           fabRef.current.releasePointerCapture(event.pointerId)
@@ -184,13 +184,13 @@ export const ReferenceCardDrawer: React.FC = () => {
             }}
             onPointerDown={handleFabPointerDown}
           >
-          {/* Main FAB */}
-          <button
-            onClick={(e) => {
-              if (!isDragging) {
-                setDrawerOpen(!drawerOpen)
-              }
-            }}
+            {/* Main FAB */}
+            <button
+              onClick={() => {
+                if (!isDragging) {
+                  setDrawerOpen(!drawerOpen)
+                }
+              }}
             className="relative bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all"
             aria-label={drawerOpen ? 'Close reference cards' : 'Open reference cards'}
           >

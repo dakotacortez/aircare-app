@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, Phone, Building2, Award, Navigation, Filter, X } from 'lucide-react'
+import { MapPin, Phone, Building2, Award, Navigation, Filter } from 'lucide-react'
 import type { Hospital, HospitalNetwork, HospitalCapability } from '@/payload-types'
 
 interface HospitalsClientProps {

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import type { Base } from '@/payload-types'
 import { isLoggedIn, isContentOrAdmin } from '../access/roles'
 
 /**
@@ -133,63 +134,66 @@ export const Bases: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'assets',
-      type: 'relationship',
-      relationTo: 'assets' as any,
-      hasMany: true,
-      label: 'Assets Based Here',
-      admin: {
-        description: 'Select vehicles and units stationed at this base. Assets already assigned to other bases will not appear in the list.',
-      },
-      filterOptions: (async ({ id, relationTo, data, siblingData, req }: any) => {
-        // This will filter out assets that are already assigned to OTHER bases
-        try {
-          // Query all other bases (not the current one being edited)
-          const allBases = await req.payload.find({
-            collection: 'bases',
-            where: {
-              id: {
-                not_equals: id,
-              },
-            },
-            limit: 1000,
-          })
-
-          // Collect all asset IDs that are assigned to other bases
-          const assignedAssetIds: number[] = []
-
-          if (allBases?.docs) {
-            allBases.docs.forEach((base: any) => {
-              if (base.assets && Array.isArray(base.assets)) {
-                base.assets.forEach((asset: any) => {
-                  const assetId = typeof asset === 'object' ? asset.id : asset
-                  if (assetId && !assignedAssetIds.includes(assetId)) {
-                    assignedAssetIds.push(assetId)
+      {
+        name: 'assets',
+        type: 'relationship',
+        relationTo: 'assets',
+        hasMany: true,
+        label: 'Assets Based Here',
+        admin: {
+          description:
+            'Select vehicles and units stationed at this base. Assets already assigned to other bases will not appear in the list.',
+        },
+        filterOptions: async ({ id, req }) => {
+          // This will filter out assets that are already assigned to OTHER bases
+          try {
+            // Query all other bases (not the current one being edited)
+            const allBases = await req.payload.find({
+              collection: 'bases',
+              limit: 1000,
+              ...(id
+                ? {
+                    where: {
+                      id: {
+                        not_equals: id,
+                      },
+                    },
                   }
-                })
-              }
+                : {}),
             })
-          }
 
-          // Return filter to exclude already assigned assets
-          if (assignedAssetIds.length > 0) {
-            return {
-              id: {
-                not_in: assignedAssetIds,
-              },
+            // Collect all asset IDs that are assigned to other bases
+            const assignedAssetIds = new Set<number>()
+
+            const docs = (allBases?.docs ?? []) as Base[]
+
+            docs.forEach((base) => {
+              base.assets?.forEach((asset) => {
+                const assetId = typeof asset === 'object' ? asset.id : asset
+                if (typeof assetId === 'number') {
+                  assignedAssetIds.add(assetId)
+                }
+              })
+            })
+
+            // Return filter to exclude already assigned assets
+            if (assignedAssetIds.size > 0) {
+              return {
+                id: {
+                  not_in: Array.from(assignedAssetIds),
+                },
+              }
             }
-          }
 
-          // If no assets are assigned elsewhere, show all
-          return {}
-        } catch (error) {
-          console.error('Error filtering assets:', error)
-          // On error, show all assets
-          return {}
-        }
-      }) as any,
-    },
+            // If no assets are assigned elsewhere, show all
+            return {}
+          } catch (error) {
+            console.error('Error filtering assets:', error)
+            // On error, show all assets
+            return {}
+          }
+        },
+      },
     {
       name: 'notes',
       type: 'textarea',

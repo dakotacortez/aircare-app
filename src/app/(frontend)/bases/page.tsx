@@ -6,11 +6,11 @@ import config from '@payload-config'
 import { getMeUser } from '@/utilities/getMeUser'
 import Link from 'next/link'
 import { MapPin, Phone, FileText } from 'lucide-react'
-import type { Base, Asset } from '@/payload-types'
+import type { Base } from '@/payload-types'
 
 export default async function BasesPage() {
   // Check authentication - redirect to login if not authenticated
-  const { user } = await getMeUser({
+  await getMeUser({
     nullUserRedirect: `/login?unauthorized=bases&redirect=${encodeURIComponent('/bases')}`,
   })
 

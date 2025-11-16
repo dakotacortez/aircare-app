@@ -9,7 +9,7 @@ import { HospitalsClient } from './page.client'
 
 export default async function HospitalsPage() {
   // Check authentication - redirect to login if not authenticated
-  const { user } = await getMeUser({
+  await getMeUser({
     nullUserRedirect: `/login?unauthorized=hospitals&redirect=${encodeURIComponent('/hospitals')}`,
   })
 

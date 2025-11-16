@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import type { User } from '@/payload-types'
 import type { ServiceLineType } from '@/providers/ServiceLine'
 import { useServiceLine } from '@/providers/ServiceLine'
@@ -11,6 +12,16 @@ const SERVICE_LINE_LABELS: Record<ServiceLineType, string> = {
   BLS: 'BLS (Basic Life Support)',
   ALS: 'ALS (Advanced Life Support)',
   CCT: 'CCT (Critical Care Transport)',
+}
+
+type UserUpdatePayload = {
+  name: string
+  email: string
+  defaultServiceLine: ServiceLineType
+  pushNotificationsEnabled: boolean
+  profileImage?: number | string
+  password?: string
+  currentPassword?: string
 }
 
 interface EditProfileFormProps {
@@ -31,6 +42,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
     initialUser.pushNotificationsEnabled ?? false,
   )
   const [profileImage, setProfileImage] = useState<File | null>(null)
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -83,7 +95,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
       }
 
       // Upload profile image if changed
-      let profileImageId = null
+      let profileImageId: string | number | null = null
       if (profileImage) {
         profileImageId = await handleImageUpload(profileImage)
         if (!profileImageId) {
@@ -92,7 +104,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
       }
 
       // Build update payload
-      const updateData: any = {
+      const updateData: UserUpdatePayload = {
         name,
         email,
         defaultServiceLine,
@@ -177,10 +189,24 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
     }
   }
 
-  const profileImageUrl =
+  useEffect(() => {
+    if (!profileImage) {
+      setProfileImagePreview(null)
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(profileImage)
+    setProfileImagePreview(objectUrl)
+
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [profileImage])
+
+  const profileImageDoc =
     typeof initialUser.profileImage === 'object' && initialUser.profileImage !== null
-      ? (initialUser.profileImage as any).url
+      ? initialUser.profileImage
       : null
+  const profileImageUrl = profileImageDoc?.url ?? null
+  const profileImageSrc = profileImagePreview ?? profileImageUrl
 
   return (
     <div className="min-h-[70vh] bg-neutral-50 dark:bg-neutral-900 py-10 px-4">
@@ -214,23 +240,18 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                 Profile Image
               </label>
               <div className="flex items-center gap-4">
-                {(profileImageUrl || profileImage) && (
-                  <div className="relative h-20 w-20 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-700">
-                    {profileImage ? (
-                      <img
-                        src={URL.createObjectURL(profileImage)}
-                        alt="Profile preview"
-                        className="h-full w-full object-cover"
+                  {profileImageSrc && (
+                    <div className="relative h-20 w-20 rounded-full overflow-hidden bg-neutral-100 dark:bg-neutral-700">
+                      <Image
+                        src={profileImageSrc}
+                        alt={profileImagePreview ? 'Profile preview' : 'Profile'}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                        unoptimized={Boolean(profileImagePreview)}
                       />
-                    ) : (
-                      <img
-                        src={profileImageUrl}
-                        alt="Profile"
-                        className="h-full w-full object-cover"
-                      />
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
                 <label className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-neutral-100 dark:bg-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition">
                   <Upload className="h-4 w-4" />
                   {profileImage || profileImageUrl ? 'Change Image' : 'Upload Image'}
