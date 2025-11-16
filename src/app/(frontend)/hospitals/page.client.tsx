@@ -16,12 +16,7 @@ interface HospitalWithDistance extends Hospital {
 }
 
 // Haversine formula to calculate distance between two coordinates
-function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959 // Earth's radius in miles
   const dLat = ((lat2 - lat1) * Math.PI) / 180
   const dLon = ((lon2 - lon1) * Math.PI) / 180
@@ -40,7 +35,7 @@ function calculateDistance(
 // Longer distances = faster (more highway/arterial roads)
 function calculateETA(distanceInMiles: number): number {
   let averageSpeed: number
-  
+
   if (distanceInMiles < 5) {
     averageSpeed = 35 // Urban streets, traffic lights, congestion
   } else if (distanceInMiles < 15) {
@@ -48,7 +43,7 @@ function calculateETA(distanceInMiles: number): number {
   } else {
     averageSpeed = 55 // Mostly highways
   }
-  
+
   return Math.round((distanceInMiles / averageSpeed) * 60) // convert to minutes
 }
 
@@ -58,6 +53,19 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
+
+  const getCapabilityLevelDescription = (
+    capability: HospitalCapability,
+    capabilityLevel?: string | null,
+  ) => {
+    if (!capability?.levels || !capabilityLevel) return null
+    const normalizedLevel = capabilityLevel.toLowerCase().trim()
+    const levelDetails = capability.levels.find((levelOption) => {
+      if (!levelOption.level) return false
+      return levelOption.level.toLowerCase().trim() === normalizedLevel
+    })
+    return levelDetails?.description?.trim() ?? null
+  }
 
   // Detect mobile
   useEffect(() => {
@@ -271,9 +279,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {processedHospitals.map((hospital) => {
               const network =
-                typeof hospital.network === 'object'
-                  ? (hospital.network as HospitalNetwork)
-                  : null
+                typeof hospital.network === 'object' ? (hospital.network as HospitalNetwork) : null
 
               return (
                 <Link
@@ -345,15 +351,28 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           const capability =
                             typeof cap.capability === 'object' ? cap.capability : null
                           if (!capability) return null
+                          const levelDescription = getCapabilityLevelDescription(
+                            capability,
+                            cap.level,
+                          )
 
                           return (
-                            <span
+                            <div
                               key={idx}
-                              className="inline-block px-2 py-1 text-xs rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200"
+                              className="inline-flex flex-col px-2 py-1 text-xs rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200"
                             >
-                              {capability.name}
-                              {cap.level && ` - ${cap.level}`}
-                            </span>
+                              <span className="font-medium">{capability.name}</span>
+                              {cap.level && (
+                                <span className="text-emerald-700 dark:text-emerald-200/90">
+                                  {cap.level}
+                                </span>
+                              )}
+                              {levelDescription && (
+                                <span className="text-[11px] text-emerald-700/80 dark:text-emerald-100/80">
+                                  {levelDescription}
+                                </span>
+                              )}
+                            </div>
                           )
                         })}
                         {hospital.capabilities.length > 2 && (

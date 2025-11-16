@@ -119,11 +119,7 @@ function renderLexicalNode(
       return null
     }
 
-    return (
-      <p key={nodeKey}>
-        {children}
-      </p>
-    )
+    return <p key={nodeKey}>{children}</p>
   }
 
   // Handle headings
@@ -134,11 +130,7 @@ function renderLexicalNode(
       return null
     }
 
-    return (
-      <Tag key={nodeKey}>
-        {children}
-      </Tag>
-    )
+    return <Tag key={nodeKey}>{children}</Tag>
   }
 
   // Handle lists
@@ -149,19 +141,12 @@ function renderLexicalNode(
       return null
     }
 
-    return (
-      <Tag key={nodeKey}>
-        {children}
-      </Tag>
-    )
+    return <Tag key={nodeKey}>{children}</Tag>
   }
 
   if (node.type === 'listitem') {
-    const children = renderChildNodes(node.children, context, nodeKey)
-    if (children.length === 0) {
-      return null
-    }
-
+    const { badgeNode, remainingChildren } = separateListItemBadge(node.children)
+    const children = renderChildNodes(remainingChildren, context, nodeKey)
     // Check if this is a checkbox list item
     const isCheckbox = typeof (node as { checked?: unknown }).checked === 'boolean'
     const isChecked = (node as { checked?: boolean }).checked ?? false
@@ -176,15 +161,27 @@ function renderLexicalNode(
             readOnly
             aria-label={isChecked ? 'Checked item' : 'Unchecked item'}
           />
-          <span className="checkbox-list-item__content">
-            {children}
-          </span>
+          <span className="checkbox-list-item__content">{children}</span>
         </li>
       )
     }
 
+    const badgeElement = badgeNode && renderCalloutBlockNode(badgeNode, context, `${nodeKey}-badge`)
+
+    if (children.length === 0 && !badgeElement) {
+      return null
+    }
+
     return (
-      <li key={nodeKey}>
+      <li
+        key={nodeKey}
+        className={badgeElement ? 'protocol-list-item protocol-list-item--with-alert' : undefined}
+      >
+        {badgeElement && (
+          <span className="protocol-list-item__badge" aria-hidden="true">
+            {badgeElement}
+          </span>
+        )}
         {children}
       </li>
     )
@@ -198,7 +195,12 @@ function renderLexicalNode(
     }
 
     return (
-      <a key={nodeKey} href={node.url} target={node.newTab ? '_blank' : undefined} rel="noopener noreferrer">
+      <a
+        key={nodeKey}
+        href={node.url}
+        target={node.newTab ? '_blank' : undefined}
+        rel="noopener noreferrer"
+      >
         {children}
       </a>
     )
@@ -211,11 +213,7 @@ function renderLexicalNode(
       return null
     }
 
-    return (
-      <>
-        {children}
-      </>
-    )
+    return <>{children}</>
   }
 
   // Fallback: render children if available
@@ -225,11 +223,7 @@ function renderLexicalNode(
       return null
     }
 
-    return (
-      <>
-        {children}
-      </>
-    )
+    return <>{children}</>
   }
 
   return null
@@ -304,14 +298,59 @@ function renderCertificationLevelNode(
  * Get color scheme CSS variables for callout/alert
  */
 function getColorScheme(color: string) {
-  const colorMap: Record<string, { bg: string; border: string; text: string; header: string; headerText: string }> = {
-    '#0ea5e9': { bg: '#e0f2fe', border: '#38bdf8', text: '#0c4a6e', header: '#38bdf8', headerText: '#0c4a6e' }, // sky/blue
-    '#3b82f6': { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a', header: '#60a5fa', headerText: '#1e3a8a' }, // blue
-    '#f59e0b': { bg: '#fef3c7', border: '#fbbf24', text: '#78350f', header: '#fbbf24', headerText: '#78350f' }, // amber/yellow
-    '#ef4444': { bg: '#fee2e2', border: '#f87171', text: '#7f1d1d', header: '#f87171', headerText: '#7f1d1d' }, // red
-    '#10b981': { bg: '#d1fae5', border: '#34d399', text: '#064e3b', header: '#34d399', headerText: '#064e3b' }, // emerald/green
-    '#f97316': { bg: '#fed7aa', border: '#fb923c', text: '#7c2d12', header: '#fb923c', headerText: '#7c2d12' }, // orange
-    '#6366f1': { bg: '#e0e7ff', border: '#818cf8', text: '#312e81', header: '#818cf8', headerText: '#312e81' }, // indigo
+  const colorMap: Record<
+    string,
+    { bg: string; border: string; text: string; header: string; headerText: string }
+  > = {
+    '#0ea5e9': {
+      bg: '#e0f2fe',
+      border: '#38bdf8',
+      text: '#0c4a6e',
+      header: '#38bdf8',
+      headerText: '#0c4a6e',
+    }, // sky/blue
+    '#3b82f6': {
+      bg: '#dbeafe',
+      border: '#60a5fa',
+      text: '#1e3a8a',
+      header: '#60a5fa',
+      headerText: '#1e3a8a',
+    }, // blue
+    '#f59e0b': {
+      bg: '#fef3c7',
+      border: '#fbbf24',
+      text: '#78350f',
+      header: '#fbbf24',
+      headerText: '#78350f',
+    }, // amber/yellow
+    '#ef4444': {
+      bg: '#fee2e2',
+      border: '#f87171',
+      text: '#7f1d1d',
+      header: '#f87171',
+      headerText: '#7f1d1d',
+    }, // red
+    '#10b981': {
+      bg: '#d1fae5',
+      border: '#34d399',
+      text: '#064e3b',
+      header: '#34d399',
+      headerText: '#064e3b',
+    }, // emerald/green
+    '#f97316': {
+      bg: '#fed7aa',
+      border: '#fb923c',
+      text: '#7c2d12',
+      header: '#fb923c',
+      headerText: '#7c2d12',
+    }, // orange
+    '#6366f1': {
+      bg: '#e0e7ff',
+      border: '#818cf8',
+      text: '#312e81',
+      header: '#818cf8',
+      headerText: '#312e81',
+    }, // indigo
   }
 
   return (
@@ -359,23 +398,23 @@ function renderCalloutBlockNode(
     '--callout-header-text': colorScheme.headerText,
   }
 
-    if (isAlert) {
-      // Render as inline badge
-      return (
-        <span
-          key={key}
-          className="callout-block callout-block--alert"
-          style={containerStyle}
-          title={label}
-          aria-label={label}
-        >
-          <span className="callout-block__icon">
-            <FontAwesomeIcon icon={iconDefinition} />
-          </span>
-          <span className="callout-block__label">{label}</span>
+  if (isAlert) {
+    // Render as inline badge
+    return (
+      <span
+        key={key}
+        className="callout-block callout-block--alert"
+        style={containerStyle}
+        title={label}
+        aria-label={label}
+      >
+        <span className="callout-block__icon">
+          <FontAwesomeIcon icon={iconDefinition} />
         </span>
-      )
-    }
+        <span className="callout-block__label">{label}</span>
+      </span>
+    )
+  }
 
   // Render as corner label box
   return (
@@ -387,11 +426,60 @@ function renderCalloutBlockNode(
         <span className="callout-block__label">{label.toUpperCase()}</span>
       </div>
 
-      <div className="callout-block__body">
-        {renderedChildren}
-      </div>
+      <div className="callout-block__body">{renderedChildren}</div>
     </div>
   )
+}
+
+function separateListItemBadge(children: readonly RichTextSerializedNode[] | undefined): {
+  badgeNode: SerializedCalloutBlockNode | null
+  remainingChildren: RichTextSerializedNode[]
+} {
+  if (!children || children.length === 0) {
+    return { badgeNode: null, remainingChildren: [] }
+  }
+
+  const remaining: RichTextSerializedNode[] = []
+  let badgeNode: SerializedCalloutBlockNode | null = null
+
+  for (const child of children) {
+    if (!badgeNode && isAlertCalloutNode(child)) {
+      badgeNode = child
+      continue
+    }
+
+    if (!badgeNode && child.type === 'paragraph' && Array.isArray(child.children)) {
+      const nested = separateListItemBadge(child.children)
+
+      if (nested.badgeNode) {
+        badgeNode = nested.badgeNode
+
+        if (nested.remainingChildren.length > 0) {
+          remaining.push({
+            ...child,
+            children: nested.remainingChildren,
+          })
+        }
+
+        continue
+      }
+    }
+
+    remaining.push(child)
+  }
+
+  return {
+    badgeNode,
+    remainingChildren: badgeNode ? remaining : [...children],
+  }
+}
+
+function isAlertCalloutNode(
+  node: RichTextSerializedNode | undefined,
+): node is SerializedCalloutBlockNode {
+  if (!node) return false
+  if (node.type !== 'callout-block') return false
+  return (node as SerializedCalloutBlockNode).variant === 'alert'
 }
 
 function renderChildNodes(
