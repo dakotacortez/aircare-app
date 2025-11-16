@@ -263,7 +263,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
   const lastUpdated = base.updatedAt ? new Date(base.updatedAt) : null
 
   return (
-    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:text-uc-text-dark-default dark:shadow-uc-card-dark dark:ring-neutral-700">
+    <div className="rounded-3xl bg-uc-light-card text-uc-text-light-default ring-1 ring-uc-light-border dark:bg-neutral-800 dark:text-uc-text-dark-default dark:ring-neutral-700">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-8">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -295,7 +295,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
             <button
               type="button"
               onClick={handleCopyAllInfo}
-              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📋
@@ -304,7 +304,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
             </button>
             <a
               href={`mailto:?subject=Base info update: ${encodeURIComponent(base.name ?? '')}`}
-              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border shadow-sm transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
+              className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📝
@@ -315,7 +315,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
         </div>
 
         <div className="mb-6 grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+          <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
             <h2 className="mb-2 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span role="img" aria-hidden="true">
                 📍
@@ -334,7 +334,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
               <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">Address coming soon</p>
             )}
           </div>
-          <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+          <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
@@ -384,7 +384,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+        <div className="mb-6 rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
           <h2 className="mb-3 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">Quick actions</h2>
           <div className="grid gap-3 md:grid-cols-3">
             <button
@@ -394,7 +394,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
                 }
               }}
               disabled={!base.squadPhone}
-              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-neutral-800"
+              className="flex w-full items-center gap-3 rounded-xl bg-uc-red-600 px-4 py-3 text-left font-semibold text-white transition hover:bg-uc-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-uc-red-600/60 dark:focus-visible:ring-offset-neutral-800"
             >
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
@@ -404,7 +404,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
             </button>
             <button
               onClick={() => navigationQuery && setShowNavModal(true)}
-              className="flex w-full items-center gap-3 rounded-xl bg-sky-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-sky-500/40 dark:bg-sky-600 dark:hover:bg-sky-500 dark:focus-visible:ring-sky-400 dark:focus-visible:ring-offset-neutral-800"
+              className="flex w-full items-center gap-3 rounded-xl bg-neutral-600 px-4 py-3 text-left font-semibold text-white transition hover:bg-neutral-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:bg-neutral-600/40 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:focus-visible:ring-neutral-500 dark:focus-visible:ring-offset-neutral-800"
               disabled={!navigationQuery}
             >
               <span aria-hidden="true">🧭</span>
@@ -421,7 +421,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
                   navigator.clipboard?.writeText(primaryDoorCode.code).catch(() => null)
                 }
               }}
-              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white shadow-sm transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-800"
+              className="flex w-full items-center gap-3 rounded-xl bg-amber-500 px-4 py-3 text-left font-semibold text-white transition hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-800"
             >
               <span aria-hidden="true">🔑</span>
               <div className="flex flex-col leading-tight">
@@ -434,7 +434,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
 
         <div className="space-y-4">
           {assets.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🚑
@@ -464,7 +464,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
           )}
 
           {otherContacts.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ☎️
@@ -498,7 +498,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
           )}
 
           {(hazards.length > 0 || base.notes) && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   ⚠️
@@ -515,7 +515,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
           )}
 
           {doorCodes.length > 0 && (
-            <div className="rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+            <div className="rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
               <h2 className="mb-3 flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
                 <span role="img" aria-hidden="true">
                   🔑
@@ -541,7 +541,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700"
+              className="w-full max-w-sm rounded-2xl bg-uc-light-card p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700"
               initial={{ scale: 0.95, y: 10, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 10, opacity: 0 }}

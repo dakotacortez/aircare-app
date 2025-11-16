@@ -118,7 +118,7 @@ export function BasesClient({ bases }: BasesClientProps) {
               return (
                 <Link key={cardKey} href={`/bases/${base.slug ?? base.id ?? ''}`} className="block">
                   <article
-                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
+                    className="rounded-2xl bg-uc-light-card p-4 text-left ring-1 ring-uc-light-border transition dark:bg-neutral-800 dark:ring-neutral-700"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div>

@@ -192,7 +192,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               <select
                 value={sortOption}
                 onChange={(event) => setSortOption(event.target.value as SortOption)}
-                  className="h-8 rounded-full border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-muted"
+                  className="h-8 rounded-full border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-muted focus:border-uc-red-300 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-muted"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -204,7 +204,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
           </div>
         </div>
 
-        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700 dark:shadow-uc-card-dark">
+        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
               <span className="text-base">🧪</span>
@@ -217,7 +217,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   onChange={(event) =>
                     setCapabilityFilter(event.target.value === '' ? null : Number(event.target.value))
                   }
-                  className="h-9 min-w-[10rem] rounded-full border border-uc-light-border bg-uc-light-subtle pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-700 dark:text-uc-text-dark-muted dark:focus:bg-neutral-800"
+                  className="h-9 min-w-[10rem] rounded-full border border-uc-light-border bg-uc-light-subtle pl-3 pr-8 text-xs font-medium text-uc-text-light-muted focus:border-uc-red-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-700 dark:text-uc-text-dark-muted dark:focus:bg-neutral-800"
                 >
                   <option value="">All capabilities</option>
                   {capabilities.map((capability) => (
@@ -271,7 +271,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               return (
                 <Link key={cardKey} href={`/hospitals/${hospital.slug ?? hospital.id ?? ''}`} className="block">
                   <article
-                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition hover:shadow-lg dark:bg-neutral-800 dark:shadow-uc-card-dark dark:ring-neutral-700 dark:hover:shadow-xl"
+                    className="rounded-2xl bg-uc-light-card p-4 text-left ring-1 ring-uc-light-border transition dark:bg-neutral-800 dark:ring-neutral-700"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
