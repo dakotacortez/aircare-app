@@ -110,25 +110,67 @@ export const Hospitals: CollectionConfig = {
       ],
     },
     {
-      type: 'row',
-      fields: [
-        {
-          name: 'latitude',
-          type: 'number',
-          label: 'Latitude',
-          admin: {
-            description: 'For mapping and routing',
+      name: 'coordinates',
+      type: 'text',
+      label: 'Coordinates (Latitude, Longitude)',
+      admin: {
+        description: 'Paste from Google Maps (e.g., "39.136774, -84.502021"). We\'ll parse it automatically.',
+        placeholder: '39.136774, -84.502021',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, siblingData }) => {
+            if (!value) return value
+            
+            // Parse various coordinate formats
+            const coordStr = String(value).trim()
+            
+            // Try to extract two numbers from the string
+            // Handles: "lat,lng" "lat, lng" "lat lng" "lat, -lng" etc.
+            const matches = coordStr.match(/-?\d+\.?\d*/g)
+            
+            if (matches && matches.length >= 2) {
+              const lat = parseFloat(matches[0])
+              const lng = parseFloat(matches[1])
+              
+              if (!isNaN(lat) && !isNaN(lng)) {
+                // Store parsed values in sibling fields
+                siblingData.latitude = lat
+                siblingData.longitude = lng
+              }
+            }
+            
+            return value
           },
-        },
-        {
-          name: 'longitude',
-          type: 'number',
-          label: 'Longitude',
-          admin: {
-            description: 'For mapping and routing',
+        ],
+        afterRead: [
+          ({ data }) => {
+            // Reconstruct the display value from lat/lng
+            if (data?.latitude && data?.longitude) {
+              return `${data.latitude}, ${data.longitude}`
+            }
+            return ''
           },
-        },
-      ],
+        ],
+      },
+    },
+    {
+      name: 'latitude',
+      type: 'number',
+      label: 'Latitude',
+      admin: {
+        hidden: true,
+        description: 'Auto-populated from coordinates field',
+      },
+    },
+    {
+      name: 'longitude',
+      type: 'number',
+      label: 'Longitude',
+      admin: {
+        hidden: true,
+        description: 'Auto-populated from coordinates field',
+      },
     },
     {
       name: 'squadPhone',
