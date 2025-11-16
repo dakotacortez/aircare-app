@@ -359,17 +359,23 @@ function renderCalloutBlockNode(
     '--callout-header-text': colorScheme.headerText,
   }
 
-  if (isAlert) {
-    // Render as inline badge
-    return (
-      <span key={key} className="callout-block callout-block--alert" style={containerStyle}>
-        <span className="callout-block__icon">
-          <FontAwesomeIcon icon={iconDefinition} />
+    if (isAlert) {
+      // Render as inline badge
+      return (
+        <span
+          key={key}
+          className="callout-block callout-block--alert"
+          style={containerStyle}
+          title={label}
+          aria-label={label}
+        >
+          <span className="callout-block__icon">
+            <FontAwesomeIcon icon={iconDefinition} />
+          </span>
+          <span className="callout-block__label">{label}</span>
         </span>
-        <span className="callout-block__label">{label}</span>
-      </span>
-    )
-  }
+      )
+    }
 
   // Render as corner label box
   return (

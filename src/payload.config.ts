@@ -31,6 +31,7 @@ import { getServerSideURL } from './utilities/getURL'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 const payloadSecret = process.env.PAYLOAD_SECRET
+const ADMIN_COLLECTION_SLUGS = ['redirects', 'forms', 'form-submissions', 'search'] as const
 
 if (!payloadSecret && process.env.NODE_ENV === 'production') {
   throw new Error('PAYLOAD_SECRET must be defined in production environments.')
@@ -45,6 +46,51 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
+    },
+    navigation: ({ defaultNav }) => {
+      const adminCollections = new Set<string>()
+
+      const navWithoutAdminCollections = defaultNav
+        .map((group) => {
+          if (!group.collections || group.collections.length === 0) return group
+
+          const remainingCollections = group.collections.filter((collection) => {
+            const slug = typeof collection === 'string' ? collection : collection.slug
+            if (ADMIN_COLLECTION_SLUGS.includes(slug as (typeof ADMIN_COLLECTION_SLUGS)[number])) {
+              adminCollections.add(slug)
+              return false
+            }
+            return true
+          })
+
+          if (remainingCollections.length === group.collections.length) {
+            return group
+          }
+
+          if (remainingCollections.length === 0 && !(group.items && group.items.length > 0)) {
+            return null
+          }
+
+          return {
+            ...group,
+            collections: remainingCollections,
+          }
+        })
+        .filter((group): group is NonNullable<typeof group> => Boolean(group))
+
+      const adminGroupCollections = ADMIN_COLLECTION_SLUGS.filter((slug) => adminCollections.has(slug))
+
+      if (!adminGroupCollections.length) {
+        return defaultNav
+      }
+
+      return [
+        ...navWithoutAdminCollections,
+        {
+          label: 'Administration',
+          collections: adminGroupCollections,
+        },
+      ]
     },
     importMap: {
       baseDir: path.resolve(dirname),

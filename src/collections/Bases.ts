@@ -115,24 +115,32 @@ export const Bases: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'doorCodes',
-      type: 'array',
-      label: 'Door Codes',
-      admin: {
-        description: 'Entry codes for base access',
-      },
-      fields: [
-        {
-          name: 'code',
-          type: 'text',
-          label: 'Door Code',
-          admin: {
-            placeholder: 'e.g., Front door 1234#',
-          },
+      {
+        name: 'doorCodes',
+        type: 'array',
+        label: 'Door Codes',
+        admin: {
+          description: 'Entry codes for base access',
         },
-      ],
-    },
+        fields: [
+          {
+            name: 'label',
+            type: 'text',
+            label: 'Door Label',
+            admin: {
+              placeholder: 'e.g., Front Entrance',
+            },
+          },
+          {
+            name: 'code',
+            type: 'text',
+            label: 'Door Code',
+            admin: {
+              placeholder: 'e.g., 1234#',
+            },
+          },
+        ],
+      },
     {
       name: 'assets',
       type: 'relationship',

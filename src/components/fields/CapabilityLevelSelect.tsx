@@ -1,34 +1,77 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { useField, useFormFields, Select, FieldLabel } from '@payloadcms/ui'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useField, Select, FieldLabel } from '@payloadcms/ui'
 
 /**
  * Custom field component for selecting hospital capability levels
  * Dynamically loads levels based on the selected capability
  */
+type Option = {
+  label: string
+  value: string
+}
+
 const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
-  const { value, setValue } = useField<string>({ path })
-  const capability = useFormFields(([fields]) => fields.capability?.value)
-  const [levels, setLevels] = useState<Array<{ label: string; value: string }>>([])
+  const { value: selectedLevel, setValue: setSelectedLevel } = useField<string>({ path })
+  const capabilityPath = useMemo(() => path.replace(/\.level$/, '.capability'), [path])
+  const { value: capabilityValue } = useField<unknown>({ path: capabilityPath })
+  const [levels, setLevels] = useState<Option[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const selectedLevelRef = useRef(selectedLevel)
+
+  useEffect(() => {
+    selectedLevelRef.current = selectedLevel
+  }, [selectedLevel])
+
+  const capabilityId = useMemo(() => {
+    if (!capabilityValue) return null
+
+    if (typeof capabilityValue === 'object') {
+      if ('value' in (capabilityValue as Record<string, unknown>) && (capabilityValue as any).value) {
+        const nestedValue = (capabilityValue as any).value
+        if (typeof nestedValue === 'object' && nestedValue?.id) {
+          return nestedValue.id
+        }
+        return nestedValue
+      }
+
+      if ('id' in (capabilityValue as Record<string, unknown>)) {
+        return (capabilityValue as any).id
+      }
+    }
+
+    return capabilityValue
+  }, [capabilityValue])
 
   // Fetch levels when capability changes
   useEffect(() => {
+    let isMounted = true
+
+    const clearSelectedLevel = () => {
+      if (selectedLevelRef.current) {
+        setSelectedLevel('')
+      }
+    }
+
     const fetchLevels = async () => {
-      if (!capability) {
-        setLevels([{ label: 'Please select a capability type first', value: '' }])
+      if (!capabilityId) {
+        if (isMounted) {
+          setLevels([])
+          setError(null)
+          setLoading(false)
+          clearSelectedLevel()
+        }
         return
       }
 
-      setLoading(true)
-      setError(null)
+      if (isMounted) {
+        setLoading(true)
+        setError(null)
+      }
 
       try {
-        // Get the capability ID
-        const capabilityId = typeof capability === 'object' ? (capability as any).id : capability
-
         // Fetch the capability to get its levels
         const response = await fetch(`/api/hospital-capabilities/${capabilityId}`, {
           credentials: 'include',
@@ -40,41 +83,51 @@ const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
 
         const capabilityData = await response.json()
 
+        if (!isMounted) return
+
         if (!capabilityData?.levels || capabilityData.levels.length === 0) {
-          setLevels([
-            {
-              label: 'No levels defined - please add levels to this capability type first',
-              value: '',
-            },
-          ])
+          setLevels([])
+          clearSelectedLevel()
         } else {
           // Map levels to options
-          const options = capabilityData.levels.map((levelObj: { level: string }) => ({
+          const options: Option[] = capabilityData.levels.map((levelObj: { level: string }) => ({
             label: levelObj.level,
             value: levelObj.level,
           }))
           setLevels(options)
+
+          const currentLevel = selectedLevelRef.current
+          if (currentLevel && !options.some((option) => option.value === currentLevel)) {
+            setSelectedLevel('')
+          }
         }
       } catch (err) {
         console.error('Error fetching capability levels:', err)
-        setError('Error loading levels')
-        setLevels([{ label: 'Error loading levels - please try again', value: '' }])
+        if (isMounted) {
+          setError('Error loading levels')
+          setLevels([])
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchLevels()
-  }, [capability])
+    return () => {
+      isMounted = false
+    }
+  }, [capabilityId, setSelectedLevel])
 
   return (
     <div className="field-type text">
       <FieldLabel label={field?.label} required={field?.required} />
       <Select
-        value={levels.find((option) => option.value === value)}
-        onChange={(e: any) => setValue(e.value)}
+        value={levels.find((option) => option.value === selectedLevel) ?? null}
+        onChange={(option: Option | null) => setSelectedLevel(option?.value || '')}
         options={levels}
-        disabled={loading || !capability}
+        disabled={loading || !capabilityId}
       />
       {field?.admin?.description && (
         <div className="field-description" style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
