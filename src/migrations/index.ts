@@ -9,6 +9,7 @@ import * as migration_20251116_143000_add_push_notifications_enabled from './202
 import * as migration_20251116_144000_add_profile_image from './20251116_144000_add_profile_image';
 import * as migration_20251116_200500_fix_missing_user_and_assets_columns from './20251116_200500_fix_missing_user_and_assets_columns';
 import * as migration_20251116_232000_fix_door_codes_label from './20251116_232000_fix_door_codes_label';
+import * as migration_20251116_235500_update_door_codes_schema from './20251116_235500_update_door_codes_schema';
 
 export const migrations = [
   {
@@ -65,4 +66,9 @@ export const migrations = [
       down: migration_20251116_232000_fix_door_codes_label.down,
       name: '20251116_232000_fix_door_codes_label'
     },
+      {
+        up: migration_20251116_235500_update_door_codes_schema.up,
+        down: migration_20251116_235500_update_door_codes_schema.down,
+        name: '20251116_235500_update_door_codes_schema'
+      },
 ];
