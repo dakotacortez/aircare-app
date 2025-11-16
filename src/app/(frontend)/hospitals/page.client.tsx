@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, Building2, Navigation, Filter } from 'lucide-react'
 import { motion } from 'framer-motion'
-import type { Hospital, HospitalNetwork, HospitalCapability } from '@/payload-types'
+import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
 import { capabilityColors } from './capabilityColors'
+
+type SortOption = 'distanceAsc' | 'distanceDesc' | 'alpha'
 
 interface HospitalsClientProps {
   hospitals: Hospital[]
@@ -18,423 +19,359 @@ interface HospitalWithDistance extends Hospital {
   eta?: number
 }
 
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'distanceAsc', label: 'Closest first' },
+  { value: 'distanceDesc', label: 'Farthest first' },
+  { value: 'alpha', label: 'A–Z' },
+]
+
 const buildAddressSummary = (hospital: Hospital) => {
-  const line1 = hospital.address?.line1?.trim()
   const city = hospital.address?.city?.trim()
   const state = hospital.address?.state?.trim()
   if (city || state) {
     return [city, state].filter(Boolean).join(', ')
   }
-  return line1 ?? null
+  return hospital.address?.line1?.trim() ?? null
 }
 
-const buildNavigationUrl = (hospital: Hospital) => {
-  const lat = typeof hospital.latitude === 'number' ? hospital.latitude : null
-  const lng = typeof hospital.longitude === 'number' ? hospital.longitude : null
-  if (lat !== null && lng !== null) {
-    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
-  }
-  const parts = [
-    hospital.address?.line1?.trim(),
-    hospital.address?.line2?.trim(),
-    hospital.address?.city?.trim(),
-    hospital.address?.state?.trim(),
-    hospital.address?.zip?.trim(),
-  ].filter(Boolean)
-  if (!parts.length) {
-    return null
-  }
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.join(', '))}`
+const resolveNetwork = (hospital: Hospital): HospitalNetwork | null => {
+  return typeof hospital.network === 'object' && hospital.network !== null
+    ? (hospital.network as HospitalNetwork)
+    : null
 }
 
-const getPrimaryDoorCode = (hospital: Hospital) => {
-  const doorCodes = hospital.doorCodes ?? []
-  return doorCodes.find((code) => code?.isPrimary) ?? doorCodes[0] ?? null
+const resolveNetworkLogo = (hospital: Hospital): Media | null => {
+  const override = hospital.networkLogoOverride
+  if (override && typeof override === 'object') {
+    return override as Media
+  }
+  const network = resolveNetwork(hospital)
+  if (network?.logo && typeof network.logo === 'object') {
+    return network.logo as Media
+  }
+  return null
+}
+
+const getCapabilityBadges = (hospital: Hospital) => {
+  if (!hospital.capabilities) return []
+
+  return hospital.capabilities
+    .map((cap, idx) => {
+      const capability = typeof cap.capability === 'object' ? (cap.capability as HospitalCapability) : null
+      if (!capability) return null
+      const level = cap.level?.trim()
+      const category = capability.category ?? 'other'
+      const color = capabilityColors[category] ?? capabilityColors.other
+      const normalizedLevel = level?.toLowerCase()
+      const levelMeta = normalizedLevel
+        ? capability.levels?.find((option) => option.level?.toLowerCase() === normalizedLevel)
+        : null
+
+      return {
+        id: `${hospital.id}-${idx}`,
+        name: capability.name,
+        level,
+        description: levelMeta?.description ?? null,
+        color,
+      }
+    })
+    .filter((badge): badge is NonNullable<typeof badge> => Boolean(badge))
 }
 
 export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProps) {
-  const [selectedCapabilities, setSelectedCapabilities] = useState<number[]>([])
+  const [capabilityFilter, setCapabilityFilter] = useState<number | null>(null)
+  const [sortOption, setSortOption] = useState<SortOption>('distanceAsc')
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [filterOpen, setFilterOpen] = useState(false)
 
-  const getCapabilityLevelDescription = (
-    capability: HospitalCapability,
-    capabilityLevel?: string | null,
-  ) => {
-    if (!capability?.levels || !capabilityLevel) return null
-    const normalizedLevel = capabilityLevel.toLowerCase().trim()
-    const levelDetails = capability.levels.find((levelOption) => {
-      if (!levelOption.level) return false
-      return levelOption.level.toLowerCase().trim() === normalizedLevel
-    })
-    return levelDetails?.description?.trim() ?? null
-  }
-
-  // Detect mobile
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Get user location on mobile
   useEffect(() => {
     if (!isMobile) return
 
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          })
-          setLocationError(null)
-        },
-        (error) => {
-          console.error('Geolocation error:', error)
-          setLocationError('Location access denied')
-        },
-      )
-    } else {
-      setLocationError('Geolocation not supported')
+    if (!('geolocation' in navigator)) {
+      setLocationError('Location not supported on this device')
+      return
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({ lat: position.coords.latitude, lon: position.coords.longitude })
+        setLocationError(null)
+      },
+      (error) => {
+        console.error('Geolocation error:', error)
+        setLocationError(error.message || 'Location access denied')
+      },
+    )
   }, [isMobile])
 
-  // Calculate distances and filter hospitals
-  const processedHospitals = useMemo(() => {
-      let processed: HospitalWithDistance[] = hospitals.map((hospital) => {
-        const result: HospitalWithDistance = { ...hospital }
+  const capabilityNameById = useMemo(() => {
+    const map = new Map<number, string>()
+    capabilities.forEach((capability) => {
+      map.set(capability.id, capability.name)
+    })
+    return map
+  }, [capabilities])
 
-        if (
-          userLocation &&
-          typeof hospital.latitude === 'number' &&
-          typeof hospital.longitude === 'number'
-        ) {
-          const distance = calculateDistanceMiles(
-            userLocation.lat,
-            userLocation.lon,
-            hospital.latitude,
-            hospital.longitude,
-          )
-          result.distance = distance
-          result.eta = estimateEtaMinutes(distance)
+  const hospitalsWithDistance = useMemo<HospitalWithDistance[]>(() => {
+    return hospitals.map((hospital) => {
+      if (
+        userLocation &&
+        typeof hospital.latitude === 'number' &&
+        typeof hospital.longitude === 'number'
+      ) {
+        const distance = calculateDistanceMiles(
+          userLocation.lat,
+          userLocation.lon,
+          hospital.latitude,
+          hospital.longitude,
+        )
+        return {
+          ...hospital,
+          distance,
+          eta: estimateEtaMinutes(distance),
         }
-
-        return result
-      })
-
-      // Filter by capabilities
-      if (selectedCapabilities.length > 0) {
-        processed = processed.filter((hospital) => {
-          if (!hospital.capabilities || hospital.capabilities.length === 0) return false
-
-          return selectedCapabilities.every((selectedCapId) =>
-            hospital.capabilities?.some((cap) => {
-              const capability = typeof cap.capability === 'object' ? cap.capability : null
-              return capability?.id === selectedCapId
-            }),
-          )
-        })
       }
+      return hospital
+    })
+  }, [hospitals, userLocation])
 
-      // Sort by distance if location is available
-      if (userLocation) {
-        processed.sort((a, b) => {
-          if (a.distance !== undefined && b.distance !== undefined) {
-            return a.distance - b.distance
-          }
-          return 0
-        })
+  const filteredAndSorted = useMemo(() => {
+    let list = hospitalsWithDistance
+    if (capabilityFilter) {
+      list = list.filter((hospital) =>
+        hospital.capabilities?.some((cap) => {
+          const capability = typeof cap.capability === 'object' ? (cap.capability as HospitalCapability) : null
+          return capability?.id === capabilityFilter
+        }),
+      )
+    }
+
+    const sorted = [...list].sort((a, b) => {
+      switch (sortOption) {
+        case 'alpha':
+          return (a.name ?? '').localeCompare(b.name ?? '')
+        case 'distanceDesc': {
+          const aDistance = typeof a.distance === 'number' ? a.distance : -Infinity
+          const bDistance = typeof b.distance === 'number' ? b.distance : -Infinity
+          return bDistance - aDistance
+        }
+        case 'distanceAsc':
+        default: {
+          const aDistance = typeof a.distance === 'number' ? a.distance : Infinity
+          const bDistance = typeof b.distance === 'number' ? b.distance : Infinity
+          return aDistance - bDistance
+        }
       }
+    })
 
-      return processed
-    }, [hospitals, selectedCapabilities, userLocation])
+    return sorted
+  }, [capabilityFilter, hospitalsWithDistance, sortOption])
 
-  const toggleCapability = (capabilityId: number) => {
-    setSelectedCapabilities((prev) =>
-      prev.includes(capabilityId)
-        ? prev.filter((id) => id !== capabilityId)
-        : [...prev, capabilityId],
-    )
-  }
-
-  const clearFilters = () => {
-    setSelectedCapabilities([])
-  }
+  const capabilityFilterLabel = capabilityFilter ? capabilityNameById.get(capabilityFilter) : null
 
   return (
-    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
-            Hospital Directory
-          </h1>
-          <p className="text-neutral-600 dark:text-neutral-400">
-            Hospital information, contacts, and capabilities
-          </p>
+    <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default dark:bg-uc-dark-bg dark:text-uc-text-dark-default">
+      <div className="mx-auto max-w-5xl px-4 py-6">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Hospital Directory</h1>
+            <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
+              Hospital information, contacts, and capabilities
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <span className="text-uc-text-light-muted dark:text-uc-text-dark-muted">Sort by</span>
+            <div className="relative">
+              <select
+                value={sortOption}
+                onChange={(event) => setSortOption(event.target.value as SortOption)}
+                className="h-8 rounded-full border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-uc-dark-border dark:bg-uc-dark-card dark:text-uc-text-dark-muted"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                ▼
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Location Status (Mobile Only) */}
-        {isMobile && (
-          <div className="mb-4">
-            {userLocation ? (
-              <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                <Navigation className="h-4 w-4" />
-                <span>Sorted by distance from your location</span>
-              </div>
-            ) : locationError ? (
-              <div className="text-sm text-amber-600 dark:text-amber-400">
-                {locationError} - showing all hospitals
-              </div>
-            ) : (
-              <div className="text-sm text-neutral-500 dark:text-neutral-400">
-                Getting your location...
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Filter Section */}
-        <div className="mb-6">
-          {/* Mobile Filter Button */}
-          <button
-            onClick={() => setFilterOpen(!filterOpen)}
-            className="md:hidden w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl shadow-sm mb-4"
-          >
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              <span className="font-medium">Filter by Capability</span>
-              {selectedCapabilities.length > 0 && (
-                <span className="px-2 py-0.5 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full">
-                  {selectedCapabilities.length}
-                </span>
-              )}
+        <div className="mb-4 rounded-2xl bg-uc-light-card p-3 shadow-uc-card-light ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border dark:shadow-uc-card-dark">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2 text-sm font-medium text-uc-text-light-muted dark:text-uc-text-dark-muted">
+              <span className="text-base">🧪</span>
+              <span>Filter by capability</span>
             </div>
-          </button>
-
-          {/* Filter Content */}
-          <div
-            className={`${filterOpen || !isMobile ? 'block' : 'hidden'} bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl shadow-sm p-4`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-neutral-500" />
-                <span className="font-medium text-sm">Filter by Capability</span>
-              </div>
-              {selectedCapabilities.length > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative">
+                <select
+                  value={capabilityFilter ?? ''}
+                  onChange={(event) =>
+                    setCapabilityFilter(event.target.value === '' ? null : Number(event.target.value))
+                  }
+                  className="h-9 min-w-[10rem] rounded-full border border-uc-light-border bg-uc-light-subtle pl-3 pr-8 text-xs font-medium text-uc-text-light-muted shadow-sm focus:border-uc-red-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-uc-dark-border dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted dark:focus:bg-uc-dark-card"
                 >
-                  Clear all
+                  <option value="">All capabilities</option>
+                  {capabilities.map((capability) => (
+                    <option key={capability.id} value={capability.id}>
+                      {capability.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[10px] text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                  ▼
+                </span>
+              </div>
+              {capabilityFilter && (
+                <button
+                  type="button"
+                  onClick={() => setCapabilityFilter(null)}
+                  className="rounded-full border border-uc-light-border bg-white px-2 py-1 text-xs font-medium text-uc-text-light-muted transition hover:bg-uc-light-subtle dark:border-uc-dark-border dark:bg-uc-dark-card dark:text-uc-text-dark-muted"
+                >
+                  Clear
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-2">
-              {capabilities.map((capability) => {
-                const isSelected = selectedCapabilities.includes(capability.id)
-                return (
-                  <button
-                    key={capability.id}
-                    onClick={() => toggleCapability(capability.id)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                      isSelected
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600'
-                    }`}
-                  >
-                    {capability.name}
-                  </button>
-                )
-              })}
-            </div>
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">
-          {processedHospitals.length} hospital{processedHospitals.length !== 1 ? 's' : ''} found
+        <div className="mb-3 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+          {filteredAndSorted.length} hospital{filteredAndSorted.length === 1 ? '' : 's'} found
+          {capabilityFilterLabel && (
+            <>
+              {' '}
+              • filtered by <span className="font-semibold">{capabilityFilterLabel}</span>
+            </>
+          )}
         </div>
+        {locationError && (
+          <p className="mb-4 text-xs text-amber-600">{locationError}</p>
+        )}
 
-        {/* Hospitals Grid */}
-        {processedHospitals.length === 0 ? (
-          <div className="rounded-2xl border bg-white p-12 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <Building2 className="mx-auto mb-4 h-12 w-12 text-neutral-400" />
-            <h2 className="mb-2 text-xl font-semibold text-neutral-900 dark:text-white">
-              No Hospitals Found
-            </h2>
-            <p className="mb-4 text-neutral-600 dark:text-neutral-400">
-              {selectedCapabilities.length > 0
-                ? 'Try adjusting your filters'
-                : 'Hospital information will appear here when added.'}
-            </p>
-            {selectedCapabilities.length > 0 && (
-              <button
-                onClick={clearFilters}
-                className="text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
-              >
-                Clear filters
-              </button>
-            )}
+        {filteredAndSorted.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-uc-light-border bg-uc-light-subtle p-8 text-center text-sm text-uc-text-light-muted dark:border-uc-dark-border dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
+            No hospitals match this capability filter yet.
           </div>
         ) : (
-          <div className="space-y-6">
-            {processedHospitals.map((hospital) => {
-              const network =
-                typeof hospital.network === 'object' ? (hospital.network as HospitalNetwork) : null
-              const capabilityBadges =
-                hospital.capabilities
-                  ?.map((cap, idx) => {
-                    const capability =
-                      typeof cap.capability === 'object' ? (cap.capability as HospitalCapability) : null
-                    if (!capability) return null
-                    const color = capabilityColors[capability.category ?? 'other'] ?? capabilityColors.other
-                    return {
-                      id: `${hospital.id}-${idx}`,
-                      name: capability.name,
-                      level: cap.level,
-                      description: getCapabilityLevelDescription(capability, cap.level),
-                      color,
-                    }
-                  })
-                  .filter((badge): badge is NonNullable<typeof badge> => badge !== null) ?? []
-              const badgesToDisplay = capabilityBadges.slice(0, 3)
-              const moreCapabilities = Math.max(capabilityBadges.length - badgesToDisplay.length, 0)
-              const primaryDoorCode = getPrimaryDoorCode(hospital)
+          <div className="space-y-3">
+            {filteredAndSorted.map((hospital) => {
+              const network = resolveNetwork(hospital)
+              const networkLogo = resolveNetworkLogo(hospital)
               const addressSummary = buildAddressSummary(hospital)
-              const navigationUrl = buildNavigationUrl(hospital)
+              const capabilityBadges = getCapabilityBadges(hospital)
+              const badgesToDisplay = capabilityBadges.slice(0, 3)
+              const moreCount = Math.max(capabilityBadges.length - badgesToDisplay.length, 0)
+              const cardKey = `${hospital.id}`
 
               return (
-                <motion.article
-                  key={hospital.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-slate-100 backdrop-blur dark:bg-neutral-900/90 dark:ring-neutral-800"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
-                        {hospital.name}
-                      </h2>
-                      {network && (
-                        <span className="mt-1 inline-flex items-center rounded-full bg-blue-100 px-3 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-100">
-                          {network.name}
-                        </span>
-                      )}
-                      {addressSummary && (
-                        <p className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                          <MapPin className="h-4 w-4" />
-                          <span>{addressSummary}</span>
-                        </p>
-                      )}
-                    </div>
-                    {hospital.eta !== undefined && hospital.distance !== undefined && (
-                      <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100">
-                        <Navigation className="h-4 w-4" />
-                        <span>
-                          ETA {hospital.eta} min • {hospital.distance.toFixed(1)} mi
-                        </span>
+                <Link key={cardKey} href={`/hospitals/${hospital.id ?? ''}`} className="block">
+                  <motion.article
+                    whileHover={{ y: -2, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="rounded-2xl bg-uc-light-card p-4 text-left shadow-uc-card-light ring-1 ring-uc-light-border transition dark:bg-uc-dark-card dark:shadow-uc-card-dark dark:ring-uc-dark-border"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        {networkLogo?.url ? (
+                          <img
+                            src={networkLogo.url}
+                            alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
+                            className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-uc-dark-card dark:ring-uc-dark-border"
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-uc-dark-card dark:ring-uc-dark-border">
+                            <span className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                              {hospital.name?.[0]?.toUpperCase() ?? '🏥'}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <div className="mb-1 flex items-center gap-2">
+                            <h2 className="text-base font-semibold">{hospital.name}</h2>
+                            {network?.name && (
+                              <span className="rounded-full bg-uc-light-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-uc-text-light-muted dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted">
+                                {network.name}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                            <span aria-hidden="true">📍</span>
+                            <span>{addressSummary ?? 'Location pending'}</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-
-                  <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                        Squad Phone
-                      </p>
-                      {hospital.squadPhone ? (
-                        <a
-                          href={`tel:${hospital.squadPhone}`}
-                          className="mt-1 inline-flex text-lg font-semibold text-slate-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-300"
+                      <div className="flex items-center gap-3 text-right text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                        <div>
+                          <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                            Distance
+                          </p>
+                          <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                            {typeof hospital.distance === 'number'
+                              ? `${hospital.distance.toFixed(1)} mi`
+                              : '—'}
+                          </p>
+                          <p className="text-[11px]">
+                            {typeof hospital.eta === 'number' ? `~${hospital.eta} min` : 'ETA pending'}
+                          </p>
+                        </div>
+                        <motion.span
+                          initial={{ x: 0 }}
+                          whileHover={{ x: 4 }}
+                          className="flex items-center text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle"
                         >
-                          {hospital.squadPhone}
-                        </a>
-                      ) : (
-                        <p className="mt-1 text-sm text-slate-400">Not set</p>
-                      )}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </motion.span>
+                      </div>
                     </div>
-                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                        ED Door Code
-                      </p>
-                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
-                        {primaryDoorCode?.code ?? '—'}
-                      </p>
-                      {primaryDoorCode?.label && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{primaryDoorCode.label}</p>
-                      )}
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                        Capabilities
-                      </p>
-                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
-                        {hospital.capabilities?.length ?? 0}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Listed specialties</p>
-                    </div>
-                  </div>
 
-                  {badgesToDisplay.length > 0 && (
-                    <div className="mt-4">
-                      <div className="flex flex-wrap gap-2">
+                    <div className="my-3 h-px bg-uc-light-border dark:bg-uc-dark-border" />
+
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <div className="flex items-center gap-1 text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                        <span className="text-[13px]">🏥</span>
+                        <span className="font-medium">Capabilities:</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
                         {badgesToDisplay.map((badge) => (
                           <span
                             key={badge.id}
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${badge.color.pill}`}
+                            className={`rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${badge.color.pill}`}
                             title={badge.description ?? undefined}
                           >
                             {badge.name}
                             {badge.level ? ` • ${badge.level}` : ''}
                           </span>
                         ))}
-                        {moreCapabilities > 0 && (
-                          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-                            +{moreCapabilities} more
+                        {moreCount > 0 && (
+                          <span className="rounded-full bg-uc-light-subtle px-2 py-0.5 text-[11px] font-medium text-uc-text-light-muted ring-1 ring-uc-light-border dark:bg-uc-dark-subtle dark:text-uc-text-dark-muted dark:ring-uc-dark-border">
+                            +{moreCount} more
                           </span>
                         )}
                       </div>
                     </div>
-                  )}
-
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      disabled={!hospital.squadPhone}
-                      onClick={() => hospital.squadPhone && window.open(`tel:${hospital.squadPhone}`, '_self')}
-                      className="inline-flex flex-1 items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-black disabled:cursor-not-allowed disabled:bg-slate-400 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 lg:flex-none lg:px-5"
-                    >
-                      Call Squad
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                      disabled={!navigationUrl}
-                      onClick={() => navigationUrl && window.open(navigationUrl, '_blank', 'noopener')}
-                      className="inline-flex flex-1 items-center justify-center rounded-2xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-400 lg:flex-none lg:px-5"
-                    >
-                      Navigate
-                    </motion.button>
-                    <Link
-                      href={`/hospitals/${hospital.id}`}
-                      className="inline-flex flex-1 items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500 lg:flex-none lg:px-5"
-                    >
-                      View details
-                    </Link>
-                  </div>
-                </motion.article>
+                  </motion.article>
+                </Link>
               )
             })}
           </div>

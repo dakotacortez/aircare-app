@@ -45,16 +45,17 @@ const config = {
         xl: '80rem',
       },
     },
-    extend: {
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
-      },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
-      },
+      extend: {
+        animation: {
+          'accordion-down': 'accordion-down 0.2s ease-out',
+          'accordion-up': 'accordion-up 0.2s ease-out',
+        },
+        borderRadius: {
+          '2xl': '1.25rem',
+          lg: 'var(--radius)',
+          md: 'calc(var(--radius) - 2px)',
+          sm: 'calc(var(--radius) - 4px)',
+        },
       colors: {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
@@ -90,9 +91,53 @@ const config = {
           foreground: 'hsl(var(--secondary-foreground))',
         },
         success: 'hsl(var(--success))',
-        error: 'hsl(var(--error))',
-        warning: 'hsl(var(--warning))',
-      },
+          error: 'hsl(var(--error))',
+          uc: {
+            red: {
+              50: '#fef2f4',
+              100: '#fde3e7',
+              200: '#fbc7d0',
+              300: '#f79aa9',
+              400: '#f0677d',
+              500: '#e53955',
+              600: '#d8263f',
+              700: '#c8102e',
+              800: '#910b22',
+              900: '#5f0717',
+            },
+            light: {
+              bg: '#f5f5f7',
+              card: '#ffffff',
+              subtle: '#f3f4f6',
+              border: '#e5e7eb',
+            },
+            dark: {
+              bg: '#0b0f19',
+              card: '#111827',
+              subtle: '#1f2937',
+              border: '#374151',
+            },
+            text: {
+              light: {
+                default: '#111827',
+                muted: '#6b7280',
+                subtle: '#9ca3af',
+                onRed: '#ffffff',
+              },
+              dark: {
+                default: '#f9fafb',
+                muted: '#9ca3af',
+                subtle: '#6b7280',
+                onRed: '#ffffff',
+              },
+            },
+          },
+          warning: 'hsl(var(--warning))',
+        },
+        boxShadow: {
+          'uc-card-light': '0 8px 20px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.06)',
+          'uc-card-dark': '0 14px 28px rgba(0, 0, 0, 0.55), 0 0 1px rgba(15, 23, 42, 0.9)',
+        },
       fontFamily: {
         mono: ['var(--font-geist-mono)'],
         sans: ['var(--font-geist-sans)'],
