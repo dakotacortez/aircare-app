@@ -1152,10 +1152,17 @@ export interface Hospital {
    * Primary EMS contact number
    */
   squadPhone?: string | null;
+  /**
+   * Secondary contacts such as charge nurses, security, etc.
+   */
   otherPhones?:
     | {
         label?: string | null;
         phoneNumber?: string | null;
+        /**
+         * Short context for when to call this contact.
+         */
+        description?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1166,6 +1173,47 @@ export interface Hospital {
     | {
         label?: string | null;
         code?: string | null;
+        /**
+         * Optional context such as time restrictions or access notes.
+         */
+        notes?: string | null;
+        /**
+         * Displayed in quick actions for rapid access.
+         */
+        isPrimary?: boolean | null;
+        /**
+         * Purely visual – helps differentiate door cards in the UI.
+         */
+        colorTheme?: ('sunset' | 'slate' | 'sky' | 'emerald' | 'violet' | 'rose') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Details for air medical operations.
+   */
+  helipad?: {
+    identifier?: string | null;
+    nightOperations?: boolean | null;
+    preferredApproach?: string | null;
+    notes?: string | null;
+  };
+  /**
+   * Upload or link to common approach maps (ambulance route, bays, interior, etc.)
+   */
+  campusMaps?:
+    | {
+        label: string;
+        /**
+         * Optional stable ID used for deep-linking tabs. Defaults to a slugified label if blank.
+         */
+        slug?: string | null;
+        mapType?: ('ambulance' | 'interior' | 'parking' | 'lz' | 'custom') | null;
+        description?: string | null;
+        mapMedia?: (number | null) | Media;
+        /**
+         * Optional link to open in Google Maps, PDF, etc.
+         */
+        externalUrl?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1189,6 +1237,19 @@ export interface Hospital {
    * Additional information for EMS crews
    */
   notes?: string | null;
+  /**
+   * Callouts that should surface in the card UI.
+   */
+  hazards?:
+    | {
+        note: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Shown under the card (e.g., “Air Care & Mobile Care education team”).
+   */
+  sourceAttribution?: string | null;
   /**
    * User who created this record
    */
@@ -1233,6 +1294,7 @@ export interface HospitalChangeRequest {
       | {
           label?: string | null;
           phoneNumber?: string | null;
+          description?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -1240,6 +1302,26 @@ export interface HospitalChangeRequest {
       | {
           label?: string | null;
           code?: string | null;
+          notes?: string | null;
+          isPrimary?: boolean | null;
+          colorTheme?: ('sunset' | 'slate' | 'sky' | 'emerald' | 'violet' | 'rose') | null;
+          id?: string | null;
+        }[]
+      | null;
+    helipad?: {
+      identifier?: string | null;
+      nightOperations?: boolean | null;
+      preferredApproach?: string | null;
+      notes?: string | null;
+    };
+    campusMaps?:
+      | {
+          label: string;
+          slug?: string | null;
+          mapType?: string | null;
+          description?: string | null;
+          mapMedia?: (number | null) | Media;
+          externalUrl?: string | null;
           id?: string | null;
         }[]
       | null;
@@ -1251,6 +1333,13 @@ export interface HospitalChangeRequest {
         }[]
       | null;
     notes?: string | null;
+    hazards?:
+      | {
+          note?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    sourceAttribution?: string | null;
   };
   /**
    * User who submitted this request
@@ -2052,6 +2141,7 @@ export interface HospitalsSelect<T extends boolean = true> {
     | {
         label?: T;
         phoneNumber?: T;
+        description?: T;
         id?: T;
       };
   doorCodes?:
@@ -2059,6 +2149,28 @@ export interface HospitalsSelect<T extends boolean = true> {
     | {
         label?: T;
         code?: T;
+        notes?: T;
+        isPrimary?: T;
+        colorTheme?: T;
+        id?: T;
+      };
+  helipad?:
+    | T
+    | {
+        identifier?: T;
+        nightOperations?: T;
+        preferredApproach?: T;
+        notes?: T;
+      };
+  campusMaps?:
+    | T
+    | {
+        label?: T;
+        slug?: T;
+        mapType?: T;
+        description?: T;
+        mapMedia?: T;
+        externalUrl?: T;
         id?: T;
       };
   capabilities?:
@@ -2069,6 +2181,13 @@ export interface HospitalsSelect<T extends boolean = true> {
         id?: T;
       };
   notes?: T;
+  hazards?:
+    | T
+    | {
+        note?: T;
+        id?: T;
+      };
+  sourceAttribution?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -2100,6 +2219,7 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
           | {
               label?: T;
               phoneNumber?: T;
+              description?: T;
               id?: T;
             };
         doorCodes?:
@@ -2107,6 +2227,28 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
           | {
               label?: T;
               code?: T;
+              notes?: T;
+              isPrimary?: T;
+              colorTheme?: T;
+              id?: T;
+            };
+        helipad?:
+          | T
+          | {
+              identifier?: T;
+              nightOperations?: T;
+              preferredApproach?: T;
+              notes?: T;
+            };
+        campusMaps?:
+          | T
+          | {
+              label?: T;
+              slug?: T;
+              mapType?: T;
+              description?: T;
+              mapMedia?: T;
+              externalUrl?: T;
               id?: T;
             };
         capabilities?:
@@ -2117,6 +2259,13 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
               id?: T;
             };
         notes?: T;
+        hazards?:
+          | T
+          | {
+              note?: T;
+              id?: T;
+            };
+        sourceAttribution?: T;
       };
   submittedBy?: T;
   status?: T;

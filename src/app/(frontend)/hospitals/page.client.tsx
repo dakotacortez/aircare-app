@@ -2,8 +2,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { MapPin, Phone, Building2, Award, Navigation, Filter, X } from 'lucide-react'
+import { MapPin, Building2, Navigation, Filter } from 'lucide-react'
+import { motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability } from '@/payload-types'
+import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { capabilityColors } from './capabilityColors'
 
 interface HospitalsClientProps {
   hospitals: Hospital[]
@@ -11,40 +14,42 @@ interface HospitalsClientProps {
 }
 
 interface HospitalWithDistance extends Hospital {
-  distance?: number // in miles
-  eta?: number // in minutes
+  distance?: number
+  eta?: number
 }
 
-// Haversine formula to calculate distance between two coordinates
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3959 // Earth's radius in miles
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLon = ((lon2 - lon1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2)
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  return R * c
-}
-
-// Estimate ETA based on distance with tiered speed approach
-// Shorter distances = slower (urban streets, traffic lights)
-// Longer distances = faster (more highway/arterial roads)
-function calculateETA(distanceInMiles: number): number {
-  let averageSpeed: number
-
-  if (distanceInMiles < 5) {
-    averageSpeed = 35 // Urban streets, traffic lights, congestion
-  } else if (distanceInMiles < 15) {
-    averageSpeed = 45 // Mix of arterials and highways
-  } else {
-    averageSpeed = 55 // Mostly highways
+const buildAddressSummary = (hospital: Hospital) => {
+  const line1 = hospital.address?.line1?.trim()
+  const city = hospital.address?.city?.trim()
+  const state = hospital.address?.state?.trim()
+  if (city || state) {
+    return [city, state].filter(Boolean).join(', ')
   }
+  return line1 ?? null
+}
 
-  return Math.round((distanceInMiles / averageSpeed) * 60) // convert to minutes
+const buildNavigationUrl = (hospital: Hospital) => {
+  const lat = typeof hospital.latitude === 'number' ? hospital.latitude : null
+  const lng = typeof hospital.longitude === 'number' ? hospital.longitude : null
+  if (lat !== null && lng !== null) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+  }
+  const parts = [
+    hospital.address?.line1?.trim(),
+    hospital.address?.line2?.trim(),
+    hospital.address?.city?.trim(),
+    hospital.address?.state?.trim(),
+    hospital.address?.zip?.trim(),
+  ].filter(Boolean)
+  if (!parts.length) {
+    return null
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(parts.join(', '))}`
+}
+
+const getPrimaryDoorCode = (hospital: Hospital) => {
+  const doorCodes = hospital.doorCodes ?? []
+  return doorCodes.find((code) => code?.isPrimary) ?? doorCodes[0] ?? null
 }
 
 export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProps) {
@@ -102,50 +107,53 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
 
   // Calculate distances and filter hospitals
   const processedHospitals = useMemo(() => {
-    let processed: HospitalWithDistance[] = hospitals.map((hospital) => {
-      const result: HospitalWithDistance = { ...hospital }
+      let processed: HospitalWithDistance[] = hospitals.map((hospital) => {
+        const result: HospitalWithDistance = { ...hospital }
 
-      // Calculate distance if we have user location and hospital coordinates
-      if (isMobile && userLocation && hospital.latitude && hospital.longitude) {
-        const distance = calculateDistance(
-          userLocation.lat,
-          userLocation.lon,
-          hospital.latitude,
-          hospital.longitude,
-        )
-        result.distance = distance
-        result.eta = calculateETA(distance)
+        if (
+          userLocation &&
+          typeof hospital.latitude === 'number' &&
+          typeof hospital.longitude === 'number'
+        ) {
+          const distance = calculateDistanceMiles(
+            userLocation.lat,
+            userLocation.lon,
+            hospital.latitude,
+            hospital.longitude,
+          )
+          result.distance = distance
+          result.eta = estimateEtaMinutes(distance)
+        }
+
+        return result
+      })
+
+      // Filter by capabilities
+      if (selectedCapabilities.length > 0) {
+        processed = processed.filter((hospital) => {
+          if (!hospital.capabilities || hospital.capabilities.length === 0) return false
+
+          return selectedCapabilities.every((selectedCapId) =>
+            hospital.capabilities?.some((cap) => {
+              const capability = typeof cap.capability === 'object' ? cap.capability : null
+              return capability?.id === selectedCapId
+            }),
+          )
+        })
       }
 
-      return result
-    })
+      // Sort by distance if location is available
+      if (userLocation) {
+        processed.sort((a, b) => {
+          if (a.distance !== undefined && b.distance !== undefined) {
+            return a.distance - b.distance
+          }
+          return 0
+        })
+      }
 
-    // Filter by capabilities
-    if (selectedCapabilities.length > 0) {
-      processed = processed.filter((hospital) => {
-        if (!hospital.capabilities || hospital.capabilities.length === 0) return false
-
-        return selectedCapabilities.every((selectedCapId) =>
-          hospital.capabilities?.some((cap) => {
-            const capability = typeof cap.capability === 'object' ? cap.capability : null
-            return capability?.id === selectedCapId
-          }),
-        )
-      })
-    }
-
-    // Sort by distance on mobile if available
-    if (isMobile && userLocation) {
-      processed.sort((a, b) => {
-        if (a.distance !== undefined && b.distance !== undefined) {
-          return a.distance - b.distance
-        }
-        return 0
-      })
-    }
-
-    return processed
-  }, [hospitals, selectedCapabilities, userLocation, isMobile])
+      return processed
+    }, [hospitals, selectedCapabilities, userLocation])
 
   const toggleCapability = (capabilityId: number) => {
     setSelectedCapabilities((prev) =>
@@ -256,12 +264,12 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
 
         {/* Hospitals Grid */}
         {processedHospitals.length === 0 ? (
-          <div className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-12 text-center">
-            <Building2 className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
-            <h2 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-2">
+          <div className="rounded-2xl border bg-white p-12 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <Building2 className="mx-auto mb-4 h-12 w-12 text-neutral-400" />
+            <h2 className="mb-2 text-xl font-semibold text-neutral-900 dark:text-white">
               No Hospitals Found
             </h2>
-            <p className="text-neutral-600 dark:text-neutral-400 mb-4">
+            <p className="mb-4 text-neutral-600 dark:text-neutral-400">
               {selectedCapabilities.length > 0
                 ? 'Try adjusting your filters'
                 : 'Hospital information will appear here when added.'}
@@ -269,121 +277,164 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
             {selectedCapabilities.length > 0 && (
               <button
                 onClick={clearFilters}
-                className="text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-blue-600 underline-offset-2 hover:underline dark:text-blue-400"
               >
                 Clear filters
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-6">
             {processedHospitals.map((hospital) => {
               const network =
                 typeof hospital.network === 'object' ? (hospital.network as HospitalNetwork) : null
+              const capabilityBadges =
+                hospital.capabilities
+                  ?.map((cap, idx) => {
+                    const capability =
+                      typeof cap.capability === 'object' ? (cap.capability as HospitalCapability) : null
+                    if (!capability) return null
+                    const color = capabilityColors[capability.category ?? 'other'] ?? capabilityColors.other
+                    return {
+                      id: `${hospital.id}-${idx}`,
+                      name: capability.name,
+                      level: cap.level,
+                      description: getCapabilityLevelDescription(capability, cap.level),
+                      color,
+                    }
+                  })
+                  .filter(Boolean) ?? []
+              const badgesToDisplay = capabilityBadges.slice(0, 3)
+              const moreCapabilities = Math.max(capabilityBadges.length - badgesToDisplay.length, 0)
+              const primaryDoorCode = getPrimaryDoorCode(hospital)
+              const addressSummary = buildAddressSummary(hospital)
+              const navigationUrl = buildNavigationUrl(hospital)
 
               return (
-                <Link
+                <motion.article
                   key={hospital.id}
-                  href={`/hospitals/${hospital.id}`}
-                  className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow flex flex-col"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="rounded-3xl bg-white/90 p-6 shadow-xl ring-1 ring-slate-100 backdrop-blur dark:bg-neutral-900/90 dark:ring-neutral-800"
                 >
-                  {/* Distance/ETA Badge (Mobile Only) */}
-                  {isMobile && hospital.distance !== undefined && hospital.eta !== undefined && (
-                    <div className="mb-3 flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
-                      <Navigation className="h-4 w-4" />
-                      <span>
-                        ETA {hospital.eta} min | {hospital.distance.toFixed(1)} mi
-                      </span>
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                        {hospital.name}
+                      </h2>
+                      {network && (
+                        <span className="mt-1 inline-flex items-center rounded-full bg-blue-100 px-3 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/40 dark:text-blue-100">
+                          {network.name}
+                        </span>
+                      )}
+                      {addressSummary && (
+                        <p className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                          <MapPin className="h-4 w-4" />
+                          <span>{addressSummary}</span>
+                        </p>
+                      )}
                     </div>
-                  )}
-
-                  {/* Hospital Name */}
-                  <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">
-                    {hospital.name}
-                  </h2>
-
-                  {/* Network Badge */}
-                  {network && (
-                    <div className="mb-3">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
-                        {network.name}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Address */}
-                  {hospital.address && (
-                    <div className="flex items-start gap-2 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                      <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <div>
-                        {hospital.address.city && hospital.address.state && (
-                          <div>
-                            {hospital.address.city}, {hospital.address.state}
-                          </div>
-                        )}
+                    {hospital.eta !== undefined && hospital.distance !== undefined && (
+                      <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-100">
+                        <Navigation className="h-4 w-4" />
+                        <span>
+                          ETA {hospital.eta} min • {hospital.distance.toFixed(1)} mi
+                        </span>
                       </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-3">
+                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                        Squad Phone
+                      </p>
+                      {hospital.squadPhone ? (
+                        <a
+                          href={`tel:${hospital.squadPhone}`}
+                          className="mt-1 inline-flex text-lg font-semibold text-slate-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-300"
+                        >
+                          {hospital.squadPhone}
+                        </a>
+                      ) : (
+                        <p className="mt-1 text-sm text-slate-400">Not set</p>
+                      )}
                     </div>
-                  )}
-
-                  {/* Squad Phone */}
-                  {hospital.squadPhone && (
-                    <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                      <Phone className="h-4 w-4 flex-shrink-0" />
-                      <a
-                        href={`tel:${hospital.squadPhone}`}
-                        className="hover:text-blue-600 dark:hover:text-blue-400"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {hospital.squadPhone}
-                      </a>
+                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                        ED Door Code
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+                        {primaryDoorCode?.code ?? '—'}
+                      </p>
+                      {primaryDoorCode?.label && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{primaryDoorCode.label}</p>
+                      )}
                     </div>
-                  )}
+                    <div className="rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/60">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+                        Capabilities
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-slate-900 dark:text-white">
+                        {hospital.capabilities?.length ?? 0}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Listed specialties</p>
+                    </div>
+                  </div>
 
-                  {/* Capabilities Preview */}
-                  {hospital.capabilities && hospital.capabilities.length > 0 && (
-                    <div className="mt-auto pt-3 border-t dark:border-neutral-700">
-                      <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-2">
-                        <Award className="h-3.5 w-3.5" />
-                        <span>Capabilities:</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {hospital.capabilities.slice(0, 2).map((cap, idx) => {
-                          const capability =
-                            typeof cap.capability === 'object' ? cap.capability : null
-                          if (!capability) return null
-                          const levelDescription = getCapabilityLevelDescription(
-                            capability,
-                            cap.level,
-                          )
-
-                          return (
-                            <div
-                              key={idx}
-                              className="inline-flex flex-col px-2 py-1 text-xs rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200"
-                            >
-                              <span className="font-medium">{capability.name}</span>
-                              {cap.level && (
-                                <span className="text-emerald-700 dark:text-emerald-200/90">
-                                  {cap.level}
-                                </span>
-                              )}
-                              {levelDescription && (
-                                <span className="text-[11px] text-emerald-700/80 dark:text-emerald-100/80">
-                                  {levelDescription}
-                                </span>
-                              )}
-                            </div>
-                          )
-                        })}
-                        {hospital.capabilities.length > 2 && (
-                          <span className="inline-block px-2 py-1 text-xs text-neutral-500 dark:text-neutral-400">
-                            +{hospital.capabilities.length - 2} more
+                  {badgesToDisplay.length > 0 && (
+                    <div className="mt-4">
+                      <div className="flex flex-wrap gap-2">
+                        {badgesToDisplay.map((badge) => (
+                          <span
+                            key={badge.id}
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ${badge.color.pill}`}
+                            title={badge.description ?? undefined}
+                          >
+                            {badge.name}
+                            {badge.level ? ` • ${badge.level}` : ''}
+                          </span>
+                        ))}
+                        {moreCapabilities > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                            +{moreCapabilities} more
                           </span>
                         )}
                       </div>
                     </div>
                   )}
-                </Link>
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={!hospital.squadPhone}
+                      onClick={() => hospital.squadPhone && window.open(`tel:${hospital.squadPhone}`, '_self')}
+                      className="inline-flex flex-1 items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-black disabled:cursor-not-allowed disabled:bg-slate-400 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 lg:flex-none lg:px-5"
+                    >
+                      Call Squad
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      disabled={!navigationUrl}
+                      onClick={() => navigationUrl && window.open(navigationUrl, '_blank', 'noopener')}
+                      className="inline-flex flex-1 items-center justify-center rounded-2xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-slate-400 lg:flex-none lg:px-5"
+                    >
+                      Navigate
+                    </motion.button>
+                    <Link
+                      href={`/hospitals/${hospital.id}`}
+                      className="inline-flex flex-1 items-center justify-center rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500 lg:flex-none lg:px-5"
+                    >
+                      View details
+                    </Link>
+                  </div>
+                </motion.article>
               )
             })}
           </div>
