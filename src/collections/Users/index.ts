@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAdmin, isContentOrAdmin } from '../../access/roles'
+import { isAdmin } from '../../access/roles'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -8,9 +8,33 @@ export const Users: CollectionConfig = {
     // Only admin team can create and delete users
     create: isAdmin,
     delete: isAdmin,
-    // Content team and admin team can read and update users (to change status, approve, etc.)
-    read: isContentOrAdmin,
-    update: isContentOrAdmin,
+    // Users can read and update their own profile, admins/content can read/update all
+    read: ({ req: { user } }) => {
+      // Admins and content team can read all users
+      if (user?.role === 'admin-team' || user?.role === 'content-team') return true
+      // Regular users can only read their own profile
+      if (user) {
+        return {
+          id: {
+            equals: user.id,
+          },
+        }
+      }
+      return false
+    },
+    update: ({ req: { user } }) => {
+      // Admins and content team can update all users
+      if (user?.role === 'admin-team' || user?.role === 'content-team') return true
+      // Regular users can only update their own profile
+      if (user) {
+        return {
+          id: {
+            equals: user.id,
+          },
+        }
+      }
+      return false
+    },
   },
   admin: {
     group: 'Administration',
