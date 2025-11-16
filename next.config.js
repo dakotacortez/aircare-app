@@ -36,9 +36,9 @@ const nextConfig = {
 
 const payloadConfig = withPayload(nextConfig, { devBundleServerPackages: false })
 
-// Add empty turbopack config to satisfy Next.js 16 requirement
-if (!('turbopack' in payloadConfig)) {
-  payloadConfig.turbopack = {}
+// Remove turbopack config added by Payload if present (not supported in Next.js 15)
+if ('turbopack' in payloadConfig) {
+  delete payloadConfig.turbopack
 }
 
 payloadConfig.experimental = {
