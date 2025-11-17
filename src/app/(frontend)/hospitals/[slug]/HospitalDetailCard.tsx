@@ -471,7 +471,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 <p className="text-xs text-amber-600">{etaState.errorMessage}</p>
             ) : (
                 <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                  Tap "Update from my location" to calculate ETA.
+                  Tap &quot;Update from my location&quot; to calculate ETA.
                 </p>
             )}
           </div>

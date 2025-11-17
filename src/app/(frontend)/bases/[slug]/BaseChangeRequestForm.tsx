@@ -95,7 +95,7 @@ export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormPro
     setAssetChanges((rows) => [...rows, { assetId: null, action: 'add' }])
   }
 
-  const updateAssetChange = (index: number, field: keyof AssetChange, value: any) => {
+  const updateAssetChange = (index: number, field: keyof AssetChange, value: AssetChange[typeof field]) => {
     setAssetChanges((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
   }
 

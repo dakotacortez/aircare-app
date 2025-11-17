@@ -260,13 +260,13 @@ export const Bases: CollectionConfig = {
     {
       name: 'assets',
       type: 'relationship',
-      relationTo: 'assets' as any,
+      relationTo: 'assets',
       hasMany: true,
       label: 'Assets Based Here',
       admin: {
         description: 'Select vehicles and units stationed at this base. Assets already assigned to other bases will not appear in the list.',
       },
-      filterOptions: (async ({ id, relationTo, data, siblingData, req }: any) => {
+      filterOptions: async ({ id, req }) => {
         // This will filter out assets that are already assigned to OTHER bases
         try {
           // Query all other bases (not the current one being edited)
@@ -284,9 +284,9 @@ export const Bases: CollectionConfig = {
           const assignedAssetIds: number[] = []
 
           if (allBases?.docs) {
-            allBases.docs.forEach((base: any) => {
+            allBases.docs.forEach((base) => {
               if (base.assets && Array.isArray(base.assets)) {
-                base.assets.forEach((asset: any) => {
+                base.assets.forEach((asset) => {
                   const assetId = typeof asset === 'object' ? asset.id : asset
                   if (assetId && !assignedAssetIds.includes(assetId)) {
                     assignedAssetIds.push(assetId)
@@ -312,7 +312,7 @@ export const Bases: CollectionConfig = {
           // On error, show all assets
           return {}
         }
-      }) as any,
+      },
     },
     {
       name: 'hazards',

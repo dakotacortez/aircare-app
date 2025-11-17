@@ -97,7 +97,7 @@ export const ReferenceCardDrawer: React.FC = () => {
         })
       }
 
-      const handlePointerUp = (upEvent: PointerEvent) => {
+      const handlePointerUp = (_upEvent: PointerEvent) => {
         setIsDragging(false)
         if (fabRef.current) {
           fabRef.current.releasePointerCapture(event.pointerId)
@@ -186,7 +186,7 @@ export const ReferenceCardDrawer: React.FC = () => {
           >
           {/* Main FAB */}
           <button
-            onClick={(e) => {
+            onClick={() => {
               if (!isDragging) {
                 setDrawerOpen(!drawerOpen)
               }
