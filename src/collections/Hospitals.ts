@@ -1,5 +1,4 @@
-import type { CollectionConfig } from 'payload'
-import type { Validate } from 'payload/types'
+import type { CollectionConfig, Validate } from 'payload'
 
 const validateCapabilityLevel: Validate<string> = async (value, { siblingData, req }) => {
   if (!value) {
