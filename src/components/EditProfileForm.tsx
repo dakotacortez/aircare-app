@@ -226,7 +226,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                         height={80}
                         unoptimized
                       />
-                    ) : (
+                    ) : profileImageUrl ? (
                       <Image
                         src={profileImageUrl}
                         alt="Profile"
@@ -235,7 +235,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
                         height={80}
                         unoptimized
                       />
-                    )}
+                    ) : null}
                   </div>
                 )}
                 <label className="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-neutral-100 dark:bg-neutral-700 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-600 transition">
