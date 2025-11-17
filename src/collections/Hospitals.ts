@@ -440,7 +440,7 @@ export const Hospitals: CollectionConfig = {
               Field: '@/components/fields/CapabilityLevelSelect',
             },
           },
-          validate: async (value: unknown, { siblingData, req }) => {
+          validate: async (value: unknown, { siblingData, req }: { siblingData?: Record<string, unknown>; req: { payload: { findByID: (args: { collection: string; id: number | string }) => Promise<{ levels?: Array<{ level: string }> }> } } }) => {
             if (!value) {
               return 'Certification level is required'
             }
