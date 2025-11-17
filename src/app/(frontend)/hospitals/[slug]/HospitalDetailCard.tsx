@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { DoorCodeList } from '@/components/door-code-list'
@@ -352,15 +353,15 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               </span>
               <span>{copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Try again' : 'Share info'}</span>
             </button>
-            <a
-              href={`mailto:?subject=Hospital info update: ${encodeURIComponent(hospital.name ?? '')}`}
+            <Link
+              href={`/hospitals/${hospital.slug ?? hospital.id}/suggest-update`}
               className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📝
               </span>
               <span>Suggest update</span>
-            </a>
+            </Link>
           </div>
         </div>
 

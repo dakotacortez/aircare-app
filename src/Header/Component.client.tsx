@@ -8,6 +8,7 @@ import type { Header as HeaderData, Page, Post, User } from '@/payload-types'
 import { useTheme } from '@/providers/Theme'
 import { useServiceLine } from '@/providers/ServiceLine'
 import { useReferenceCard } from '@/hooks/useReferenceCard'
+import { getClientSideURL } from '@/utilities/getURL'
 
 type NavItem = {
   href: string
@@ -92,7 +93,9 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/users/me')
+        const res = await fetch(`${getClientSideURL()}/api/users/me`, {
+          credentials: 'include',
+        })
         if (res.ok) {
           const userData = await res.json()
           setUser(userData.user)

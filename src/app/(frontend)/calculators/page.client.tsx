@@ -42,10 +42,10 @@ export function CalculatorsClient({ calculators }: CalculatorsClientProps) {
               <Calculator className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+              <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 sm:text-3xl">
                 Medical Calculators
               </h1>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 sm:text-base">
                 Clinical decision support tools for critical care
               </p>
             </div>
