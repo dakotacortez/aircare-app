@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import type { Base } from '@/payload-types'
-import { calculateDistanceMiles, estimateEtaMinutes, fetchRealTimeEta } from '@/utilities/distance'
+import { calculateDistanceMiles, estimateEtaMinutes, fetchRealTimeEta, getTrafficColor, type TrafficStatus } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
 
 interface BasesClientProps {
@@ -13,6 +13,7 @@ interface BasesClientProps {
 interface BaseWithDistance extends Base {
   distance?: number
   eta?: number
+  trafficStatus?: TrafficStatus
 }
 
 const buildAddressSummary = (base: Base) => {
@@ -50,7 +51,7 @@ export function BasesClient({ bases }: BasesClientProps) {
     fetchLocation()
   }, [])
 
-  const [realtimeEtas, setRealtimeEtas] = useState<Map<number, { eta: number; distance: number }>>(new Map())
+  const [realtimeEtas, setRealtimeEtas] = useState<Map<number, { eta: number; distance: number; trafficStatus?: TrafficStatus }>>(new Map())
 
   const basesWithDistance = useMemo<BaseWithDistance[]>(() => {
     return bases.map((base) => {
@@ -61,6 +62,7 @@ export function BasesClient({ bases }: BasesClientProps) {
           ...base,
           distance: realtimeData.distance,
           eta: realtimeData.eta,
+          trafficStatus: realtimeData.trafficStatus,
         }
       }
 
@@ -109,17 +111,18 @@ export function BasesClient({ bases }: BasesClientProps) {
               id: base.id,
               eta: etaData.etaMinutes,
               distance: etaData.distanceMiles,
+              trafficStatus: etaData.trafficStatus,
             }
           }
           return null
         })
 
       const results = await Promise.all(etaPromises)
-      const newEtas = new Map<number, { eta: number; distance: number }>()
+      const newEtas = new Map<number, { eta: number; distance: number; trafficStatus?: TrafficStatus }>()
 
       results.forEach((result) => {
         if (result) {
-          newEtas.set(result.id, { eta: result.eta, distance: result.distance })
+          newEtas.set(result.id, { eta: result.eta, distance: result.distance, trafficStatus: result.trafficStatus })
         }
       })
 
@@ -193,7 +196,11 @@ export function BasesClient({ bases }: BasesClientProps) {
                             <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
                               Mins
                             </p>
-                            <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                            <p className={`text-sm font-semibold ${
+                              base.trafficStatus
+                                ? getTrafficColor(base.trafficStatus)
+                                : 'text-uc-text-light-default dark:text-uc-text-dark-default'
+                            }`}>
                               {typeof base.eta === 'number' ? `~${base.eta}` : 'ETA pending'}
                             </p>
                           </div>
