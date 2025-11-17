@@ -1433,6 +1433,10 @@ export interface Base {
     | {
         label?: string | null;
         code?: string | null;
+        /**
+         * Optional context such as time restrictions or access notes.
+         */
+        notes?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -2372,6 +2376,7 @@ export interface BasesSelect<T extends boolean = true> {
     | {
         label?: T;
         code?: T;
+        notes?: T;
         id?: T;
       };
   assets?: T;

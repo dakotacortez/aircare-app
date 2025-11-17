@@ -246,6 +246,15 @@ export const Bases: CollectionConfig = {
               placeholder: 'e.g., 1234#',
             },
           },
+          {
+            name: 'notes',
+            type: 'textarea',
+            label: 'Notes / Instructions',
+            admin: {
+              rows: 2,
+              description: 'Optional context such as time restrictions or access notes.',
+            },
+          },
         ],
       },
     {

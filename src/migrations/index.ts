@@ -16,6 +16,7 @@ import * as migration_20251117_010500_expand_hospital_info_card from './20251117
 import * as migration_20251117_020000_add_coordinates_field from './20251117_020000_add_coordinates_field';
 import * as migration_20251117_020100_add_slug_fields from './20251117_020100_add_slug_fields';
 import * as migration_20251117_020200_expand_bases_and_assets from './20251117_020200_expand_bases_and_assets';
+import * as migration_20251117_030300_add_door_code_notes from './20251117_030300_add_door_code_notes';
 
 export const migrations = [
   {
@@ -107,4 +108,9 @@ export const migrations = [
       down: migration_20251117_020200_expand_bases_and_assets.down,
       name: '20251117_020200_expand_bases_and_assets'
     },
-];
+    {
+      up: migration_20251117_030300_add_door_code_notes.up,
+      down: migration_20251117_030300_add_door_code_notes.down,
+      name: '20251117_030300_add_door_code_notes'
+    },
+  ];
