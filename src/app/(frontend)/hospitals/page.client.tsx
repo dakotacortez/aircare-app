@@ -334,13 +334,15 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         {networkLogo?.url ? (
-                          <Image
-                            src={networkLogo.url}
-                            alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
-                            width={40}
-                            height={40}
-                            className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-neutral-800 dark:ring-neutral-700"
-                          />
+                          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
+                            <Image
+                              src={networkLogo.url}
+                              alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
+                              width={40}
+                              height={40}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          </div>
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
                             <span className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">

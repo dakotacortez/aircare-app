@@ -337,13 +337,15 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {networkLogo?.url ? (
-              <Image
-                src={networkLogo.url}
-                alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
-                width={48}
-                height={48}
-                className="h-12 w-12 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-neutral-800 dark:ring-neutral-700"
-              />
+              <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-0.5 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
+                <Image
+                  src={networkLogo.url}
+                  alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
+                  width={48}
+                  height={48}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
             ) : (
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
                   <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
