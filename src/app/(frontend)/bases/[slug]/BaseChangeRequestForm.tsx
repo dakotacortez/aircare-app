@@ -483,7 +483,9 @@ export function BaseChangeRequestForm({ base, assets: availableAssets }: BaseCha
         <div className="space-y-3">
           {assets.map((asset, index) => {
             const selectedAsset = availableAssets.find((a) => a.id === asset.assetId)
-            const assetName = selectedAsset ? `${selectedAsset.emoji} ${selectedAsset.name}` : 'Unknown'
+            const assetName = selectedAsset
+              ? [selectedAsset.emoji, selectedAsset.name].filter(Boolean).join(' ')
+              : 'Unknown'
 
             return (
               <div key={index} className="rounded-xl border border-uc-light-border p-3 dark:border-neutral-700">

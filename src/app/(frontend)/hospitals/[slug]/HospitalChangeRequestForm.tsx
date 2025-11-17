@@ -71,6 +71,7 @@ export function HospitalChangeRequestForm({ hospital, capabilities: availableCap
   const [city, setCity] = useState(hospital.address?.city ?? '')
   const [state, setState] = useState(hospital.address?.state ?? '')
   const [zip, setZip] = useState(hospital.address?.zip ?? '')
+  const [coordinates, setCoordinates] = useState(hospital.coordinates ?? '')
   const [squadPhone, setSquadPhone] = useState(hospital.squadPhone ?? '')
   const [notes, setNotes] = useState('')
   const [hazard, setHazard] = useState('')
@@ -162,6 +163,9 @@ export function HospitalChangeRequestForm({ hospital, capabilities: availableCap
     const nameValue = cleanString(name)
     if (nameValue) proposedData.name = nameValue
     if (Object.keys(addressPayload).length > 0) proposedData.address = addressPayload
+
+    const coordinateValue = cleanString(coordinates)
+    if (coordinateValue) proposedData.coordinates = coordinateValue
 
     const squadPhoneValue = cleanString(squadPhone)
     if (squadPhoneValue) proposedData.squadPhone = squadPhoneValue
@@ -308,6 +312,17 @@ export function HospitalChangeRequestForm({ hospital, capabilities: availableCap
             </label>
           </div>
         </div>
+
+        <label className="mt-3 flex flex-col gap-2 text-sm font-medium">
+          Coordinates (lat, lon)
+          <input
+            type="text"
+            value={coordinates}
+            onChange={(e) => setCoordinates(e.target.value)}
+            className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
+            placeholder="39.136774, -84.502021"
+          />
+        </label>
       </div>
 
       <div className="rounded-2xl bg-white p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">

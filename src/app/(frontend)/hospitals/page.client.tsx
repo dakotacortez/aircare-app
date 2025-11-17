@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
-import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import { calculateDistanceMiles, estimateEtaMinutes, fetchRealTimeEta } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors, type CapabilityColorToken } from './capabilityColors'
 
@@ -117,8 +117,21 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
     return map
   }, [capabilities])
 
+  const [realtimeEtas, setRealtimeEtas] = useState<Map<number, { eta: number; distance: number }>>(new Map())
+
   const hospitalsWithDistance = useMemo<HospitalWithDistance[]>(() => {
     return hospitals.map((hospital) => {
+      // Use realtime ETA if available
+      const realtimeData = realtimeEtas.get(hospital.id)
+      if (realtimeData) {
+        return {
+          ...hospital,
+          distance: realtimeData.distance,
+          eta: realtimeData.eta,
+        }
+      }
+
+      // Fallback to basic calculation
       if (
         userLocation &&
         typeof hospital.latitude === 'number' &&
@@ -138,7 +151,50 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
       }
       return hospital
     })
-  }, [hospitals, userLocation])
+  }, [hospitals, userLocation, realtimeEtas])
+
+  // Fetch realtime ETAs when user location is available
+  useEffect(() => {
+    if (!userLocation) return
+
+    const fetchRealtimeEtas = async () => {
+      const etaPromises = hospitals
+        .filter((hospital) =>
+          typeof hospital.latitude === 'number' &&
+          typeof hospital.longitude === 'number'
+        )
+        .map(async (hospital) => {
+          const etaData = await fetchRealTimeEta(
+            hospital.latitude as number,
+            hospital.longitude as number,
+            userLocation.lat,
+            userLocation.lon,
+          )
+
+          if (etaData) {
+            return {
+              id: hospital.id,
+              eta: etaData.etaMinutes,
+              distance: etaData.distanceMiles,
+            }
+          }
+          return null
+        })
+
+      const results = await Promise.all(etaPromises)
+      const newEtas = new Map<number, { eta: number; distance: number }>()
+
+      results.forEach((result) => {
+        if (result) {
+          newEtas.set(result.id, { eta: result.eta, distance: result.distance })
+        }
+      })
+
+      setRealtimeEtas(newEtas)
+    }
+
+    fetchRealtimeEtas()
+  }, [userLocation, hospitals])
 
   const filteredAndSorted = useMemo(() => {
     let list = hospitalsWithDistance
