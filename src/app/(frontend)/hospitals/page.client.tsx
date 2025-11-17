@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
@@ -95,6 +96,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [selectedCapability, setSelectedCapability] = useState<{ name: string; level: string | null; description: string | null; color: any } | null>(null)
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -200,7 +202,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               <select
                 value={sortOption}
                 onChange={(event) => setSortOption(event.target.value as SortOption)}
-                  className="h-9 appearance-none rounded-lg border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600"
+                  className="h-9 appearance-none rounded-lg border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600 dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
                   style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
               >
                 {sortOptions.map((option) => (
@@ -228,7 +230,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   onChange={(event) =>
                     setCapabilityFilter(event.target.value === '' ? null : Number(event.target.value))
                   }
-                  className="h-9 min-w-[10rem] appearance-none rounded-lg border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600"
+                  className="h-9 min-w-[10rem] appearance-none rounded-lg border border-uc-light-border bg-uc-light-card pl-3 pr-8 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600 dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
                   style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
                 >
                   <option value="">All capabilities</option>
@@ -369,19 +371,19 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           <button
                             key={badge.id}
                             type="button"
-                            className={`group relative inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ${badge.color.pill}`}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              if (badge.description) {
+                                setSelectedCapability(badge)
+                              }
+                            }}
+                            className={`group relative inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 transition hover:opacity-80 ${badge.color.pill}`}
                           >
                             <span className={badge.color.text}>
                               {badge.name}
                               {badge.level ? ` • ${badge.level}` : ''}
                             </span>
-                            {badge.description && (
-                              <span
-                                className={`pointer-events-none absolute left-0 top-full z-10 mt-1 w-56 rounded-lg ${badge.color.tooltip} px-3 py-2 text-[11px] font-normal opacity-0 shadow-lg transition group-hover:opacity-100 group-focus-visible:opacity-100`}
-                              >
-                                {badge.description}
-                              </span>
-                            )}
                           </button>
                         ))}
                         {moreCount > 0 && (
@@ -398,6 +400,55 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedCapability && (
+          <motion.div
+            className="fixed inset-0 z-30 flex items-center justify-center bg-neutral-900/60 p-4 dark:bg-neutral-950/80"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedCapability(null)}
+          >
+            <motion.div
+              className="w-full max-w-sm rounded-2xl bg-uc-light-card p-5 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700"
+              initial={{ scale: 0.95, y: 10, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 10, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                  Clinical Capability
+                </h3>
+                <button
+                  onClick={() => setSelectedCapability(null)}
+                  className="rounded-full p-1 text-uc-text-light-subtle hover:bg-uc-light-subtle hover:text-uc-text-light-default dark:text-uc-text-dark-subtle dark:hover:bg-neutral-700 dark:hover:text-uc-text-dark-default"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <div className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ring-1 ${selectedCapability.color.pill}`}>
+                    <span className={selectedCapability.color.text}>
+                      {selectedCapability.name}
+                      {selectedCapability.level ? ` • ${selectedCapability.level}` : ''}
+                    </span>
+                  </div>
+                </div>
+                {selectedCapability.description && (
+                  <div className="rounded-lg bg-uc-light-subtle p-3 dark:bg-neutral-700/50">
+                    <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
+                      {selectedCapability.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

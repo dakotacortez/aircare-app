@@ -136,21 +136,34 @@ export function BasesClient({ bases }: BasesClientProps) {
                           <span>{addressSummary ?? 'Location pending'}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 text-right text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                        <div>
-                          <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
-                            Distance
-                          </p>
-                          <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
-                            {typeof base.distance === 'number'
-                              ? `${base.distance.toFixed(1)} mi`
-                              : '—'}
-                          </p>
-                          <p className="text-[11px]">
-                            {typeof base.eta === 'number' ? `~${base.eta} min` : 'ETA pending'}
-                          </p>
+                      <div className="flex w-full flex-col gap-2 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+                        <div className="grid w-full grid-cols-3 gap-2 sm:w-auto">
+                          <div className="flex flex-col rounded-lg bg-uc-light-subtle/70 px-3 py-2 text-left sm:text-right dark:bg-neutral-700/60">
+                            <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                              Distance
+                            </p>
+                            <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                              From you
+                            </p>
+                          </div>
+                          <div className="flex flex-col rounded-lg bg-uc-light-subtle/70 px-3 py-2 text-left sm:text-right dark:bg-neutral-700/60">
+                            <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                              Mins
+                            </p>
+                            <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                              {typeof base.eta === 'number' ? `~${base.eta}` : 'ETA pending'}
+                            </p>
+                          </div>
+                          <div className="flex flex-col rounded-lg bg-uc-light-subtle/70 px-3 py-2 text-left sm:text-right dark:bg-neutral-700/60">
+                            <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                              Miles
+                            </p>
+                            <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                              {typeof base.distance === 'number' ? base.distance.toFixed(1) : '—'}
+                            </p>
+                          </div>
                         </div>
-                        <span className="flex items-center text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
+                        <span className="flex items-center justify-end text-base text-uc-text-light-subtle dark:text-uc-text-dark-subtle sm:justify-center">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
