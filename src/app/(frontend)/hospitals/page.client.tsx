@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
-import { calculateDistanceMiles, estimateEtaMinutes, fetchRealTimeEta } from '@/utilities/distance'
+import { calculateDistanceMiles, estimateEtaMinutes, fetchRealTimeEta, getTrafficColor, type TrafficStatus } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors, type CapabilityColorToken } from './capabilityColors'
 
@@ -19,6 +19,7 @@ interface HospitalsClientProps {
 interface HospitalWithDistance extends Hospital {
   distance?: number
   eta?: number
+  trafficStatus?: TrafficStatus
 }
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -117,7 +118,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
     return map
   }, [capabilities])
 
-  const [realtimeEtas, setRealtimeEtas] = useState<Map<number, { eta: number; distance: number }>>(new Map())
+  const [realtimeEtas, setRealtimeEtas] = useState<Map<number, { eta: number; distance: number; trafficStatus?: TrafficStatus }>>(new Map())
 
   const hospitalsWithDistance = useMemo<HospitalWithDistance[]>(() => {
     return hospitals.map((hospital) => {
@@ -128,6 +129,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
           ...hospital,
           distance: realtimeData.distance,
           eta: realtimeData.eta,
+          trafficStatus: realtimeData.trafficStatus,
         }
       }
 
@@ -176,17 +178,18 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
               id: hospital.id,
               eta: etaData.etaMinutes,
               distance: etaData.distanceMiles,
+              trafficStatus: etaData.trafficStatus,
             }
           }
           return null
         })
 
       const results = await Promise.all(etaPromises)
-      const newEtas = new Map<number, { eta: number; distance: number }>()
+      const newEtas = new Map<number, { eta: number; distance: number; trafficStatus?: TrafficStatus }>()
 
       results.forEach((result) => {
         if (result) {
-          newEtas.set(result.id, { eta: result.eta, distance: result.distance })
+          newEtas.set(result.id, { eta: result.eta, distance: result.distance, trafficStatus: result.trafficStatus })
         }
       })
 
@@ -379,7 +382,11 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                             <p className="text-[11px] uppercase tracking-wide text-uc-text-light-subtle dark:text-uc-text-dark-subtle">
                               Mins
                             </p>
-                            <p className="text-sm font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                            <p className={`text-sm font-semibold ${
+                              hospital.trafficStatus
+                                ? getTrafficColor(hospital.trafficStatus)
+                                : 'text-uc-text-light-default dark:text-uc-text-dark-default'
+                            }`}>
                               {typeof hospital.eta === 'number' ? `~${hospital.eta}` : 'ETA pending'}
                             </p>
                           </div>
