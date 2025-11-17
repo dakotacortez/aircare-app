@@ -19,6 +19,27 @@ type DoorCodeEntry = {
   notes?: string
 }
 
+type RawContact = NonNullable<Base['contactInfo']>[number]
+type RawDoorCode = NonNullable<Base['doorCodes']>[number]
+
+const normalizeContacts = (contactInfo: Base['contactInfo']): ContactEntry[] =>
+  (contactInfo ?? [])
+    .filter((contact): contact is RawContact => Boolean(contact) && typeof contact === 'object')
+    .map((contact) => ({
+      label: contact.label ?? '',
+      phoneNumber: contact.phoneNumber ?? '',
+      description: contact.description ?? '',
+    }))
+
+const normalizeDoorCodes = (doorCodes: Base['doorCodes']): DoorCodeEntry[] =>
+  (doorCodes ?? [])
+    .filter((door): door is RawDoorCode => Boolean(door) && typeof door === 'object')
+    .map((door) => ({
+      label: door.label ?? '',
+      code: door.code ?? '',
+      notes: door.notes ?? '',
+    }))
+
 const cleanString = (value: string) => value.trim() || undefined
 
 export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
@@ -30,34 +51,8 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
   const [zip, setZip] = useState(base.address?.zip ?? '')
   const [coordinates, setCoordinates] = useState(base.coordinates ?? '')
   const [squadPhone, setSquadPhone] = useState(base.squadPhone ?? '')
-  const [contactInfo, setContactInfo] = useState<ContactEntry[]>(
-    (base.contactInfo || [])
-      .map((contact) =>
-        typeof contact === 'object'
-          ? {
-              label: contact.label ?? '',
-              phoneNumber: contact.phoneNumber ?? '',
-              description: contact.description ?? '',
-            }
-          : null,
-      )
-      .filter((entry): entry is ContactEntry => Boolean(entry)),
-  )
-  const [doorCodes, setDoorCodes] = useState<DoorCodeEntry[]>(
-    (base.doorCodes || [])
-      .map((door) => {
-        if (typeof door === 'object' && door !== null) {
-          const typedDoor = door as { label?: string; code?: string; notes?: string }
-          return {
-            label: typedDoor.label ?? '',
-            code: typedDoor.code ?? '',
-            notes: typedDoor.notes ?? '',
-          }
-        }
-        return null
-      })
-      .filter((entry): entry is DoorCodeEntry => Boolean(entry)),
-  )
+  const [contactInfo, setContactInfo] = useState<ContactEntry[]>(normalizeContacts(base.contactInfo))
+  const [doorCodes, setDoorCodes] = useState<DoorCodeEntry[]>(normalizeDoorCodes(base.doorCodes))
   const [notes, setNotes] = useState('')
   const [hazard, setHazard] = useState('')
 
