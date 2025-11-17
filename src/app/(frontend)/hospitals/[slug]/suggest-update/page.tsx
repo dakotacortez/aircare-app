@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeft, Sparkles } from 'lucide-react'
 import { getMeUser } from '@/utilities/getMeUser'
-import type { Hospital } from '@/payload-types'
+import type { Hospital, HospitalCapability } from '@/payload-types'
 import { HospitalChangeRequestForm } from '../HospitalChangeRequestForm'
 
 interface HospitalSuggestUpdatePageProps {
@@ -40,8 +40,14 @@ export default async function HospitalSuggestUpdatePage({ params }: HospitalSugg
     notFound()
   }
 
+  const capabilitiesResult = await payload.find({
+    collection: 'hospital-capabilities',
+    limit: 100,
+  })
+
   const hospital = result.docs[0] as Hospital
   const hydratedHospital = JSON.parse(JSON.stringify(hospital)) as Hospital
+  const capabilities = JSON.parse(JSON.stringify(capabilitiesResult.docs)) as HospitalCapability[]
 
   return (
     <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default transition-colors dark:bg-uc-dark-bg dark:text-uc-text-dark-default">
@@ -74,7 +80,7 @@ export default async function HospitalSuggestUpdatePage({ params }: HospitalSugg
           </div>
         </div>
 
-        <HospitalChangeRequestForm hospital={hydratedHospital} />
+        <HospitalChangeRequestForm hospital={hydratedHospital} capabilities={capabilities} />
       </div>
     </div>
   )

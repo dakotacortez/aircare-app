@@ -63,7 +63,7 @@ export function ProtocolTree({ protocols, currentProtocolNumber, isOpen, onClose
           </nav>
         </aside>
       ) : (
-        <div className="hidden md:flex flex-col border-r dark:border-neutral-700 bg-white dark:bg-neutral-800">
+        <div className="hidden md:flex h-full flex-col border-r dark:border-neutral-700 bg-white dark:bg-neutral-800">
           <button
             onClick={onToggleCollapse}
             className="p-3 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex flex-col items-center gap-2 border-b dark:border-neutral-700"

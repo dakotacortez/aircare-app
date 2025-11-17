@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import type { Base } from '@/payload-types'
+import type { Base, Asset } from '@/payload-types'
 
 interface BaseChangeRequestFormProps {
   base: Base
+  assets: Asset[]
 }
 
 type ContactEntry = {
@@ -17,6 +18,11 @@ type DoorCodeEntry = {
   label: string
   code: string
   notes?: string
+}
+
+type AssetChange = {
+  assetId: number | null
+  action: 'add' | 'remove'
 }
 
 type RawContact = NonNullable<Base['contactInfo']>[number]
@@ -42,7 +48,7 @@ const normalizeDoorCodes = (doorCodes: Base['doorCodes']): DoorCodeEntry[] =>
 
 const cleanString = (value: string) => value.trim() || undefined
 
-export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
+export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormProps) {
   const [name, setName] = useState(base.name ?? '')
   const [addressLine1, setAddressLine1] = useState(base.address?.line1 ?? '')
   const [addressLine2, setAddressLine2] = useState(base.address?.line2 ?? '')
@@ -53,6 +59,7 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
   const [squadPhone, setSquadPhone] = useState(base.squadPhone ?? '')
   const [contactInfo, setContactInfo] = useState<ContactEntry[]>(normalizeContacts(base.contactInfo))
   const [doorCodes, setDoorCodes] = useState<DoorCodeEntry[]>(normalizeDoorCodes(base.doorCodes))
+  const [assetChanges, setAssetChanges] = useState<AssetChange[]>([])
   const [notes, setNotes] = useState('')
   const [hazard, setHazard] = useState('')
 
@@ -82,6 +89,18 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
 
   const removeDoorCodeRow = (index: number) => {
     setDoorCodes((rows) => rows.filter((_, idx) => idx !== index))
+  }
+
+  const addAssetChange = () => {
+    setAssetChanges((rows) => [...rows, { assetId: null, action: 'add' }])
+  }
+
+  const updateAssetChange = (index: number, field: keyof AssetChange, value: any) => {
+    setAssetChanges((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
+  }
+
+  const removeAssetChange = (index: number) => {
+    setAssetChanges((rows) => rows.filter((_, idx) => idx !== index))
   }
 
   const buildPayload = () => {
@@ -115,6 +134,13 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
       }))
       .filter((door) => door.label || door.code || door.notes)
 
+    const filteredAssetChanges = assetChanges
+      .filter((change) => change.assetId !== null)
+      .map((change) => ({
+        assetId: change.assetId,
+        action: change.action,
+      }))
+
     const proposedData: Record<string, unknown> = {}
 
     const nameValue = cleanString(name)
@@ -128,6 +154,7 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
     if (squadPhoneValue) proposedData.squadPhone = squadPhoneValue
     if (filteredContacts.length > 0) proposedData.contactInfo = filteredContacts
     if (filteredDoorCodes.length > 0) proposedData.doorCodes = filteredDoorCodes
+    if (filteredAssetChanges.length > 0) proposedData.assetChanges = filteredAssetChanges
 
     const notesValue = cleanString(notes)
     if (notesValue) proposedData.notes = notesValue
@@ -422,6 +449,85 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
       </div>
 
       <div className="rounded-2xl bg-white p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold">Assets</h3>
+            <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
+              Add or remove vehicles and units at this base.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={addAssetChange}
+            className="rounded-full bg-uc-light-subtle px-3 py-1 text-sm font-medium text-uc-text-light-default ring-1 ring-uc-light-border transition hover:bg-uc-light-card dark:bg-neutral-700 dark:text-uc-text-dark-default dark:ring-neutral-600"
+          >
+            + Add asset change
+          </button>
+        </div>
+
+        {assetChanges.length === 0 && (
+          <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
+            No asset changes yet.
+          </p>
+        )}
+
+        <div className="space-y-3">
+          {assetChanges.map((change, index) => {
+            const selectedAsset = assets.find((a) => a.id === change.assetId)
+
+            return (
+              <div key={index} className="rounded-xl border border-uc-light-border p-3 dark:border-neutral-700">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium">Asset change {index + 1}</p>
+                  <button
+                    type="button"
+                    onClick={() => removeAssetChange(index)}
+                    className="text-xs text-uc-text-light-muted underline decoration-dashed underline-offset-4 transition hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <label className="flex flex-col gap-2 text-sm font-medium">
+                    Action
+                    <select
+                      value={change.action}
+                      onChange={(e) => updateAssetChange(index, 'action', e.target.value)}
+                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
+                    >
+                      <option value="add">Add to base</option>
+                      <option value="remove">Remove from base</option>
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-2 text-sm font-medium">
+                    Asset
+                    <select
+                      value={change.assetId ?? ''}
+                      onChange={(e) => updateAssetChange(index, 'assetId', Number(e.target.value) || null)}
+                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
+                    >
+                      <option value="">Select asset</option>
+                      {assets.map((asset) => (
+                        <option key={asset.id} value={asset.id}>
+                          {asset.emoji} {asset.name} ({asset.type.toUpperCase()})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                {selectedAsset && (
+                  <div className="mt-2 rounded-lg bg-uc-light-subtle p-2 text-xs text-uc-text-light-muted dark:bg-neutral-700/50 dark:text-uc-text-dark-muted">
+                    {selectedAsset.unitId && <span>Unit: {selectedAsset.unitId}</span>}
+                    {selectedAsset.licensePlate && <span className="ml-2">• Plate: {selectedAsset.licensePlate}</span>}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-2xl bg-white p-4 ring-1 ring-uc-light-border dark:bg-neutral-800 dark:ring-neutral-700">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-2 text-sm font-medium">
             General notes
@@ -429,7 +535,7 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
-              className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400"
+              className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
               placeholder="Anything else crews should know"
             />
           </label>
@@ -439,7 +545,7 @@ export function BaseChangeRequestForm({ base }: BaseChangeRequestFormProps) {
               value={hazard}
               onChange={(e) => setHazard(e.target.value)}
               rows={4}
-              className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400"
+              className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
               placeholder="Construction, closures, or safety concerns"
             />
           </label>

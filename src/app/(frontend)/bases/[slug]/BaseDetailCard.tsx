@@ -149,7 +149,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
       network?.name ? `Network: ${network.name}` : null,
       addressLines.length ? `Address: ${addressLines.join(', ')}` : null,
       primaryDoorCode?.code ? `Door Code: ${primaryDoorCode.code}` : null,
-      base.squadPhone ? `Squad Phone: ${base.squadPhone}` : null,
+      base.squadPhone ? `Base Phone: ${base.squadPhone}` : null,
       assets.length
         ? `Assets: ${assets.map((a) => a?.name).join('; ')}`
         : null,
@@ -417,7 +417,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
             >
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
-                <span className="text-sm">Squad Phone</span>
+                <span className="text-sm">Base Phone</span>
                 <span className="text-sm">{base.squadPhone ?? 'Not set'}</span>
               </div>
             </button>

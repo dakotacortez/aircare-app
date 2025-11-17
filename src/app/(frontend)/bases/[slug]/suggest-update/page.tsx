@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeft, Wrench } from 'lucide-react'
 import { getMeUser } from '@/utilities/getMeUser'
-import type { Base } from '@/payload-types'
+import type { Base, Asset } from '@/payload-types'
 import { BaseChangeRequestForm } from '../BaseChangeRequestForm'
 
 interface BaseSuggestUpdatePageProps {
@@ -40,8 +40,14 @@ export default async function BaseSuggestUpdatePage({ params }: BaseSuggestUpdat
     notFound()
   }
 
+  const assetsResult = await payload.find({
+    collection: 'assets',
+    limit: 200,
+  })
+
   const base = result.docs[0] as Base
   const hydratedBase = JSON.parse(JSON.stringify(base)) as Base
+  const assets = JSON.parse(JSON.stringify(assetsResult.docs)) as Asset[]
 
   return (
     <div className="min-h-screen bg-uc-light-bg text-uc-text-light-default transition-colors dark:bg-uc-dark-bg dark:text-uc-text-dark-default">
@@ -74,7 +80,7 @@ export default async function BaseSuggestUpdatePage({ params }: BaseSuggestUpdat
           </div>
         </div>
 
-        <BaseChangeRequestForm base={hydratedBase} />
+        <BaseChangeRequestForm base={hydratedBase} assets={assets} />
       </div>
     </div>
   )
