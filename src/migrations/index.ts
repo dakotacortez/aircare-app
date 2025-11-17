@@ -20,6 +20,7 @@ import * as migration_20251117_030300_add_door_code_notes from './20251117_03030
 import * as migration_20251117_040000_ensure_base_schema from './20251117_040000_ensure_base_schema';
 import * as migration_20251117_040100_ensure_hospital_schema from './20251117_040100_ensure_hospital_schema';
 import * as migration_20251117_040200_ensure_change_request_schema from './20251117_040200_ensure_change_request_schema';
+import * as migration_20251117_040300_ensure_reference_schema from './20251117_040300_ensure_reference_schema';
 
 export const migrations = [
   {
@@ -130,5 +131,10 @@ export const migrations = [
       up: migration_20251117_040200_ensure_change_request_schema.up,
       down: migration_20251117_040200_ensure_change_request_schema.down,
       name: '20251117_040200_ensure_change_request_schema'
+    },
+    {
+      up: migration_20251117_040300_ensure_reference_schema.up,
+      down: migration_20251117_040300_ensure_reference_schema.down,
+      name: '20251117_040300_ensure_reference_schema'
     },
   ];
