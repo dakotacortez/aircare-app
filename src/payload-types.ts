@@ -77,6 +77,7 @@ export interface Config {
     'hospital-capabilities': HospitalCapability;
     hospitals: Hospital;
     'hospital-change-requests': HospitalChangeRequest;
+    'base-change-requests': BaseChangeRequest;
     bases: Base;
     assets: Asset;
     calculators: Calculator;
@@ -107,6 +108,7 @@ export interface Config {
     'hospital-capabilities': HospitalCapabilitiesSelect<false> | HospitalCapabilitiesSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
     'hospital-change-requests': HospitalChangeRequestsSelect<false> | HospitalChangeRequestsSelect<true>;
+    'base-change-requests': BaseChangeRequestsSelect<false> | BaseChangeRequestsSelect<true>;
     bases: BasesSelect<false> | BasesSelect<true>;
     assets: AssetsSelect<false> | AssetsSelect<true>;
     calculators: CalculatorsSelect<false> | CalculatorsSelect<true>;
@@ -1369,6 +1371,82 @@ export interface HospitalChangeRequest {
   createdAt: string;
 }
 /**
+ * User-submitted requests to add or update base information
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "base-change-requests".
+ */
+export interface BaseChangeRequest {
+  id: number;
+  /**
+   * Type of change request
+   */
+  type: 'add' | 'update';
+  /**
+   * Base to update (required for update requests)
+   */
+  targetBase?: (number | null) | Base;
+  /**
+   * The data to add or update
+   */
+  proposedData?: {
+    name?: string | null;
+    address?: {
+      line1?: string | null;
+      line2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      zip?: string | null;
+    };
+    coordinates?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    squadPhone?: string | null;
+    contactInfo?:
+      | {
+          label?: string | null;
+          phoneNumber?: string | null;
+          description?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    doorCodes?:
+      | {
+          label?: string | null;
+          code?: string | null;
+          notes?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    hazards?:
+      | {
+          note?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    notes?: string | null;
+    sourceAttribution?: string | null;
+  };
+  /**
+   * User who submitted this request
+   */
+  submittedBy?: (number | null) | User;
+  /**
+   * When set to approved, changes are automatically applied to the base
+   */
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * Internal notes about this request
+   */
+  adminNotes?: string | null;
+  /**
+   * When the change was automatically applied
+   */
+  appliedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * EMS base locations and station information
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1736,6 +1814,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'hospital-change-requests';
         value: number | HospitalChangeRequest;
+      } | null)
+    | ({
+        relationTo: 'base-change-requests';
+        value: number | BaseChangeRequest;
       } | null)
     | ({
         relationTo: 'bases';
@@ -2332,6 +2414,62 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
               note?: T;
               id?: T;
             };
+        sourceAttribution?: T;
+      };
+  submittedBy?: T;
+  status?: T;
+  adminNotes?: T;
+  appliedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "base-change-requests_select".
+ */
+export interface BaseChangeRequestsSelect<T extends boolean = true> {
+  type?: T;
+  targetBase?: T;
+  proposedData?:
+    | T
+    | {
+        name?: T;
+        address?:
+          | T
+          | {
+              line1?: T;
+              line2?: T;
+              city?: T;
+              state?: T;
+              zip?: T;
+            };
+        coordinates?: T;
+        latitude?: T;
+        longitude?: T;
+        squadPhone?: T;
+        contactInfo?:
+          | T
+          | {
+              label?: T;
+              phoneNumber?: T;
+              description?: T;
+              id?: T;
+            };
+        doorCodes?:
+          | T
+          | {
+              label?: T;
+              code?: T;
+              notes?: T;
+              id?: T;
+            };
+        hazards?:
+          | T
+          | {
+              note?: T;
+              id?: T;
+            };
+        notes?: T;
         sourceAttribution?: T;
       };
   submittedBy?: T;

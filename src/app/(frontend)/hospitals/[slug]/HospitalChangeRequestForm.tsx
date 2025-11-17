@@ -13,6 +13,17 @@ type PhoneEntry = {
   description?: string
 }
 
+type RawPhone = NonNullable<Hospital['otherPhones']>[number]
+
+const normalizePhones = (otherPhones: Hospital['otherPhones']): PhoneEntry[] =>
+  (otherPhones ?? [])
+    .filter((phone): phone is RawPhone => Boolean(phone) && typeof phone === 'object')
+    .map((phone) => ({
+      label: phone.label ?? '',
+      phoneNumber: phone.phoneNumber ?? '',
+      description: phone.description ?? '',
+    }))
+
 const cleanString = (value: string) => value.trim() || undefined
 
 export function HospitalChangeRequestForm({ hospital }: HospitalChangeRequestFormProps) {
@@ -25,19 +36,7 @@ export function HospitalChangeRequestForm({ hospital }: HospitalChangeRequestFor
   const [squadPhone, setSquadPhone] = useState(hospital.squadPhone ?? '')
   const [notes, setNotes] = useState('')
   const [hazard, setHazard] = useState('')
-  const [otherPhones, setOtherPhones] = useState<PhoneEntry[]>(
-    (hospital.otherPhones || [])
-      .map((phone) =>
-        typeof phone === 'object'
-          ? {
-              label: phone.label ?? '',
-              phoneNumber: phone.phoneNumber ?? '',
-              description: phone.description ?? '',
-            }
-          : null,
-      )
-      .filter((entry): entry is PhoneEntry => Boolean(entry)),
-  )
+  const [otherPhones, setOtherPhones] = useState<PhoneEntry[]>(normalizePhones(hospital.otherPhones))
 
   const [submitting, setSubmitting] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
