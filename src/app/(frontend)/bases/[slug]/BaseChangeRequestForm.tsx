@@ -20,13 +20,14 @@ type DoorCodeEntry = {
   notes?: string
 }
 
-type AssetChange = {
+type AssetEntry = {
   assetId: number | null
-  action: 'add' | 'remove'
+  isExisting: boolean  // Track if this was an original asset
 }
 
 type RawContact = NonNullable<Base['contactInfo']>[number]
 type RawDoorCode = NonNullable<Base['doorCodes']>[number]
+type RawAsset = NonNullable<Base['assets']>[number]
 
 const normalizeContacts = (contactInfo: Base['contactInfo']): ContactEntry[] =>
   (contactInfo ?? [])
@@ -46,9 +47,20 @@ const normalizeDoorCodes = (doorCodes: Base['doorCodes']): DoorCodeEntry[] =>
       notes: door.notes ?? '',
     }))
 
+const normalizeAssets = (baseAssets: Base['assets']): AssetEntry[] =>
+  (baseAssets ?? [])
+    .filter((asset): asset is RawAsset => Boolean(asset) && typeof asset === 'object')
+    .map((asset) => {
+      const assetId = typeof asset === 'object' ? asset?.id : asset
+      return {
+        assetId: assetId ?? null,
+        isExisting: true,
+      }
+    })
+
 const cleanString = (value: string) => value.trim() || undefined
 
-export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormProps) {
+export function BaseChangeRequestForm({ base, assets: availableAssets }: BaseChangeRequestFormProps) {
   const [name, setName] = useState(base.name ?? '')
   const [addressLine1, setAddressLine1] = useState(base.address?.line1 ?? '')
   const [addressLine2, setAddressLine2] = useState(base.address?.line2 ?? '')
@@ -59,7 +71,7 @@ export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormPro
   const [squadPhone, setSquadPhone] = useState(base.squadPhone ?? '')
   const [contactInfo, setContactInfo] = useState<ContactEntry[]>(normalizeContacts(base.contactInfo))
   const [doorCodes, setDoorCodes] = useState<DoorCodeEntry[]>(normalizeDoorCodes(base.doorCodes))
-  const [assetChanges, setAssetChanges] = useState<AssetChange[]>([])
+  const [assets, setAssets] = useState<AssetEntry[]>(normalizeAssets(base.assets))
   const [notes, setNotes] = useState('')
   const [hazard, setHazard] = useState('')
 
@@ -91,16 +103,16 @@ export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormPro
     setDoorCodes((rows) => rows.filter((_, idx) => idx !== index))
   }
 
-  const addAssetChange = () => {
-    setAssetChanges((rows) => [...rows, { assetId: null, action: 'add' }])
+  const addAsset = () => {
+    setAssets((rows) => [...rows, { assetId: null, isExisting: false }])
   }
 
-  const updateAssetChange = (index: number, field: keyof AssetChange, value: AssetChange[typeof field]) => {
-    setAssetChanges((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
+  const updateAsset = (index: number, field: keyof AssetEntry, value: AssetEntry[typeof field]) => {
+    setAssets((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
   }
 
-  const removeAssetChange = (index: number) => {
-    setAssetChanges((rows) => rows.filter((_, idx) => idx !== index))
+  const removeAsset = (index: number) => {
+    setAssets((rows) => rows.filter((_, idx) => idx !== index))
   }
 
   const buildPayload = () => {
@@ -134,12 +146,9 @@ export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormPro
       }))
       .filter((door) => door.label || door.code || door.notes)
 
-    const filteredAssetChanges = assetChanges
-      .filter((change) => change.assetId !== null)
-      .map((change) => ({
-        assetId: change.assetId,
-        action: change.action,
-      }))
+    const filteredAssets = assets
+      .filter((asset) => asset.assetId !== null)
+      .map((asset) => asset.assetId)
 
     const proposedData: Record<string, unknown> = {}
 
@@ -154,7 +163,7 @@ export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormPro
     if (squadPhoneValue) proposedData.squadPhone = squadPhoneValue
     if (filteredContacts.length > 0) proposedData.contactInfo = filteredContacts
     if (filteredDoorCodes.length > 0) proposedData.doorCodes = filteredDoorCodes
-    if (filteredAssetChanges.length > 0) proposedData.assetChanges = filteredAssetChanges
+    if (filteredAssets.length > 0) proposedData.assets = filteredAssets
 
     const notesValue = cleanString(notes)
     if (notesValue) proposedData.notes = notesValue
@@ -453,73 +462,70 @@ export function BaseChangeRequestForm({ base, assets }: BaseChangeRequestFormPro
           <div>
             <h3 className="text-base font-semibold">Assets</h3>
             <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-              Add or remove vehicles and units at this base.
+              Remove existing assets or add new ones to this base.
             </p>
           </div>
           <button
             type="button"
-            onClick={addAssetChange}
+            onClick={addAsset}
             className="rounded-full bg-uc-light-subtle px-3 py-1 text-sm font-medium text-uc-text-light-default ring-1 ring-uc-light-border transition hover:bg-uc-light-card dark:bg-neutral-700 dark:text-uc-text-dark-default dark:ring-neutral-600"
           >
-            + Add asset change
+            + Add asset
           </button>
         </div>
 
-        {assetChanges.length === 0 && (
+        {assets.length === 0 && (
           <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-            No asset changes yet.
+            No assets yet.
           </p>
         )}
 
         <div className="space-y-3">
-          {assetChanges.map((change, index) => {
-            const selectedAsset = assets.find((a) => a.id === change.assetId)
+          {assets.map((asset, index) => {
+            const selectedAsset = availableAssets.find((a) => a.id === asset.assetId)
+            const assetName = selectedAsset ? `${selectedAsset.emoji} ${selectedAsset.name}` : 'Unknown'
 
             return (
               <div key={index} className="rounded-xl border border-uc-light-border p-3 dark:border-neutral-700">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">Asset change {index + 1}</p>
+                  <p className="text-sm font-medium">
+                    {asset.isExisting ? assetName : `New Asset ${index + 1}`}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => removeAssetChange(index)}
+                    onClick={() => removeAsset(index)}
                     className="text-xs text-uc-text-light-muted underline decoration-dashed underline-offset-4 transition hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
                   >
                     Remove
                   </button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <label className="flex flex-col gap-2 text-sm font-medium">
-                    Action
-                    <select
-                      value={change.action}
-                      onChange={(e) => updateAssetChange(index, 'action', e.target.value as 'add' | 'remove')}
-                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
-                    >
-                      <option value="add">Add to base</option>
-                      <option value="remove">Remove from base</option>
-                    </select>
-                  </label>
-                  <label className="flex flex-col gap-2 text-sm font-medium">
-                    Asset
-                    <select
-                      value={change.assetId ?? ''}
-                      onChange={(e) => updateAssetChange(index, 'assetId', Number(e.target.value) || null)}
-                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
-                    >
-                      <option value="">Select asset</option>
-                      {assets.map((asset) => (
-                        <option key={asset.id} value={asset.id}>
-                          {asset.emoji} {asset.name} ({asset.type.toUpperCase()})
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
+                <label className="flex flex-col gap-2 text-sm font-medium">
+                  Asset
+                  <select
+                    value={asset.assetId ?? ''}
+                    onChange={(e) => updateAsset(index, 'assetId', Number(e.target.value) || null)}
+                    disabled={asset.isExisting}
+                    className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
+                  >
+                    <option value="">Select asset</option>
+                    {availableAssets.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.emoji} {a.name} ({a.type.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 {selectedAsset && (
                   <div className="mt-2 rounded-lg bg-uc-light-subtle p-2 text-xs text-uc-text-light-muted dark:bg-neutral-700/50 dark:text-uc-text-dark-muted">
                     {selectedAsset.unitId && <span>Unit: {selectedAsset.unitId}</span>}
                     {selectedAsset.licensePlate && <span className="ml-2">• Plate: {selectedAsset.licensePlate}</span>}
+                    {selectedAsset.type && <span className="ml-2">• Type: {selectedAsset.type.toUpperCase()}</span>}
                   </div>
+                )}
+                {asset.isExisting && (
+                  <p className="mt-2 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                    Existing asset - click remove to unassign from base
+                  </p>
                 )}
               </div>
             )

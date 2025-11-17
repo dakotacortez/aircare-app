@@ -15,6 +15,7 @@ import {
   type TrafficStatus,
 } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
+import { formatPhone } from '@/utilities/formatPhone'
 import { capabilityColors } from '../capabilityColors'
 
 interface HospitalDetailCardProps {
@@ -69,17 +70,6 @@ function slugify(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '')
-}
-
-function formatPhone(phone: string) {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-  }
-  if (digits.length === 7) {
-    return `${digits.slice(0, 3)}-${digits.slice(3)}`
-  }
-  return phone
 }
 
 // UC Medical Center coordinates as fallback
@@ -494,7 +484,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
                 <span className="text-sm">Squad Phone</span>
-                <span className="text-sm">{hospital.squadPhone ?? 'Not set'}</span>
+                <span className="text-sm">{formatPhone(hospital.squadPhone) || 'Not set'}</span>
               </div>
             </motion.button>
               <motion.button

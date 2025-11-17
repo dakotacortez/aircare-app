@@ -96,8 +96,6 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   }, [])
 
   useEffect(() => {
-    if (!isMobile) return
-
     const fetchLocation = async () => {
       const location = await getDeviceLocation()
       if (location) {
@@ -109,7 +107,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
     }
 
     fetchLocation()
-  }, [isMobile])
+  }, [])
 
   const capabilityNameById = useMemo(() => {
     const map = new Map<number, string>()

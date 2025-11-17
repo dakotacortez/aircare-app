@@ -37,8 +37,6 @@ export function BasesClient({ bases }: BasesClientProps) {
   }, [])
 
   useEffect(() => {
-    if (!isMobile) return
-
     const fetchLocation = async () => {
       const location = await getDeviceLocation()
       if (location) {
@@ -50,7 +48,7 @@ export function BasesClient({ bases }: BasesClientProps) {
     }
 
     fetchLocation()
-  }, [isMobile])
+  }, [])
 
   const basesWithDistance = useMemo<BaseWithDistance[]>(() => {
     return bases.map((base) => {
