@@ -306,11 +306,11 @@ export const Bases: CollectionConfig = {
           }
 
           // If no assets are assigned elsewhere, show all
-          return {}
+          return true
         } catch (error) {
           console.error('Error filtering assets:', error)
           // On error, show all assets
-          return {}
+          return true
         }
       },
     },
