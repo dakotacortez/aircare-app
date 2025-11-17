@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Base, HospitalNetwork, Asset, Media } from '@/payload-types'
 import { DoorCodeList } from '@/components/door-code-list'
@@ -314,15 +315,15 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
               </span>
               <span>{copyState === 'copied' ? 'Copied' : copyState === 'error' ? 'Try again' : 'Share info'}</span>
             </button>
-            <a
-              href={`mailto:?subject=Base info update: ${encodeURIComponent(base.name ?? '')}`}
+            <Link
+              href={`/bases/${base.slug ?? base.id}/suggest-update`}
               className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-uc-text-light-muted ring-1 ring-uc-light-border transition hover:bg-uc-light-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-uc-red-200 dark:bg-neutral-700/80 dark:text-uc-text-dark-muted dark:ring-neutral-600"
             >
               <span role="img" aria-hidden="true">
                 📝
               </span>
               <span>Suggest update</span>
-            </a>
+            </Link>
           </div>
         </div>
 
