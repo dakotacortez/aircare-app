@@ -122,8 +122,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   return (
     <>
-        <header className="safe-area-top border-b dark:border-neutral-700 bg-white dark:bg-neutral-800 sticky top-0 z-50 px-4">
-          <div className="flex min-h-16 items-center gap-3">
+        <header className="safe-area-top border-b dark:border-neutral-700 bg-white dark:bg-neutral-800 sticky top-0 z-50 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto flex min-h-16 items-center gap-3">
           {/* Logo - opens nav menu on mobile, links to home on desktop */}
           <button
             onClick={() => setMobileOpen(o => !o)}
