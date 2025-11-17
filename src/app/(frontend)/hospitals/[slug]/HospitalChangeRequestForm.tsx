@@ -24,11 +24,12 @@ type DoorCodeEntry = {
 type CapabilityEntry = {
   capability: number | null
   level: string
-  action: 'add' | 'change' | 'remove'
+  isExisting: boolean  // Track if this was an original capability
 }
 
 type RawPhone = NonNullable<Hospital['otherPhones']>[number]
 type RawDoorCode = NonNullable<Hospital['doorCodes']>[number]
+type RawCapability = NonNullable<Hospital['capabilities']>[number]
 
 const normalizePhones = (otherPhones: Hospital['otherPhones']): PhoneEntry[] =>
   (otherPhones ?? [])
@@ -49,9 +50,21 @@ const normalizeDoorCodes = (doorCodes: Hospital['doorCodes']): DoorCodeEntry[] =
       isPrimary: door.isPrimary ?? false,
     }))
 
+const normalizeCapabilities = (hospitalCapabilities: Hospital['capabilities']): CapabilityEntry[] =>
+  (hospitalCapabilities ?? [])
+    .filter((cap): cap is RawCapability => Boolean(cap) && typeof cap === 'object')
+    .map((cap) => {
+      const capabilityId = typeof cap.capability === 'object' ? cap.capability?.id : cap.capability
+      return {
+        capability: capabilityId ?? null,
+        level: cap.level ?? '',
+        isExisting: true,
+      }
+    })
+
 const cleanString = (value: string) => value.trim() || undefined
 
-export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalChangeRequestFormProps) {
+export function HospitalChangeRequestForm({ hospital, capabilities: availableCapabilities }: HospitalChangeRequestFormProps) {
   const [name, setName] = useState(hospital.name ?? '')
   const [addressLine1, setAddressLine1] = useState(hospital.address?.line1 ?? '')
   const [addressLine2, setAddressLine2] = useState(hospital.address?.line2 ?? '')
@@ -63,7 +76,7 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
   const [hazard, setHazard] = useState('')
   const [otherPhones, setOtherPhones] = useState<PhoneEntry[]>(normalizePhones(hospital.otherPhones))
   const [doorCodes, setDoorCodes] = useState<DoorCodeEntry[]>(normalizeDoorCodes(hospital.doorCodes))
-  const [capabilityChanges, setCapabilityChanges] = useState<CapabilityEntry[]>([])
+  const [capabilities, setCapabilities] = useState<CapabilityEntry[]>(normalizeCapabilities(hospital.capabilities))
 
   const [submitting, setSubmitting] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -93,16 +106,16 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
     setDoorCodes((rows) => rows.filter((_, idx) => idx !== index))
   }
 
-  const addCapabilityChange = () => {
-    setCapabilityChanges((rows) => [...rows, { capability: null, level: '', action: 'add' }])
+  const addCapability = () => {
+    setCapabilities((rows) => [...rows, { capability: null, level: '', isExisting: false }])
   }
 
-  const updateCapabilityChange = (index: number, field: keyof CapabilityEntry, value: CapabilityEntry[typeof field]) => {
-    setCapabilityChanges((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
+  const updateCapability = (index: number, field: keyof CapabilityEntry, value: CapabilityEntry[typeof field]) => {
+    setCapabilities((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
   }
 
-  const removeCapabilityChange = (index: number) => {
-    setCapabilityChanges((rows) => rows.filter((_, idx) => idx !== index))
+  const removeCapability = (index: number) => {
+    setCapabilities((rows) => rows.filter((_, idx) => idx !== index))
   }
 
   const buildPayload = () => {
@@ -137,12 +150,11 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
       }))
       .filter((door) => door.label || door.code || door.notes)
 
-    const filteredCapabilities = capabilityChanges
+    const filteredCapabilities = capabilities
       .filter((cap) => cap.capability !== null)
       .map((cap) => ({
         capability: cap.capability,
         level: cleanString(cap.level),
-        action: cap.action,
       }))
 
     const proposedData: Record<string, unknown> = {}
@@ -462,63 +474,55 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
           <div>
             <h3 className="text-base font-semibold">Clinical capabilities</h3>
             <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-              Add, change, or remove capability certifications.
+              Update levels or remove existing capabilities, or add new ones.
             </p>
           </div>
           <button
             type="button"
-            onClick={addCapabilityChange}
+            onClick={addCapability}
             className="rounded-full bg-uc-light-subtle px-3 py-1 text-sm font-medium text-uc-text-light-default ring-1 ring-uc-light-border transition hover:bg-uc-light-card dark:bg-neutral-700 dark:text-uc-text-dark-default dark:ring-neutral-600"
           >
             + Add capability
           </button>
         </div>
 
-        {capabilityChanges.length === 0 && (
+        {capabilities.length === 0 && (
           <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-            No capability changes yet.
+            No capabilities yet.
           </p>
         )}
 
         <div className="space-y-3">
-          {capabilityChanges.map((cap, index) => {
-            const selectedCapability = capabilities.find((c) => c.id === cap.capability)
+          {capabilities.map((cap, index) => {
+            const selectedCapability = availableCapabilities.find((c) => c.id === cap.capability)
             const levelOptions = selectedCapability?.levels ?? []
+            const capabilityName = selectedCapability?.name || 'Unknown'
 
             return (
               <div key={index} className="rounded-xl border border-uc-light-border p-3 dark:border-neutral-700">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">Capability {index + 1}</p>
+                  <p className="text-sm font-medium">
+                    {cap.isExisting ? capabilityName : `New Capability ${index + 1}`}
+                  </p>
                   <button
                     type="button"
-                    onClick={() => removeCapabilityChange(index)}
+                    onClick={() => removeCapability(index)}
                     className="text-xs text-uc-text-light-muted underline decoration-dashed underline-offset-4 transition hover:text-uc-text-light-default dark:text-uc-text-dark-muted dark:hover:text-uc-text-dark-default"
                   >
                     Remove
                   </button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-3">
-                  <label className="flex flex-col gap-2 text-sm font-medium">
-                    Action
-                    <select
-                      value={cap.action}
-                      onChange={(e) => updateCapabilityChange(index, 'action', e.target.value as 'add' | 'change' | 'remove')}
-                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
-                    >
-                      <option value="add">Add</option>
-                      <option value="change">Change</option>
-                      <option value="remove">Remove</option>
-                    </select>
-                  </label>
+                <div className="grid gap-3 md:grid-cols-2">
                   <label className="flex flex-col gap-2 text-sm font-medium">
                     Capability type
                     <select
                       value={cap.capability ?? ''}
-                      onChange={(e) => updateCapabilityChange(index, 'capability', Number(e.target.value) || null)}
-                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
+                      onChange={(e) => updateCapability(index, 'capability', Number(e.target.value) || null)}
+                      disabled={cap.isExisting}
+                      className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
                     >
                       <option value="">Select capability</option>
-                      {capabilities.map((capability) => (
+                      {availableCapabilities.map((capability) => (
                         <option key={capability.id} value={capability.id}>
                           {capability.name}
                         </option>
@@ -529,7 +533,7 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
                     Level
                     <select
                       value={cap.level}
-                      onChange={(e) => updateCapabilityChange(index, 'level', e.target.value)}
+                      onChange={(e) => updateCapability(index, 'level', e.target.value)}
                       disabled={!selectedCapability}
                       className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
                     >
@@ -542,6 +546,11 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
                     </select>
                   </label>
                 </div>
+                {cap.isExisting && (
+                  <p className="mt-2 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
+                    Existing capability - change level or remove
+                  </p>
+                )}
               </div>
             )
           })}
