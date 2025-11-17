@@ -15,6 +15,7 @@ import {
   type TrafficStatus,
 } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
+import { formatPhone } from '@/utilities/formatPhone'
 
 interface BaseDetailCardProps {
   base: Base
@@ -63,17 +64,6 @@ const assetColorsByType: Record<string, { pill: string; text: string; tooltip: s
     text: 'text-slate-800 dark:text-slate-200',
     tooltip: 'bg-slate-900 text-slate-100',
   },
-}
-
-function formatPhone(phone: string) {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-  }
-  if (digits.length === 7) {
-    return `${digits.slice(0, 3)}-${digits.slice(3)}`
-  }
-  return phone
 }
 
 // UC Medical Center coordinates as fallback
@@ -454,7 +444,7 @@ export function BaseDetailCard({ base, network, networkLogo }: BaseDetailCardPro
               <span aria-hidden="true">📞</span>
               <div className="flex flex-col leading-tight">
                 <span className="text-sm">Base Phone</span>
-                <span className="text-sm">{base.squadPhone ?? 'Not set'}</span>
+                <span className="text-sm">{formatPhone(base.squadPhone) || 'Not set'}</span>
               </div>
             </button>
             <button
