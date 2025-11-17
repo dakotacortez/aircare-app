@@ -1,8 +1,12 @@
--- Emergency fix for missing columns in payload_locked_documents_rels table
--- This adds the missing columns that are causing the application to crash
+-- Emergency fix for missing database columns
+-- This adds ALL missing columns that are causing the application to crash
 -- Run this with: psql $DATABASE_URL -f fix_locked_documents_rels.sql
 
 BEGIN;
+
+-- ========================================
+-- PART 1: payload_locked_documents_rels
+-- ========================================
 
 -- Add missing collection ID columns to payload_locked_documents_rels
 ALTER TABLE "payload_locked_documents_rels"
@@ -109,9 +113,142 @@ BEGIN
   END IF;
 END $$;
 
+-- ========================================
+-- PART 2: Change Request Tables
+-- ========================================
+
+-- Add admin_notes column to base_change_requests
+ALTER TABLE "base_change_requests"
+  ADD COLUMN IF NOT EXISTS "admin_notes" text;
+
+-- Ensure door codes table has all columns
+ALTER TABLE "base_change_requests_proposed_data_door_codes"
+  ADD COLUMN IF NOT EXISTS "label" varchar,
+  ADD COLUMN IF NOT EXISTS "code" varchar,
+  ADD COLUMN IF NOT EXISTS "notes" text;
+
+-- Add admin_notes column to hospital_change_requests
+ALTER TABLE "hospital_change_requests"
+  ADD COLUMN IF NOT EXISTS "admin_notes" text;
+
+-- Add missing columns to hospital door codes
+ALTER TABLE "hospital_change_requests_proposed_data_door_codes"
+  ADD COLUMN IF NOT EXISTS "label" varchar,
+  ADD COLUMN IF NOT EXISTS "code" varchar,
+  ADD COLUMN IF NOT EXISTS "notes" text,
+  ADD COLUMN IF NOT EXISTS "is_primary" boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS "color_theme" varchar;
+
+-- Create hospital_change_requests_proposed_data_campus_maps table
+CREATE TABLE IF NOT EXISTS "hospital_change_requests_proposed_data_campus_maps" (
+  "_order" integer NOT NULL,
+  "_parent_id" integer NOT NULL,
+  "id" varchar PRIMARY KEY NOT NULL,
+  "label" varchar,
+  "slug" varchar,
+  "map_type" varchar,
+  "description" text,
+  "map_media_id" integer,
+  "external_url" varchar
+);
+
+-- Add any missing columns to campus maps
+ALTER TABLE "hospital_change_requests_proposed_data_campus_maps"
+  ADD COLUMN IF NOT EXISTS "label" varchar,
+  ADD COLUMN IF NOT EXISTS "slug" varchar,
+  ADD COLUMN IF NOT EXISTS "map_type" varchar,
+  ADD COLUMN IF NOT EXISTS "description" text,
+  ADD COLUMN IF NOT EXISTS "map_media_id" integer,
+  ADD COLUMN IF NOT EXISTS "external_url" varchar;
+
+-- Create indexes for campus maps
+CREATE INDEX IF NOT EXISTS "hospital_change_requests_proposed_data_campus_maps_order_idx"
+  ON "hospital_change_requests_proposed_data_campus_maps" USING btree ("_order");
+CREATE INDEX IF NOT EXISTS "hospital_change_requests_proposed_data_campus_maps_parent_idx"
+  ON "hospital_change_requests_proposed_data_campus_maps" USING btree ("_parent_id");
+CREATE INDEX IF NOT EXISTS "hospital_change_requests_proposed_data_campus_maps_map_media_idx"
+  ON "hospital_change_requests_proposed_data_campus_maps" USING btree ("map_media_id");
+
+-- Add foreign keys for campus maps
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'hospital_change_requests_proposed_data_campus_maps_parent_fk'
+  ) THEN
+    ALTER TABLE "hospital_change_requests_proposed_data_campus_maps"
+      ADD CONSTRAINT "hospital_change_requests_proposed_data_campus_maps_parent_fk"
+        FOREIGN KEY ("_parent_id") REFERENCES "hospital_change_requests"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'hospital_change_requests_proposed_data_campus_maps_map_media_fk'
+  ) THEN
+    ALTER TABLE "hospital_change_requests_proposed_data_campus_maps"
+      ADD CONSTRAINT "hospital_change_requests_proposed_data_campus_maps_map_media_fk"
+        FOREIGN KEY ("map_media_id") REFERENCES "media"("id")
+        ON DELETE set null ON UPDATE no action;
+  END IF;
+END $$;
+
+-- Create hospital_change_requests_proposed_data_capabilities table
+CREATE TABLE IF NOT EXISTS "hospital_change_requests_proposed_data_capabilities" (
+  "_order" integer NOT NULL,
+  "_parent_id" integer NOT NULL,
+  "id" varchar PRIMARY KEY NOT NULL,
+  "capability_id" integer,
+  "level" varchar
+);
+
+-- Add any missing columns to capabilities
+ALTER TABLE "hospital_change_requests_proposed_data_capabilities"
+  ADD COLUMN IF NOT EXISTS "capability_id" integer,
+  ADD COLUMN IF NOT EXISTS "level" varchar;
+
+-- Create indexes for capabilities
+CREATE INDEX IF NOT EXISTS "hospital_change_requests_proposed_data_capabilities_order_idx"
+  ON "hospital_change_requests_proposed_data_capabilities" USING btree ("_order");
+CREATE INDEX IF NOT EXISTS "hospital_change_requests_proposed_data_capabilities_parent_idx"
+  ON "hospital_change_requests_proposed_data_capabilities" USING btree ("_parent_id");
+CREATE INDEX IF NOT EXISTS "hospital_change_requests_proposed_data_capabilities_capability_idx"
+  ON "hospital_change_requests_proposed_data_capabilities" USING btree ("capability_id");
+
+-- Add foreign keys for capabilities
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'hospital_change_requests_proposed_data_capabilities_parent_fk'
+  ) THEN
+    ALTER TABLE "hospital_change_requests_proposed_data_capabilities"
+      ADD CONSTRAINT "hospital_change_requests_proposed_data_capabilities_parent_fk"
+        FOREIGN KEY ("_parent_id") REFERENCES "hospital_change_requests"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'hospital_change_requests_proposed_data_capabilities_capability_fk'
+  ) THEN
+    ALTER TABLE "hospital_change_requests_proposed_data_capabilities"
+      ADD CONSTRAINT "hospital_change_requests_proposed_data_capabilities_capability_fk"
+        FOREIGN KEY ("capability_id") REFERENCES "hospital_capabilities"("id")
+        ON DELETE set null ON UPDATE no action;
+  END IF;
+END $$;
+
+-- Add helipad group columns to hospital_change_requests if missing
+ALTER TABLE "hospital_change_requests"
+  ADD COLUMN IF NOT EXISTS "proposed_data_helipad_identifier" varchar,
+  ADD COLUMN IF NOT EXISTS "proposed_data_helipad_night_operations" boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS "proposed_data_helipad_preferred_approach" varchar,
+  ADD COLUMN IF NOT EXISTS "proposed_data_helipad_notes" text;
+
 COMMIT;
 
--- Verify the changes
+-- ========================================
+-- Verification
+-- ========================================
+
+SELECT 'Fixed payload_locked_documents_rels columns:' as status;
 SELECT column_name, data_type
 FROM information_schema.columns
 WHERE table_name = 'payload_locked_documents_rels'
@@ -125,4 +262,17 @@ WHERE table_name = 'payload_locked_documents_rels'
     'assets_id',
     'calculators_id'
   )
+ORDER BY column_name;
+
+SELECT 'Fixed base_change_requests columns:' as status;
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'base_change_requests'
+  AND column_name = 'admin_notes';
+
+SELECT 'Fixed hospital_change_requests columns:' as status;
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'hospital_change_requests'
+  AND column_name LIKE '%admin_notes%' OR column_name LIKE '%helipad%'
 ORDER BY column_name;
