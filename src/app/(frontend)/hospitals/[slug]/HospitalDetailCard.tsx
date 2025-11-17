@@ -6,7 +6,14 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { DoorCodeList } from '@/components/door-code-list'
-import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
+import {
+  calculateDistanceMiles,
+  estimateEtaMinutes,
+  fetchRealTimeEta,
+  getTrafficColor,
+  getTrafficDescription,
+  type TrafficStatus,
+} from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
 import { capabilityColors } from '../capabilityColors'
 
@@ -87,6 +94,8 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
     distanceMiles?: number
     errorMessage?: string
     usingUCMC?: boolean
+    trafficStatus?: TrafficStatus
+    source?: 'device_live_traffic' | 'ucmc_baseline'
   }>({ status: 'idle' })
 
   const addressLines = useMemo(() => {
@@ -246,36 +255,55 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
     // Try to get device location
     const location = await getDeviceLocation()
 
-    if (location) {
-      // Successfully got user's location
-      const distance = calculateDistanceMiles(
-        location.lat,
-        location.lon,
-        hospital.latitude as number,
-        hospital.longitude as number,
-      )
-      const eta = estimateEtaMinutes(distance)
+    // Call the real-time ETA API with GPS coordinates or fallback to UCMC
+    const etaData = await fetchRealTimeEta(
+      hospital.latitude as number,
+      hospital.longitude as number,
+      location?.lat,
+      location?.lon,
+    )
+
+    if (etaData) {
+      // Successfully got ETA from Google Maps API
       setEtaState({
-        status: 'ready',
-        etaMinutes: eta,
-        distanceMiles: Number.isFinite(distance) ? distance : undefined,
-        usingUCMC: false,
+        status: etaData.source === 'device_live_traffic' ? 'ready' : 'ucmc-fallback',
+        etaMinutes: etaData.etaMinutes,
+        distanceMiles: etaData.distanceMiles,
+        usingUCMC: etaData.source === 'ucmc_baseline',
+        trafficStatus: etaData.trafficStatus,
+        source: etaData.source,
       })
     } else {
-      // Fallback to UCMC coordinates
-      const distance = calculateDistanceMiles(
-        UCMC_COORDS.lat,
-        UCMC_COORDS.lon,
-        hospital.latitude as number,
-        hospital.longitude as number,
-      )
-      const eta = estimateEtaMinutes(distance)
-      setEtaState({
-        status: 'ucmc-fallback',
-        etaMinutes: eta,
-        distanceMiles: Number.isFinite(distance) ? distance : undefined,
-        usingUCMC: true,
-      })
+      // Fallback to old calculation method if API fails
+      if (location) {
+        const distance = calculateDistanceMiles(
+          location.lat,
+          location.lon,
+          hospital.latitude as number,
+          hospital.longitude as number,
+        )
+        const eta = estimateEtaMinutes(distance)
+        setEtaState({
+          status: 'ready',
+          etaMinutes: eta,
+          distanceMiles: Number.isFinite(distance) ? distance : undefined,
+          usingUCMC: false,
+        })
+      } else {
+        const distance = calculateDistanceMiles(
+          UCMC_COORDS.lat,
+          UCMC_COORDS.lon,
+          hospital.latitude as number,
+          hospital.longitude as number,
+        )
+        const eta = estimateEtaMinutes(distance)
+        setEtaState({
+          status: 'ucmc-fallback',
+          etaMinutes: eta,
+          distanceMiles: Number.isFinite(distance) ? distance : undefined,
+          usingUCMC: true,
+        })
+      }
     }
   }, [hospital.latitude, hospital.longitude])
 
@@ -413,7 +441,13 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
             ) : etaState.status === 'ready' || etaState.status === 'ucmc-fallback' ? (
               <>
                   <p className="text-sm text-uc-text-light-default dark:text-uc-text-dark-default">
-                    <span className="text-lg font-semibold text-uc-text-light-default dark:text-uc-text-dark-default">
+                    <span
+                      className={`text-lg font-semibold ${
+                        etaState.trafficStatus
+                          ? getTrafficColor(etaState.trafficStatus)
+                          : 'text-uc-text-light-default dark:text-uc-text-dark-default'
+                      }`}
+                    >
                     {etaState.etaMinutes} min
                   </span>
                   {etaState.distanceMiles && (
@@ -426,7 +460,9 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                   )}
                 </p>
                   <p className="mt-1 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                    {etaState.usingUCMC 
+                    {etaState.source && etaState.trafficStatus
+                      ? getTrafficDescription(etaState.trafficStatus, etaState.source)
+                      : etaState.usingUCMC
                       ? 'Based on location to UC Medical Center'
                       : 'Based on your current GPS location'}
                   </p>
@@ -435,7 +471,7 @@ export function HospitalDetailCard({ hospital, network, networkLogo }: HospitalD
                 <p className="text-xs text-amber-600">{etaState.errorMessage}</p>
             ) : (
                 <p className="text-sm text-uc-text-light-muted dark:text-uc-text-dark-muted">
-                  Tap “Update from my location” to calculate ETA.
+                  Tap "Update from my location" to calculate ETA.
                 </p>
             )}
           </div>
