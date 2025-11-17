@@ -502,7 +502,7 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
                     Action
                     <select
                       value={cap.action}
-                      onChange={(e) => updateCapabilityChange(index, 'action', e.target.value)}
+                      onChange={(e) => updateCapabilityChange(index, 'action', e.target.value as 'add' | 'change' | 'remove')}
                       className="rounded-xl border border-uc-light-border bg-white px-3 py-2 text-sm text-uc-text-light-default shadow-sm focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-uc-text-dark-default dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
                     >
                       <option value="add">Add</option>
