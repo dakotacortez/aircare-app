@@ -17,6 +17,8 @@ import * as migration_20251117_020000_add_coordinates_field from './20251117_020
 import * as migration_20251117_020100_add_slug_fields from './20251117_020100_add_slug_fields';
 import * as migration_20251117_020200_expand_bases_and_assets from './20251117_020200_expand_bases_and_assets';
 import * as migration_20251117_030300_add_door_code_notes from './20251117_030300_add_door_code_notes';
+import * as migration_20251117_040000_ensure_base_schema from './20251117_040000_ensure_base_schema';
+import * as migration_20251117_040100_ensure_hospital_schema from './20251117_040100_ensure_hospital_schema';
 
 export const migrations = [
   {
@@ -112,5 +114,15 @@ export const migrations = [
       up: migration_20251117_030300_add_door_code_notes.up,
       down: migration_20251117_030300_add_door_code_notes.down,
       name: '20251117_030300_add_door_code_notes'
+    },
+    {
+      up: migration_20251117_040000_ensure_base_schema.up,
+      down: migration_20251117_040000_ensure_base_schema.down,
+      name: '20251117_040000_ensure_base_schema'
+    },
+    {
+      up: migration_20251117_040100_ensure_hospital_schema.up,
+      down: migration_20251117_040100_ensure_hospital_schema.down,
+      name: '20251117_040100_ensure_hospital_schema'
     },
   ];
