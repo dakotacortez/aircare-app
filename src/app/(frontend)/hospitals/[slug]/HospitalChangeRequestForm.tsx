@@ -97,7 +97,7 @@ export function HospitalChangeRequestForm({ hospital, capabilities }: HospitalCh
     setCapabilityChanges((rows) => [...rows, { capability: null, level: '', action: 'add' }])
   }
 
-  const updateCapabilityChange = (index: number, field: keyof CapabilityEntry, value: any) => {
+  const updateCapabilityChange = (index: number, field: keyof CapabilityEntry, value: CapabilityEntry[typeof field]) => {
     setCapabilityChanges((rows) => rows.map((row, idx) => (idx === index ? { ...row, [field]: value } : row)))
   }
 

@@ -13,7 +13,18 @@ type LevelOption = {
   description?: string
 }
 
-const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
+interface CapabilityLevelSelectProps {
+  path: string
+  field?: {
+    label?: string
+    required?: boolean
+    admin?: {
+      description?: string
+    }
+  }
+}
+
+const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, field }) => {
   const { value: selectedLevel, setValue: setSelectedLevel } = useField<string>({ path })
   const capabilityPath = useMemo(() => path.replace(/\.level$/, '.capability'), [path])
   const { value: capabilityValue } = useField<unknown>({ path: capabilityPath })
@@ -34,19 +45,17 @@ const CapabilityLevelSelect: React.FC<any> = ({ path, field }) => {
     if (!capabilityValue) return null
 
     if (typeof capabilityValue === 'object') {
-      if (
-        'value' in (capabilityValue as Record<string, unknown>) &&
-        (capabilityValue as any).value
-      ) {
-        const nestedValue = (capabilityValue as any).value
-        if (typeof nestedValue === 'object' && nestedValue?.id) {
-          return nestedValue.id
+      const objValue = capabilityValue as Record<string, unknown>
+      if ('value' in objValue && objValue.value) {
+        const nestedValue = objValue.value
+        if (typeof nestedValue === 'object' && nestedValue && 'id' in nestedValue) {
+          return (nestedValue as Record<string, unknown>).id
         }
         return nestedValue
       }
 
-      if ('id' in (capabilityValue as Record<string, unknown>)) {
-        return (capabilityValue as any).id
+      if ('id' in objValue) {
+        return objValue.id
       }
     }
 

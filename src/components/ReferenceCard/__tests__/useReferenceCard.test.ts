@@ -3,6 +3,23 @@
  * Run in browser console or use with testing framework
  */
 
+import type { ReferenceCard } from '@/types/referenceCard'
+
+declare global {
+  interface Window {
+    referenceCardTests?: {
+      createCard: typeof testCreateCard
+      addCalculation: typeof testAddCalculation
+      addNote: typeof testAddNote
+      checkExpiration: typeof testExpiration
+      forceExpiration: typeof testForceExpiration
+      clearAll: typeof testClearAll
+      viewAll: typeof testViewAll
+      runAll: typeof runAllTests
+    }
+  }
+}
+
 // Test 1: Create a card
 export function testCreateCard() {
   const cards = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
@@ -24,8 +41,8 @@ export function testCreateCard() {
 
 // Test 2: Add calculation entry
 export function testAddCalculation(cardId: string) {
-  const cards = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
-  const card = cards.find((c: any) => c.id === cardId)
+  const cards: ReferenceCard[] = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
+  const card = cards.find((c: ReferenceCard) => c.id === cardId)
   
   if (!card) {
     console.error('❌ Card not found')
@@ -50,8 +67,8 @@ export function testAddCalculation(cardId: string) {
 
 // Test 3: Add note entry
 export function testAddNote(cardId: string) {
-  const cards = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
-  const card = cards.find((c: any) => c.id === cardId)
+  const cards: ReferenceCard[] = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
+  const card = cards.find((c: ReferenceCard) => c.id === cardId)
   
   if (!card) {
     console.error('❌ Card not found')
@@ -75,11 +92,11 @@ export function testAddNote(cardId: string) {
 
 // Test 4: Check expiration
 export function testExpiration() {
-  const cards = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
+  const cards: ReferenceCard[] = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
   const now = Date.now()
-  
-  const expired = cards.filter((card: any) => card.expiresAt <= now)
-  const active = cards.filter((card: any) => card.expiresAt > now)
+
+  const expired = cards.filter((card: ReferenceCard) => card.expiresAt <= now)
+  const active = cards.filter((card: ReferenceCard) => card.expiresAt > now)
   
   console.log(`📊 Total cards: ${cards.length}`)
   console.log(`✅ Active: ${active.length}`)
@@ -90,8 +107,8 @@ export function testExpiration() {
 
 // Test 5: Force expiration (for testing)
 export function testForceExpiration(cardId: string) {
-  const cards = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
-  const card = cards.find((c: any) => c.id === cardId)
+  const cards: ReferenceCard[] = JSON.parse(localStorage.getItem('acmc-reference-cards') || '[]')
+  const card = cards.find((c: ReferenceCard) => c.id === cardId)
   
   if (!card) {
     console.error('❌ Card not found')
@@ -147,7 +164,7 @@ export function runAllTests() {
 
 // Export for browser console testing
 if (typeof window !== 'undefined') {
-  (window as any).referenceCardTests = {
+  window.referenceCardTests = {
     createCard: testCreateCard,
     addCalculation: testAddCalculation,
     addNote: testAddNote,

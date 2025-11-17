@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Hospital, HospitalNetwork, HospitalCapability, Media } from '@/payload-types'
 import { calculateDistanceMiles, estimateEtaMinutes } from '@/utilities/distance'
 import { getDeviceLocation } from '@/utilities/geolocation'
-import { capabilityColors } from './capabilityColors'
+import { capabilityColors, type CapabilityColorToken } from './capabilityColors'
 
 type SortOption = 'distanceAsc' | 'distanceDesc' | 'alpha'
 
@@ -25,17 +26,6 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'distanceDesc', label: 'Farthest first' },
   { value: 'alpha', label: 'A–Z' },
 ]
-
-const formatPhone = (phone: string) => {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-  }
-  if (digits.length === 7) {
-    return `${digits.slice(0, 3)}-${digits.slice(3)}`
-  }
-  return phone
-}
 
 const buildAddressSummary = (hospital: Hospital) => {
   const city = hospital.address?.city?.trim()
@@ -96,7 +86,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
-  const [selectedCapability, setSelectedCapability] = useState<{ name: string; level: string | null; description: string | null; color: any } | null>(null)
+  const [selectedCapability, setSelectedCapability] = useState<{ name: string; level: string | null; description: string | null; color: CapabilityColorToken } | null>(null)
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
@@ -290,9 +280,11 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
                         {networkLogo?.url ? (
-                          <img
+                          <Image
                             src={networkLogo.url}
                             alt={networkLogo.alt || `${network?.name ?? hospital.name} logo`}
+                            width={40}
+                            height={40}
                             className="h-10 w-10 rounded-full bg-white p-0.5 ring-1 ring-uc-light-border object-cover dark:bg-neutral-800 dark:ring-neutral-700"
                           />
                         ) : (

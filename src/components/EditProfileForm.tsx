@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import type { User } from '@/payload-types'
+import type { User, Media } from '@/payload-types'
 import type { ServiceLineType } from '@/providers/ServiceLine'
 import { useServiceLine } from '@/providers/ServiceLine'
 import { useRouter } from 'next/navigation'
@@ -93,7 +93,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
       }
 
       // Build update payload
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         name,
         email,
         defaultServiceLine,
@@ -180,7 +180,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
 
   const profileImageUrl =
     typeof initialUser.profileImage === 'object' && initialUser.profileImage !== null
-      ? (initialUser.profileImage as any).url
+      ? (initialUser.profileImage as Media).url
       : null
 
   return (
