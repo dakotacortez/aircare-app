@@ -467,6 +467,7 @@ export const Hospitals: CollectionConfig = {
           admin: {
             description: 'Select a capability type (e.g., Trauma, PCI, Stroke)',
             allowCreate: false,
+            allowEdit: false,
           },
         },
         {
