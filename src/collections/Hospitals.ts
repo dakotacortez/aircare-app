@@ -467,6 +467,7 @@ export const Hospitals: CollectionConfig = {
           admin: {
             description: 'Select a capability type (e.g., Trauma, PCI, Stroke)',
             allowCreate: false,
+            allowEdit: false,
           },
         },
         {
@@ -477,7 +478,7 @@ export const Hospitals: CollectionConfig = {
           admin: {
             description: 'Select the certification level from the dropdown. Options are loaded from the selected Capability Type.',
             components: {
-              Field: '@/components/fields/CapabilityLevelSelect',
+              Field: '../components/fields/CapabilityLevelSelect',
             },
           },
           validate: validateCapabilityLevel,
