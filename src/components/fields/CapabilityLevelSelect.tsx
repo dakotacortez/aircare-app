@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { useField, Select, FieldLabel } from '@payloadcms/ui'
+import { useField, FieldLabel } from '@payloadcms/ui'
 
 /**
  * Custom field component for selecting hospital capability levels
@@ -143,24 +143,67 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
   return (
     <div className="field-type text">
       <FieldLabel label={field?.label} required={field?.required} />
-      <Select
-        value={selectedOption ?? undefined}
-        onChange={(option) => {
-          if (option && !Array.isArray(option) && 'value' in option) {
-            setSelectedLevel(String(option.value) || '')
-          } else {
-            setSelectedLevel('')
-          }
-        }}
-        options={levels}
-        disabled={loading || !capabilityId}
-      />
+      <div style={{ position: 'relative' }}>
+        <select
+          value={selectedLevel || ''}
+          onChange={(e) => setSelectedLevel(e.target.value)}
+          disabled={loading || !capabilityId || levels.length === 0}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            fontSize: '14px',
+            lineHeight: '1.5',
+            border: '1px solid #e5e7eb',
+            borderRadius: '6px',
+            backgroundColor: loading || !capabilityId ? '#f9fafb' : '#ffffff',
+            cursor: loading || !capabilityId ? 'not-allowed' : 'pointer',
+            appearance: 'none',
+            paddingRight: '32px',
+          }}
+        >
+          <option value="">
+            {loading
+              ? 'Loading levels...'
+              : !capabilityId
+                ? 'Select a capability first'
+                : levels.length === 0
+                  ? 'No levels available'
+                  : 'Select a level'}
+          </option>
+          {levels.map((level) => (
+            <option key={level.value} value={level.value}>
+              {level.label}
+            </option>
+          ))}
+        </select>
+        {/* Custom dropdown arrow */}
+        <div
+          style={{
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            pointerEvents: 'none',
+            color: '#6b7280',
+          }}
+        >
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+            <path
+              d="M1 1.5L6 6.5L11 1.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
       {selectedOption?.description && (
         <div
           className="field-description"
-          style={{ marginTop: '0.35rem', fontSize: '0.875rem', color: '#374151' }}
+          style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#374151' }}
         >
-          {selectedOption.description}
+          <strong>Level description:</strong> {selectedOption.description}
         </div>
       )}
       {field?.admin?.description && (
