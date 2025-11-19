@@ -43,7 +43,7 @@ if ('turbopack' in payloadConfig) {
 
 payloadConfig.experimental = {
   ...(payloadConfig.experimental ?? {}),
-  allowedDevOrigins: ['https://ucair.care'],
+  allowedDevOrigins: ['https://acmc.app'],
 }
 
 export default payloadConfig

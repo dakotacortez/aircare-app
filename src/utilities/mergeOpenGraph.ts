@@ -1,22 +1,39 @@
 import type { Metadata } from 'next'
 import { getServerSideURL } from './getURL'
 
-const defaultOpenGraph: Metadata['openGraph'] = {
-  type: 'website',
-  description: 'An open-source website built with Payload and Next.js.',
-  images: [
-    {
-      url: `${getServerSideURL()}/website-template-OG.webp`,
-    },
-  ],
-  siteName: 'Payload Website Template',
-  title: 'Payload Website Template',
+type OpenGraphDefaults = {
+  description?: string | null
+  image?: string | null
+  siteName?: string | null
+  title?: string | null
+  type?: Metadata['openGraph'] extends infer T ? (T extends { type: infer U } ? U : string) : string
 }
 
-export const mergeOpenGraph = (og?: Metadata['openGraph']): Metadata['openGraph'] => {
+const getDefaultOpenGraph = (defaults?: OpenGraphDefaults): Metadata['openGraph'] => {
+  const fallbackImage = defaults?.image || `${getServerSideURL()}/website-template-OG.webp`
+
   return {
-    ...defaultOpenGraph,
+    type: defaults?.type || 'website',
+    description: defaults?.description || 'Offline-ready access to protocols, checklists, and calculators.',
+    images: [
+      {
+        url: fallbackImage,
+      },
+    ],
+    siteName: defaults?.siteName || 'AirCare Protocol Hub',
+    title: defaults?.title || 'AirCare Protocol Hub',
+  }
+}
+
+export const mergeOpenGraph = (
+  og?: Metadata['openGraph'],
+  defaults?: OpenGraphDefaults,
+): Metadata['openGraph'] => {
+  const base = getDefaultOpenGraph(defaults)
+
+  return {
+    ...base,
     ...og,
-    images: og?.images ? og.images : defaultOpenGraph.images,
+    images: og?.images ? og.images : base.images,
   }
 }

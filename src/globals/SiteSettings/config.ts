@@ -354,7 +354,16 @@ export const SiteSettings: GlobalConfig = {
           type: 'text',
           label: 'Default Meta Title',
           admin: {
-            description: 'Default title for pages without a specific meta title',
+            description:
+              'Default title for pages without a specific meta title and the base value used for social shares',
+          },
+        },
+        {
+          name: 'metaSiteName',
+          type: 'text',
+          label: 'Open Graph Site Name',
+          admin: {
+            description: 'Site or organization name shown on social share cards',
           },
         },
         {
@@ -373,6 +382,14 @@ export const SiteSettings: GlobalConfig = {
           label: 'Default Social Share Image',
           admin: {
             description: 'Default image for social media shares (recommended: 1200x630px)',
+          },
+        },
+        {
+          name: 'metaTwitterHandle',
+          type: 'text',
+          label: 'Twitter/X Handle',
+          admin: {
+            description: 'Optional Twitter/X handle (with @) used on summary cards',
           },
         },
       ],
