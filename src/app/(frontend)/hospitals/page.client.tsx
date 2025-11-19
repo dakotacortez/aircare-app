@@ -437,7 +437,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                           >
                             <span className={badge.color.text}>
                               {badge.name}
-                              {badge.level ? ` • ${badge.level}` : ''}
+                              {badge.level ? ` – ${badge.level}` : ''}
                             </span>
                           </button>
                         ))}
@@ -488,7 +488,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
                   <div className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ring-1 ${selectedCapability.color.pill}`}>
                     <span className={selectedCapability.color.text}>
                       {selectedCapability.name}
-                      {selectedCapability.level ? ` • ${selectedCapability.level}` : ''}
+                      {selectedCapability.level ? ` – ${selectedCapability.level}` : ''}
                     </span>
                   </div>
                 </div>
