@@ -50,8 +50,9 @@ export const generateMeta = async (args: {
   const { doc } = args
 
   const siteDefaults = await getSiteMetadataDefaults()
+  const siteSettings = (await getSiteSettings()) as SiteSetting
 
-  const ogImage = getImageURL(doc?.meta?.image, siteDefaults.image)
+  const ogImage = getImageURL(doc?.meta?.image, siteSettings?.metaImage)
 
   const title = doc?.meta?.title
     ? `${doc.meta.title} | ${siteDefaults.siteName}`

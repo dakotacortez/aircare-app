@@ -6,10 +6,10 @@ type OpenGraphDefaults = {
   image?: string | null
   siteName?: string | null
   title?: string | null
-  type?: Metadata['openGraph'] extends infer T ? (T extends { type: infer U } ? U : string) : string
+  type?: 'article' | 'book' | 'website' | 'profile' | 'music.song' | 'music.album' | 'music.playlist' | 'music.radio_station' | 'video.movie' | 'video.episode' | 'video.tv_show' | 'video.other'
 }
 
-const getDefaultOpenGraph = (defaults?: OpenGraphDefaults): Metadata['openGraph'] => {
+const getDefaultOpenGraph = (defaults?: OpenGraphDefaults): NonNullable<Metadata['openGraph']> => {
   const fallbackImage = defaults?.image || `${getServerSideURL()}/website-template-OG.webp`
 
   return {
