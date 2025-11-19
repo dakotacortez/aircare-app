@@ -9,7 +9,7 @@ ACMC now runs a purpose-built medical operations portal that sits on top of Payl
 - **Clinical Content Library:** Draftable, orderable protocol collection with service-line tabs (Universal, BLS, ALS, CCT), hospital asset catalogs, bases, calculators, and more.
 - **Role-aware Access Control:** Users must be active and approved; content-team and admin-team roles unlock authoring tools, while field crews only see published material.
 - **Next.js Frontend + Payload Backend:** Shared repo using the App Router, Tailwind, shadcn/ui, Payload SEO/Search/Redirect plugins, and on-demand revalidation.
-- **Native Packaging:** The `android/` folder plus `capacitor.config.ts` provide a wrapper that points the native shell to the live deployment at `https://ucair.care`.
+- **Native Packaging:** The `android/` folder plus `capacitor.config.ts` provide a wrapper that points the native shell to the live deployment at `https://acmc.app`.
 
 ## Tech Stack at a Glance
 
@@ -128,7 +128,7 @@ For deeper UX details, animations, and troubleshooting guides, see `docs/REFEREN
 
 - Sync the web assets with `npx cap sync android` (or `pnpm cap sync android` if you add a script).
 - Open the project in Android Studio from `android/` and build as usual.
-- The Capacitor server points to `https://ucair.care`; update `capacitor.config.ts` if you need a staging URL.
+- The Capacitor server points to `https://acmc.app`; update `capacitor.config.ts` if you need a staging URL.
 
 ## Additional Documentation
 

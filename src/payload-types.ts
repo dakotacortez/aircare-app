@@ -3002,9 +3002,13 @@ export interface SiteSetting {
       }[]
     | null;
   /**
-   * Default title for pages without a specific meta title
+   * Default title for pages without a specific meta title and the base value used for social shares
    */
   metaTitle?: string | null;
+  /**
+   * Site or organization name shown on social share cards
+   */
+  metaSiteName?: string | null;
   /**
    * Default description for search engines (160 characters max)
    */
@@ -3013,6 +3017,10 @@ export interface SiteSetting {
    * Default image for social media shares (recommended: 1200x630px)
    */
   metaImage?: (number | null) | Media;
+  /**
+   * Optional Twitter/X handle (with @) used on summary cards
+   */
+  metaTwitterHandle?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3107,8 +3115,10 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         id?: T;
       };
   metaTitle?: T;
+  metaSiteName?: T;
   metaDescription?: T;
   metaImage?: T;
+  metaTwitterHandle?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

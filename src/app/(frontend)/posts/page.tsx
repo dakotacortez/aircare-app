@@ -7,6 +7,8 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
+import { getSiteMetadataDefaults } from '@/utilities/generateMeta'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
@@ -56,8 +58,36 @@ export default async function Page() {
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
+  const siteDefaults = await getSiteMetadataDefaults()
+  const title = `${siteDefaults.siteName} Posts`
+
   return {
-    title: `Payload Website Template Posts`,
+    description: siteDefaults.description,
+    openGraph: mergeOpenGraph(
+      {
+        description: siteDefaults.description,
+        images: siteDefaults.image
+          ? [
+              {
+                url: siteDefaults.image,
+              },
+            ]
+          : undefined,
+        siteName: siteDefaults.siteName,
+        title,
+      },
+      {
+        description: siteDefaults.description,
+        image: siteDefaults.image,
+        siteName: siteDefaults.siteName,
+        title,
+      },
+    ),
+    title,
+    twitter: {
+      card: 'summary_large_image',
+      ...(siteDefaults.twitterHandle ? { creator: siteDefaults.twitterHandle } : {}),
+    },
   }
 }

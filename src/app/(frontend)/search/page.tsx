@@ -7,6 +7,8 @@ import React from 'react'
 import { Search } from '@/search/Component'
 import PageClient from './page.client'
 import { CardPostData } from '@/components/Card'
+import { getSiteMetadataDefaults } from '@/utilities/generateMeta'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 
 type Args = {
   searchParams: Promise<{
@@ -81,8 +83,36 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
+  const siteDefaults = await getSiteMetadataDefaults()
+  const title = `${siteDefaults.siteName} Search`
+
   return {
-    title: `Payload Website Template Search`,
+    description: siteDefaults.description,
+    openGraph: mergeOpenGraph(
+      {
+        description: siteDefaults.description,
+        images: siteDefaults.image
+          ? [
+              {
+                url: siteDefaults.image,
+              },
+            ]
+          : undefined,
+        siteName: siteDefaults.siteName,
+        title,
+      },
+      {
+        description: siteDefaults.description,
+        image: siteDefaults.image,
+        siteName: siteDefaults.siteName,
+        title,
+      },
+    ),
+    title,
+    twitter: {
+      card: 'summary_large_image',
+      ...(siteDefaults.twitterHandle ? { creator: siteDefaults.twitterHandle } : {}),
+    },
   }
 }

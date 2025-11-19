@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     // Point the native shell at your live app
-    url: 'https://ucair.care',
+    url: 'https://acmc.app',
     cleartext: false,
   },
 };
