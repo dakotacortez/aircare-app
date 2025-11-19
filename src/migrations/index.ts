@@ -23,6 +23,7 @@ import * as migration_20251117_040200_ensure_change_request_schema from './20251
 import * as migration_20251117_040300_ensure_reference_schema from './20251117_040300_ensure_reference_schema';
 import * as migration_20251117_050000_add_missing_locked_documents_rels_columns from './20251117_050000_add_missing_locked_documents_rels_columns';
 import * as migration_20251117_050100_add_missing_change_request_columns from './20251117_050100_add_missing_change_request_columns';
+import * as migration_20251119_000000_add_meta_site_name_and_twitter from './20251119_000000_add_meta_site_name_and_twitter';
 
 export const migrations = [
   {
@@ -148,5 +149,10 @@ export const migrations = [
       up: migration_20251117_050100_add_missing_change_request_columns.up,
       down: migration_20251117_050100_add_missing_change_request_columns.down,
       name: '20251117_050100_add_missing_change_request_columns'
+    },
+    {
+      up: migration_20251119_000000_add_meta_site_name_and_twitter.up,
+      down: migration_20251119_000000_add_meta_site_name_and_twitter.down,
+      name: '20251119_000000_add_meta_site_name_and_twitter'
     },
   ];
