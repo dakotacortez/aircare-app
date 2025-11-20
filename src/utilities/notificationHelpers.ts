@@ -132,7 +132,8 @@ export async function sendAndLogNotification(payload: Payload, params: {
     }
 
     // Log the notification in the database
-    await payload.create<Notification>({
+    // Note: Payload's create function expects two generic params; rely on inference here
+    await payload.create({
       collection: 'notifications',
       data: {
         type,
@@ -158,9 +159,9 @@ export async function sendAndLogNotification(payload: Payload, params: {
   } catch (error) {
     console.error(`Error sending and logging notification:`, error)
 
-    // Still try to log the failed notification
+    // Still try to log the failed notification (use inference for Payload create generics)
     try {
-      await payload.create<Notification>({
+      await payload.create({
         collection: 'notifications',
         data: {
           type,
@@ -283,7 +284,7 @@ export async function logAuditTrail(payload: Payload, params: {
   const { action, collection, documentId, changedBy, changes, metadata, ipAddress, userAgent } = params
 
   try {
-    await payload.create<AuditLog>({
+    await payload.create({
       collection: 'audit-log',
       data: {
         action,

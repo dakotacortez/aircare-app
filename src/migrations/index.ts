@@ -26,6 +26,7 @@ import * as migration_20251117_050100_add_missing_change_request_columns from '.
 import * as migration_20251119_000000_add_meta_site_name_and_twitter from './20251119_000000_add_meta_site_name_and_twitter';
 import * as migration_20251120_000000_add_hospital_cr_source_attribution from './20251120_000000_add_hospital_cr_source_attribution';
 import * as migration_20251120_030000_add_notifications_and_audit_trail from './20251120_030000_add_notifications_and_audit_trail';
+import * as migration_20251120_120000_readd_hospital_cr_source_attribution from './20251120_120000_readd_hospital_cr_source_attribution';
 
 export const migrations = [
   {
@@ -166,5 +167,10 @@ export const migrations = [
       up: migration_20251120_030000_add_notifications_and_audit_trail.up,
       down: migration_20251120_030000_add_notifications_and_audit_trail.down,
       name: '20251120_030000_add_notifications_and_audit_trail'
+    },
+    {
+      up: migration_20251120_120000_readd_hospital_cr_source_attribution.up,
+      down: migration_20251120_120000_readd_hospital_cr_source_attribution.down,
+      name: '20251120_120000_readd_hospital_cr_source_attribution'
     },
   ];
