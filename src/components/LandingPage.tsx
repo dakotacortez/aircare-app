@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { SiteSetting, Media } from '@/payload-types';
 import {
   HeartPulse, Syringe, Search, BookOpenText,
@@ -67,11 +68,6 @@ export default function LandingPage({ data }: LandingPageProps) {
   const heroBackgroundUrl = getMediaUrl(data.heroBackgroundImage);
   // Use uploaded image if available, otherwise use fallback
   const backgroundImageUrl = heroBackgroundUrl || '/media/image-hero1.webp';
-  const backgroundStyle = {
-    backgroundImage: `url(${backgroundImageUrl})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center'
-  };
 
   // Build gradient style from CMS settings
   const gradientColor = data.heroGradientColor || 'black';
@@ -95,9 +91,20 @@ export default function LandingPage({ data }: LandingPageProps) {
   return (
     <>
       {/* HERO */}
-      <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center" style={backgroundStyle}>
+      <section className="px-4 md:px-8 pt-12 md:pt-16 pb-24 md:pb-16 relative overflow-hidden min-h-[calc(100vh-4rem)] md:min-h-0 flex items-center">
+        {/* Background Image - Responsive with Next.js Image */}
+        <Image
+          src={backgroundImageUrl}
+          alt="Hero background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+          quality={90}
+        />
+
         {/* Gradient overlay - configurable via CMS */}
-        <div className="absolute inset-0" style={gradientStyle} />
+        <div className="absolute inset-0 z-[1]" style={gradientStyle} />
 
         <div className="relative z-10 text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white backdrop-blur-sm border border-white/20 text-sm font-medium mb-4">
