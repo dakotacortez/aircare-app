@@ -206,12 +206,6 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
   return (
     <div className="field-type text">
       <FieldLabel label={field?.label} required={field?.required} />
-      {capabilityMeta?.name && (
-        <div className="field-description" style={{ marginBottom: '0.25rem', color: '#4b5563' }}>
-          Levels for <strong>{capabilityMeta.name}</strong>
-          {capabilityMeta.category ? ` (${capabilityMeta.category})` : ''}
-        </div>
-      )}
       <div style={{ position: 'relative' }}>
         <select
           value={selectedLevel || ''}
