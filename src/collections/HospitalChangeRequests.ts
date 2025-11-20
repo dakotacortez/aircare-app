@@ -187,6 +187,21 @@ export const HospitalChangeRequests: CollectionConfig = {
           ],
         },
         {
+          name: 'coordinates',
+          type: 'text',
+          label: 'Coordinates (Latitude, Longitude)',
+        },
+        {
+          name: 'latitude',
+          type: 'number',
+          label: 'Latitude',
+        },
+        {
+          name: 'longitude',
+          type: 'number',
+          label: 'Longitude',
+        },
+        {
           name: 'squadPhone',
           type: 'text',
           label: 'Squad Phone',
