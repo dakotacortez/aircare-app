@@ -253,7 +253,7 @@ export async function logAuditTrail(payload: Payload, params: {
     previousValue?: string
     newValue?: string
   }>
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   ipAddress?: string
   userAgent?: string
 }): Promise<void> {
