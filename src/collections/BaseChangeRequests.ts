@@ -1,5 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { isContentOrAdmin } from '../access/roles'
+import { sendAndLogNotification, sendAndLogAdminNotification, logAuditTrail, detectChanges } from '@/utilities/notificationHelpers'
+import {
+  baseChangeRequestSubmittedAdminEmail,
+  baseChangeRequestApprovedEmail,
+  baseChangeRequestRejectedEmail,
+} from '@/utilities/emailTemplates'
+import type { User } from '@/payload-types'
 
 /**
  * Base Change Requests Collection
@@ -27,66 +34,231 @@ export const BaseChangeRequests: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ req, operation, data }) => {
+      async ({ req, operation, data, previousDoc }) => {
         if (operation === 'create' && req.user) {
           data.submittedBy = req.user.id
         }
+
+        // Track amendments in audit trail
+        if (operation === 'update' && previousDoc && req.user && req.payload) {
+          const fieldsToCompare = ['name', 'squadPhone', 'coordinates', 'latitude', 'longitude']
+          const previousProposedData = previousDoc.proposedData || {}
+          const newProposedData = data.proposedData || {}
+
+          const changes = detectChanges(previousProposedData, newProposedData, fieldsToCompare)
+
+          if (changes.length > 0) {
+            await logAuditTrail(req.payload, {
+              action: 'amended',
+              collection: 'base-change-requests',
+              documentId: previousDoc.id,
+              changedBy: req.user.id,
+              changes,
+              metadata: {
+                amendedBefore: previousDoc.status === 'pending' ? 'approval' : 'rejection',
+              },
+            })
+          }
+        }
+
         return data
+      },
+    ],
+    afterCreate: [
+      async ({ req, doc }) => {
+        if (!req.payload) return doc
+
+        try {
+          const submittedByUser = doc.submittedBy
+            ? await req.payload.findByID({
+                collection: 'users',
+                id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+              })
+            : null
+
+          const emailTemplate = baseChangeRequestSubmittedAdminEmail({
+            id: doc.id,
+            type: doc.type,
+            submittedBy: submittedByUser,
+            proposedData: doc.proposedData,
+            targetBase: doc.targetBase,
+          })
+
+          await sendAndLogAdminNotification(req.payload, {
+            type: 'base_request_submitted_admin',
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+            relatedBaseRequest: doc.id,
+            relatedUser: submittedByUser?.id,
+          })
+
+          await logAuditTrail(req.payload, {
+            action: 'created',
+            collection: 'base-change-requests',
+            documentId: doc.id,
+            changedBy: submittedByUser?.id || doc.id,
+            metadata: {
+              type: doc.type,
+              targetBase: typeof doc.targetBase === 'object' ? doc.targetBase?.id : doc.targetBase,
+            },
+          })
+        } catch (error) {
+          console.error('Failed to send base change request notification:', error)
+        }
+
+        return doc
       },
     ],
     afterChange: [
       async ({ req, doc, previousDoc }) => {
+        if (!req.payload) return doc
+
         if (previousDoc?.status === 'approved') {
           return doc
         }
 
-        if (doc.status !== 'approved') {
+        const statusChanged = previousDoc && previousDoc.status !== doc.status
+
+        if (doc.status !== 'approved' && doc.status !== 'rejected') {
           return doc
         }
 
-        const { type, targetBase, proposedData } = doc
+        // Handle approval
+        if (doc.status === 'approved' && statusChanged) {
+          const { type, targetBase, proposedData } = doc
 
-        if (!proposedData) {
-          console.warn('BaseChangeRequest approved but proposedData is missing')
-          return doc
-        }
-
-        try {
-          if (type === 'add') {
-            await req.payload.create({
-              collection: 'bases',
-              data: proposedData,
-              user: req.user,
-            })
-            console.log('BaseChangeRequest: Created new base from request', doc.id)
-          } else if (type === 'update') {
-            if (!targetBase) {
-              console.warn('BaseChangeRequest: Update request missing targetBase')
-              return doc
-            }
-
-            const baseId = typeof targetBase === 'string' ? targetBase : targetBase.id
-
-            await req.payload.update({
-              collection: 'bases',
-              id: baseId,
-              data: proposedData,
-              user: req.user,
-            })
-            console.log('BaseChangeRequest: Updated base from request', doc.id)
+          if (!proposedData) {
+            console.warn('BaseChangeRequest approved but proposedData is missing')
+            return doc
           }
 
-          await req.payload.update({
-            collection: 'base-change-requests',
-            id: doc.id,
-            data: {
-              appliedAt: new Date().toISOString(),
-            },
-            user: req.user,
-            depth: 0,
-          })
-        } catch (error) {
-          console.error('BaseChangeRequest: Failed to apply change', error)
+          try {
+            if (type === 'add') {
+              await req.payload.create({
+                collection: 'bases',
+                data: proposedData,
+                user: req.user,
+              })
+              console.log('BaseChangeRequest: Created new base from request', doc.id)
+            } else if (type === 'update') {
+              if (!targetBase) {
+                console.warn('BaseChangeRequest: Update request missing targetBase')
+                return doc
+              }
+
+              const baseId = typeof targetBase === 'string' ? targetBase : targetBase.id
+
+              await req.payload.update({
+                collection: 'bases',
+                id: baseId,
+                data: proposedData,
+                user: req.user,
+              })
+              console.log('BaseChangeRequest: Updated base from request', doc.id)
+            }
+
+            await req.payload.update({
+              collection: 'base-change-requests',
+              id: doc.id,
+              data: {
+                appliedAt: new Date().toISOString(),
+              },
+              user: req.user,
+              depth: 0,
+            })
+
+            // Send approval notification
+            const submittedByUser = doc.submittedBy
+              ? await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+                })
+              : null
+
+            if (submittedByUser?.email) {
+              const emailTemplate = baseChangeRequestApprovedEmail(
+                submittedByUser.email,
+                (submittedByUser as User).name,
+                {
+                  type: doc.type,
+                  proposedData: doc.proposedData,
+                  targetBase: doc.targetBase,
+                }
+              )
+
+              await sendAndLogNotification(req.payload, {
+                type: 'base_request_approved',
+                recipient: submittedByUser.email,
+                recipientUser: submittedByUser.id,
+                subject: emailTemplate.subject,
+                html: emailTemplate.html,
+                relatedBaseRequest: doc.id,
+                relatedUser: submittedByUser.id,
+              })
+            }
+
+            await logAuditTrail(req.payload, {
+              action: 'approved',
+              collection: 'base-change-requests',
+              documentId: doc.id,
+              changedBy: req.user?.id || doc.id,
+              changes: [
+                { field: 'status', previousValue: previousDoc?.status || '', newValue: doc.status },
+              ],
+            })
+          } catch (error) {
+            console.error('BaseChangeRequest: Failed to apply change', error)
+          }
+        }
+
+        // Handle rejection
+        if (doc.status === 'rejected' && statusChanged) {
+          try {
+            const submittedByUser = doc.submittedBy
+              ? await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+                })
+              : null
+
+            if (submittedByUser?.email) {
+              const emailTemplate = baseChangeRequestRejectedEmail(
+                submittedByUser.email,
+                (submittedByUser as User).name,
+                {
+                  type: doc.type,
+                  proposedData: doc.proposedData,
+                  targetBase: doc.targetBase,
+                },
+                doc.rejectionReason || undefined
+              )
+
+              await sendAndLogNotification(req.payload, {
+                type: 'base_request_rejected',
+                recipient: submittedByUser.email,
+                recipientUser: submittedByUser.id,
+                subject: emailTemplate.subject,
+                html: emailTemplate.html,
+                relatedBaseRequest: doc.id,
+                relatedUser: submittedByUser.id,
+              })
+            }
+
+            await logAuditTrail(req.payload, {
+              action: 'rejected',
+              collection: 'base-change-requests',
+              documentId: doc.id,
+              changedBy: req.user?.id || doc.id,
+              changes: [
+                { field: 'status', previousValue: previousDoc?.status || '', newValue: doc.status },
+              ],
+              metadata: {
+                rejectionReason: doc.rejectionReason,
+              },
+            })
+          } catch (error) {
+            console.error('BaseChangeRequest: Failed to send rejection notification', error)
+          }
         }
 
         return doc
@@ -250,6 +422,16 @@ export const BaseChangeRequests: CollectionConfig = {
       admin: {
         description: 'Internal notes about this request',
         position: 'sidebar',
+      },
+    },
+    {
+      name: 'rejectionReason',
+      type: 'textarea',
+      label: 'Rejection Reason',
+      admin: {
+        description: 'Reason for rejecting this request (sent to user in notification email)',
+        position: 'sidebar',
+        condition: (data) => data.status === 'rejected',
       },
     },
     {

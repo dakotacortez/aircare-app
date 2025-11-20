@@ -1,13 +1,20 @@
 import type { CollectionConfig } from 'payload'
 import { isContentOrAdmin } from '../access/roles'
+import { sendAndLogNotification, sendAndLogAdminNotification, logAuditTrail, detectChanges } from '@/utilities/notificationHelpers'
+import {
+  hospitalChangeRequestSubmittedAdminEmail,
+  hospitalChangeRequestApprovedEmail,
+  hospitalChangeRequestRejectedEmail,
+} from '@/utilities/emailTemplates'
+import type { User } from '@/payload-types'
 
 /**
  * Hospital Change Requests Collection
- * 
+ *
  * Allows any authenticated user to propose additions or updates to hospitals.
- * When an admin approves the request (sets status to 'approved'), 
+ * When an admin approves the request (sets status to 'approved'),
  * the change is automatically applied to the hospitals collection.
- * 
+ *
  * Admin Workflow:
  * 1. Admin reviews the proposedData
  * 2. Admin edits it directly if needed (refining before approval)
@@ -37,81 +44,254 @@ export const HospitalChangeRequests: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ req, operation, data }) => {
+      async ({ req, operation, data, previousDoc }) => {
         // Set submittedBy on create
         if (operation === 'create' && req.user) {
           data.submittedBy = req.user.id
         }
+
+        // Track amendments in audit trail
+        if (operation === 'update' && previousDoc && req.user && req.payload) {
+          // Check if proposedData was amended (admin edited it)
+          const fieldsToCompare = ['name', 'squadPhone', 'coordinates', 'latitude', 'longitude']
+          const previousProposedData = previousDoc.proposedData || {}
+          const newProposedData = data.proposedData || {}
+
+          const changes = detectChanges(previousProposedData, newProposedData, fieldsToCompare)
+
+          if (changes.length > 0) {
+            // Admin amended the proposed data
+            await logAuditTrail(req.payload, {
+              action: 'amended',
+              collection: 'hospital-change-requests',
+              documentId: previousDoc.id,
+              changedBy: req.user.id,
+              changes,
+              metadata: {
+                amendedBefore: previousDoc.status === 'pending' ? 'approval' : 'rejection',
+              },
+            })
+          }
+        }
+
         return data
       },
     ],
+    afterCreate: [
+      async ({ req, doc }) => {
+        // Send admin notification when a new request is submitted
+        if (!req.payload) return doc
+
+        try {
+          // Fetch submittedBy user details
+          const submittedByUser = doc.submittedBy
+            ? await req.payload.findByID({
+                collection: 'users',
+                id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+              })
+            : null
+
+          const emailTemplate = hospitalChangeRequestSubmittedAdminEmail({
+            id: doc.id,
+            type: doc.type,
+            submittedBy: submittedByUser,
+            proposedData: doc.proposedData,
+            targetHospital: doc.targetHospital,
+          })
+
+          await sendAndLogAdminNotification(req.payload, {
+            type: 'hospital_request_submitted_admin',
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+            relatedHospitalRequest: doc.id,
+            relatedUser: submittedByUser?.id,
+          })
+
+          // Log audit trail
+          await logAuditTrail(req.payload, {
+            action: 'created',
+            collection: 'hospital-change-requests',
+            documentId: doc.id,
+            changedBy: submittedByUser?.id || doc.id,
+            metadata: {
+              type: doc.type,
+              targetHospital: typeof doc.targetHospital === 'object' ? doc.targetHospital?.id : doc.targetHospital,
+            },
+          })
+        } catch (error) {
+          console.error('Failed to send hospital change request notification:', error)
+        }
+
+        return doc
+      },
+    ],
     afterChange: [
-      async ({ req, doc, previousDoc }) => {
+      async ({ req, doc, previousDoc, operation }) => {
+        if (!req.payload) return doc
+
         // Auto-apply approved changes
         // Only proceed if status just changed to 'approved'
         if (previousDoc?.status === 'approved') {
           // Already applied, don't reprocess
           return doc
         }
-        
-        if (doc.status !== 'approved') {
-          // Not approved yet
+
+        const statusChanged = previousDoc && previousDoc.status !== doc.status
+
+        if (doc.status !== 'approved' && doc.status !== 'rejected') {
+          // Not approved or rejected yet
           return doc
         }
 
-        // Status is now 'approved' and wasn't before - apply the change
-        const { type, targetHospital, proposedData } = doc
+        // Handle approval
+        if (doc.status === 'approved' && statusChanged) {
+          // Status is now 'approved' and wasn't before - apply the change
+          const { type, targetHospital, proposedData } = doc
 
-        if (!proposedData) {
-          console.warn('HospitalChangeRequest approved but proposedData is missing')
-          return doc
-        }
-
-        try {
-          if (type === 'add') {
-            // Create new hospital
-            await req.payload.create({
-              collection: 'hospitals',
-              data: proposedData,
-              user: req.user,
-            })
-            console.log('HospitalChangeRequest: Created new hospital from request', doc.id)
-          } else if (type === 'update') {
-            // Update existing hospital
-            if (!targetHospital) {
-              console.warn('HospitalChangeRequest: Update request missing targetHospital')
-              return doc
-            }
-            
-            // Resolve hospital ID (could be string or object)
-            const hospitalId = typeof targetHospital === 'string' 
-              ? targetHospital 
-              : targetHospital.id
-
-            await req.payload.update({
-              collection: 'hospitals',
-              id: hospitalId,
-              data: proposedData,
-              user: req.user,
-            })
-            console.log('HospitalChangeRequest: Updated hospital from request', doc.id)
+          if (!proposedData) {
+            console.warn('HospitalChangeRequest approved but proposedData is missing')
+            return doc
           }
 
-          // Set appliedAt timestamp
-          // Note: We need to update the doc directly here to avoid infinite loop
-          await req.payload.update({
-            collection: 'hospital-change-requests',
-            id: doc.id,
-            data: {
-              appliedAt: new Date().toISOString(),
-            },
-            user: req.user,
-            // Prevent hooks from running again
-            depth: 0,
-          })
-        } catch (error) {
-          console.error('HospitalChangeRequest: Failed to apply change', error)
-          // Don't throw - we want the approval to succeed even if auto-apply fails
+          try {
+            if (type === 'add') {
+              // Create new hospital
+              await req.payload.create({
+                collection: 'hospitals',
+                data: proposedData,
+                user: req.user,
+              })
+              console.log('HospitalChangeRequest: Created new hospital from request', doc.id)
+            } else if (type === 'update') {
+              // Update existing hospital
+              if (!targetHospital) {
+                console.warn('HospitalChangeRequest: Update request missing targetHospital')
+                return doc
+              }
+
+              // Resolve hospital ID (could be string or object)
+              const hospitalId = typeof targetHospital === 'string'
+                ? targetHospital
+                : targetHospital.id
+
+              await req.payload.update({
+                collection: 'hospitals',
+                id: hospitalId,
+                data: proposedData,
+                user: req.user,
+              })
+              console.log('HospitalChangeRequest: Updated hospital from request', doc.id)
+            }
+
+            // Set appliedAt timestamp
+            // Note: We need to update the doc directly here to avoid infinite loop
+            await req.payload.update({
+              collection: 'hospital-change-requests',
+              id: doc.id,
+              data: {
+                appliedAt: new Date().toISOString(),
+              },
+              user: req.user,
+              // Prevent hooks from running again
+              depth: 0,
+            })
+
+            // Send approval notification to submitter
+            const submittedByUser = doc.submittedBy
+              ? await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+                })
+              : null
+
+            if (submittedByUser?.email) {
+              const emailTemplate = hospitalChangeRequestApprovedEmail(
+                submittedByUser.email,
+                (submittedByUser as User).name,
+                {
+                  type: doc.type,
+                  proposedData: doc.proposedData,
+                  targetHospital: doc.targetHospital,
+                }
+              )
+
+              await sendAndLogNotification(req.payload, {
+                type: 'hospital_request_approved',
+                recipient: submittedByUser.email,
+                recipientUser: submittedByUser.id,
+                subject: emailTemplate.subject,
+                html: emailTemplate.html,
+                relatedHospitalRequest: doc.id,
+                relatedUser: submittedByUser.id,
+              })
+            }
+
+            // Log audit trail
+            await logAuditTrail(req.payload, {
+              action: 'approved',
+              collection: 'hospital-change-requests',
+              documentId: doc.id,
+              changedBy: req.user?.id || doc.id,
+              changes: [
+                { field: 'status', previousValue: previousDoc?.status || '', newValue: doc.status },
+              ],
+            })
+          } catch (error) {
+            console.error('HospitalChangeRequest: Failed to apply change', error)
+            // Don't throw - we want the approval to succeed even if auto-apply fails
+          }
+        }
+
+        // Handle rejection
+        if (doc.status === 'rejected' && statusChanged) {
+          try {
+            // Send rejection notification to submitter
+            const submittedByUser = doc.submittedBy
+              ? await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+                })
+              : null
+
+            if (submittedByUser?.email) {
+              const emailTemplate = hospitalChangeRequestRejectedEmail(
+                submittedByUser.email,
+                (submittedByUser as User).name,
+                {
+                  type: doc.type,
+                  proposedData: doc.proposedData,
+                  targetHospital: doc.targetHospital,
+                },
+                doc.rejectionReason || undefined
+              )
+
+              await sendAndLogNotification(req.payload, {
+                type: 'hospital_request_rejected',
+                recipient: submittedByUser.email,
+                recipientUser: submittedByUser.id,
+                subject: emailTemplate.subject,
+                html: emailTemplate.html,
+                relatedHospitalRequest: doc.id,
+                relatedUser: submittedByUser.id,
+              })
+            }
+
+            // Log audit trail
+            await logAuditTrail(req.payload, {
+              action: 'rejected',
+              collection: 'hospital-change-requests',
+              documentId: doc.id,
+              changedBy: req.user?.id || doc.id,
+              changes: [
+                { field: 'status', previousValue: previousDoc?.status || '', newValue: doc.status },
+              ],
+              metadata: {
+                rejectionReason: doc.rejectionReason,
+              },
+            })
+          } catch (error) {
+            console.error('HospitalChangeRequest: Failed to send rejection notification', error)
+          }
         }
 
         return doc
@@ -419,6 +599,16 @@ export const HospitalChangeRequests: CollectionConfig = {
       admin: {
         description: 'Internal notes about this request',
         position: 'sidebar',
+      },
+    },
+    {
+      name: 'rejectionReason',
+      type: 'textarea',
+      label: 'Rejection Reason',
+      admin: {
+        description: 'Reason for rejecting this request (sent to user in notification email)',
+        position: 'sidebar',
+        condition: (data) => data.status === 'rejected',
       },
     },
     {
