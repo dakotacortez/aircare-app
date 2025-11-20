@@ -96,15 +96,16 @@ export async function sendAndLogNotification(payload: Payload, params: {
 
     // Send push notification if requested and user has enabled it
     if (sendPushNotification && recipientUser) {
+      // Build data object with only defined values (FCM requires Record<string, string>)
+      const pushData: Record<string, string> = { type }
+      if (relatedUser) pushData.relatedUser = relatedUser.toString()
+      if (relatedHospitalRequest) pushData.relatedHospitalRequest = relatedHospitalRequest.toString()
+      if (relatedBaseRequest) pushData.relatedBaseRequest = relatedBaseRequest.toString()
+
       await sendPushNotificationToUser(payload, recipientUser, {
         title: subject,
         body: stripHtml(html).substring(0, 200), // First 200 chars without HTML
-        data: {
-          type,
-          relatedUser: relatedUser?.toString(),
-          relatedHospitalRequest: relatedHospitalRequest?.toString(),
-          relatedBaseRequest: relatedBaseRequest?.toString(),
-        },
+        data: pushData,
       })
     }
 
