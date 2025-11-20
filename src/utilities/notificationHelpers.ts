@@ -284,8 +284,8 @@ export async function logAuditTrail(payload: Payload, params: {
  * Compare two objects and generate a list of field changes
  */
 export function detectChanges(
-  previousData: Record<string, any>,
-  newData: Record<string, any>,
+  previousData: Record<string, unknown>,
+  newData: Record<string, unknown>,
   fieldsToCompare: string[]
 ): Array<{ field: string; previousValue: string; newValue: string }> {
   const changes: Array<{ field: string; previousValue: string; newValue: string }> = []
