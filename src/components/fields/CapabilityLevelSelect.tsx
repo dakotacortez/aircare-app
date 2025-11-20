@@ -31,6 +31,7 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
   const [levels, setLevels] = useState<LevelOption[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [capabilityMeta, setCapabilityMeta] = useState<{ name?: string; category?: string } | null>(null)
   const selectedLevelRef = useRef(selectedLevel)
   const selectedOption = useMemo(
     () => levels.find((option) => option.value === selectedLevel),
@@ -78,6 +79,7 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
           setLevels([])
           setError(null)
           setLoading(false)
+          setCapabilityMeta(null)
           clearSelectedLevel()
         }
         return
@@ -98,16 +100,23 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
           throw new Error('Failed to fetch capability levels')
         }
 
+        // The Payload REST API wraps documents in a `doc` key, but
+        // fall back to the root in case the structure changes.
         const capabilityData = await response.json()
+        const capabilityDoc = capabilityData?.doc ?? capabilityData
+        const capabilityLevels = capabilityDoc?.levels ?? []
+        setCapabilityMeta(
+          capabilityDoc ? { name: capabilityDoc.name as string | undefined, category: capabilityDoc.category } : null,
+        )
 
         if (!isMounted) return
 
-        if (!capabilityData?.levels || capabilityData.levels.length === 0) {
+        if (capabilityLevels.length === 0) {
           setLevels([])
           clearSelectedLevel()
         } else {
           // Map levels to options
-          const options: LevelOption[] = capabilityData.levels.map(
+          const options: LevelOption[] = capabilityLevels.map(
             (levelObj: { level: string; description?: string | null }) => ({
               label: levelObj.level,
               value: levelObj.level,
@@ -143,6 +152,12 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
   return (
     <div className="field-type text">
       <FieldLabel label={field?.label} required={field?.required} />
+      {capabilityMeta?.name && (
+        <div className="field-description" style={{ marginBottom: '0.25rem', color: '#4b5563' }}>
+          Levels for <strong>{capabilityMeta.name}</strong>
+          {capabilityMeta.category ? ` (${capabilityMeta.category})` : ''}
+        </div>
+      )}
       <div style={{ position: 'relative' }}>
         <select
           value={selectedLevel || ''}
@@ -204,6 +219,12 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
           style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#374151' }}
         >
           <strong>Level description:</strong> {selectedOption.description}
+        </div>
+      )}
+      {!loading && capabilityId && levels.length === 0 && !error && (
+        <div className="field-description" style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
+          No certification levels are configured for this capability. Add levels in the Capability Types collection to make
+          them available here.
         </div>
       )}
       {field?.admin?.description && (
