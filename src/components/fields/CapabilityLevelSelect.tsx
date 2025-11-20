@@ -35,7 +35,7 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
   const [levels, setLevels] = useState<LevelOption[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [capabilityMeta, setCapabilityMeta] = useState<{ name?: string; category?: string } | null>(null)
+  const [_capabilityMeta, setCapabilityMeta] = useState<{ name?: string; category?: string } | null>(null)
   const selectedLevelRef = useRef(selectedLevel)
   const selectedOption = useMemo(
     () => levels.find((option) => option.value === selectedLevel),
