@@ -217,6 +217,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       ADD COLUMN IF NOT EXISTS "proposed_data_latitude" numeric,
       ADD COLUMN IF NOT EXISTS "proposed_data_longitude" numeric,
       ADD COLUMN IF NOT EXISTS "proposed_data_notes" text,
+      ADD COLUMN IF NOT EXISTS "proposed_data_source_attribution" varchar,
       ADD COLUMN IF NOT EXISTS "proposed_data_address_line1" varchar,
       ADD COLUMN IF NOT EXISTS "proposed_data_address_line2" varchar,
       ADD COLUMN IF NOT EXISTS "proposed_data_address_city" varchar,

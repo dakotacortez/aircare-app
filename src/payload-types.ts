@@ -1299,6 +1299,9 @@ export interface HospitalChangeRequest {
       state?: string | null;
       zip?: string | null;
     };
+    coordinates?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
     squadPhone?: string | null;
     otherPhones?:
       | {
@@ -2362,6 +2365,9 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
               state?: T;
               zip?: T;
             };
+        coordinates?: T;
+        latitude?: T;
+        longitude?: T;
         squadPhone?: T;
         otherPhones?:
           | T
