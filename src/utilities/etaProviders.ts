@@ -3,6 +3,8 @@
  * Supports Google Maps and HERE API with configurable fallback
  */
 
+import { calculateDistanceMiles } from './distance'
+
 export type TrafficStatus = 'green' | 'yellow' | 'red'
 
 export interface EtaResult {
@@ -161,6 +163,17 @@ export class HereProvider implements EtaProvider {
     // HERE returns duration in seconds and distance in meters
     const trafficDuration = summary.duration || 0
     const distance = summary.length || 0
+
+    // Guard against obvious coordinate ordering issues by comparing to haversine distance
+    const expectedDistanceMeters = calculateDistanceMiles(originLat, originLng, destLat, destLng) * 1609.34
+    if (expectedDistanceMeters > 0) {
+      const distanceRatio = distance / expectedDistanceMeters
+      if (distanceRatio > 3 || distanceRatio < 0.3) {
+        throw new Error(
+          `HERE API returned unrealistic distance (ratio ${Math.round(distanceRatio * 100) / 100}). Check lat/lng ordering.`,
+        )
+      }
+    }
 
     // For baseline duration, we need to make a second call without traffic
     // Or estimate it from the traffic duration
