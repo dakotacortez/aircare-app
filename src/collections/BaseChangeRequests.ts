@@ -81,7 +81,7 @@ export const BaseChangeRequests: CollectionConfig = {
             const emailTemplate = baseChangeRequestSubmittedAdminEmail({
               id: doc.id,
               type: doc.type,
-              submittedBy: submittedByUser,
+              submittedBy: submittedByUser || undefined,
               proposedData: doc.proposedData,
               targetBase: doc.targetBase,
             })
