@@ -77,59 +77,56 @@ export const HospitalChangeRequests: CollectionConfig = {
         return data
       },
     ],
-    afterCreate: [
-      async ({ req, doc }) => {
-        // Send admin notification when a new request is submitted
+    afterChange: [
+      async ({ req, doc, previousDoc, operation }) => {
         if (!req.payload) return doc
 
-        try {
-          // Fetch submittedBy user details
-          const submittedByUser = doc.submittedBy
-            ? await req.payload.findByID({
-                collection: 'users',
-                id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
-              })
-            : null
+        // Handle creation - send admin notification when a new request is submitted
+        if (operation === 'create') {
+          try {
+            // Fetch submittedBy user details
+            const submittedByUser = doc.submittedBy
+              ? await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+                })
+              : null
 
-          const emailTemplate = hospitalChangeRequestSubmittedAdminEmail({
-            id: doc.id,
-            type: doc.type,
-            submittedBy: submittedByUser,
-            proposedData: doc.proposedData,
-            targetHospital: doc.targetHospital,
-          })
-
-          await sendAndLogAdminNotification(req.payload, {
-            type: 'hospital_request_submitted_admin',
-            subject: emailTemplate.subject,
-            html: emailTemplate.html,
-            relatedHospitalRequest: doc.id,
-            relatedUser: submittedByUser?.id,
-          })
-
-          // Log audit trail
-          await logAuditTrail(req.payload, {
-            action: 'created',
-            collection: 'hospital-change-requests',
-            documentId: doc.id,
-            changedBy: submittedByUser?.id || doc.id,
-            metadata: {
+            const emailTemplate = hospitalChangeRequestSubmittedAdminEmail({
+              id: doc.id,
               type: doc.type,
-              targetHospital: typeof doc.targetHospital === 'object' ? doc.targetHospital?.id : doc.targetHospital,
-            },
-          })
-        } catch (error) {
-          console.error('Failed to send hospital change request notification:', error)
+              submittedBy: submittedByUser,
+              proposedData: doc.proposedData,
+              targetHospital: doc.targetHospital,
+            })
+
+            await sendAndLogAdminNotification(req.payload, {
+              type: 'hospital_request_submitted_admin',
+              subject: emailTemplate.subject,
+              html: emailTemplate.html,
+              relatedHospitalRequest: doc.id,
+              relatedUser: submittedByUser?.id,
+            })
+
+            // Log audit trail
+            await logAuditTrail(req.payload, {
+              action: 'created',
+              collection: 'hospital-change-requests',
+              documentId: doc.id,
+              changedBy: submittedByUser?.id || doc.id,
+              metadata: {
+                type: doc.type,
+                targetHospital: typeof doc.targetHospital === 'object' ? doc.targetHospital?.id : doc.targetHospital,
+              },
+            })
+          } catch (error) {
+            console.error('Failed to send hospital change request notification:', error)
+          }
+
+          return doc
         }
 
-        return doc
-      },
-    ],
-    afterChange: [
-      async ({ req, doc, previousDoc, operation: _operation }) => {
-        if (!req.payload) return doc
-
-        // Auto-apply approved changes
+        // Handle updates - auto-apply approved changes
         // Only proceed if status just changed to 'approved'
         if (previousDoc?.status === 'approved') {
           // Already applied, don't reprocess

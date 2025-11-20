@@ -56,11 +56,13 @@ export interface EtaResponse {
   trafficRatio: number
   trafficStatus: TrafficStatus
   source: 'device_live_traffic' | 'ucmc_baseline'
+  provider?: 'google' | 'here' | 'fallback'
   lastUpdated: string
 }
 
 /**
- * Fetch real-time ETA using Google Maps Distance Matrix API.
+ * Fetch real-time ETA using configured provider (Google Maps or HERE API).
+ * Automatically falls back to alternate provider if primary fails.
  * Falls back to UCMC origin if no GPS coordinates provided.
  *
  * @param destLat Destination latitude

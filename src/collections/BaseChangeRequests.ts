@@ -64,55 +64,54 @@ export const BaseChangeRequests: CollectionConfig = {
         return data
       },
     ],
-    afterCreate: [
-      async ({ req, doc }) => {
+    afterChange: [
+      async ({ req, doc, previousDoc, operation }) => {
         if (!req.payload) return doc
 
-        try {
-          const submittedByUser = doc.submittedBy
-            ? await req.payload.findByID({
-                collection: 'users',
-                id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
-              })
-            : null
+        // Handle creation - send admin notification when a new request is submitted
+        if (operation === 'create') {
+          try {
+            const submittedByUser = doc.submittedBy
+              ? await req.payload.findByID({
+                  collection: 'users',
+                  id: typeof doc.submittedBy === 'string' ? doc.submittedBy : doc.submittedBy.id || doc.submittedBy,
+                })
+              : null
 
-          const emailTemplate = baseChangeRequestSubmittedAdminEmail({
-            id: doc.id,
-            type: doc.type,
-            submittedBy: submittedByUser,
-            proposedData: doc.proposedData,
-            targetBase: doc.targetBase,
-          })
-
-          await sendAndLogAdminNotification(req.payload, {
-            type: 'base_request_submitted_admin',
-            subject: emailTemplate.subject,
-            html: emailTemplate.html,
-            relatedBaseRequest: doc.id,
-            relatedUser: submittedByUser?.id,
-          })
-
-          await logAuditTrail(req.payload, {
-            action: 'created',
-            collection: 'base-change-requests',
-            documentId: doc.id,
-            changedBy: submittedByUser?.id || doc.id,
-            metadata: {
+            const emailTemplate = baseChangeRequestSubmittedAdminEmail({
+              id: doc.id,
               type: doc.type,
-              targetBase: typeof doc.targetBase === 'object' ? doc.targetBase?.id : doc.targetBase,
-            },
-          })
-        } catch (error) {
-          console.error('Failed to send base change request notification:', error)
+              submittedBy: submittedByUser,
+              proposedData: doc.proposedData,
+              targetBase: doc.targetBase,
+            })
+
+            await sendAndLogAdminNotification(req.payload, {
+              type: 'base_request_submitted_admin',
+              subject: emailTemplate.subject,
+              html: emailTemplate.html,
+              relatedBaseRequest: doc.id,
+              relatedUser: submittedByUser?.id,
+            })
+
+            await logAuditTrail(req.payload, {
+              action: 'created',
+              collection: 'base-change-requests',
+              documentId: doc.id,
+              changedBy: submittedByUser?.id || doc.id,
+              metadata: {
+                type: doc.type,
+                targetBase: typeof doc.targetBase === 'object' ? doc.targetBase?.id : doc.targetBase,
+              },
+            })
+          } catch (error) {
+            console.error('Failed to send base change request notification:', error)
+          }
+
+          return doc
         }
 
-        return doc
-      },
-    ],
-    afterChange: [
-      async ({ req, doc, previousDoc }) => {
-        if (!req.payload) return doc
-
+        // Handle updates - approval/rejection logic
         if (previousDoc?.status === 'approved') {
           return doc
         }
