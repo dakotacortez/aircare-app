@@ -310,27 +310,44 @@ export function stripHtml(html: string): string {
 /**
  * Initialize Firebase Admin SDK for push notifications
  * Uses HTTP v1 API (legacy FCM API deprecated 6/20/2024)
+ *
+ * Supports two configuration methods:
+ * 1. GOOGLE_APPLICATION_CREDENTIALS env var pointing to JSON file (recommended)
+ * 2. Individual FCM_PROJECT_ID, FCM_PRIVATE_KEY, FCM_CLIENT_EMAIL env vars
  */
 let firebaseInitialized = false
 
 function initializeFirebaseAdmin() {
   if (firebaseInitialized) return
 
-  const projectId = process.env.FCM_PROJECT_ID
-  const privateKey = process.env.FCM_PRIVATE_KEY
-  const clientEmail = process.env.FCM_CLIENT_EMAIL
-
-  // Only initialize if credentials are provided
-  if (!projectId || !privateKey || !clientEmail) {
-    console.warn('Firebase credentials not configured - push notifications will be disabled')
-    return
-  }
-
   try {
     // Dynamic import to avoid issues if firebase-admin is not installed
     const admin = require('firebase-admin')
 
-    if (!admin.apps.length) {
+    if (admin.apps.length > 0) {
+      firebaseInitialized = true
+      return
+    }
+
+    // Method 1 (Recommended): Use GOOGLE_APPLICATION_CREDENTIALS
+    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+
+    if (credentialsPath) {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
+        projectId: process.env.FCM_PROJECT_ID,
+      })
+      firebaseInitialized = true
+      console.log('Firebase Admin SDK initialized successfully (using GOOGLE_APPLICATION_CREDENTIALS)')
+      return
+    }
+
+    // Method 2 (Fallback): Use individual credentials
+    const projectId = process.env.FCM_PROJECT_ID
+    const privateKey = process.env.FCM_PRIVATE_KEY
+    const clientEmail = process.env.FCM_CLIENT_EMAIL
+
+    if (projectId && privateKey && clientEmail) {
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId,
@@ -339,8 +356,13 @@ function initializeFirebaseAdmin() {
         }),
       })
       firebaseInitialized = true
-      console.log('Firebase Admin SDK initialized successfully')
+      console.log('Firebase Admin SDK initialized successfully (using individual credentials)')
+      return
     }
+
+    // No credentials configured
+    console.warn('Firebase credentials not configured - push notifications will be disabled')
+    console.warn('Configure either GOOGLE_APPLICATION_CREDENTIALS or FCM_PROJECT_ID/FCM_PRIVATE_KEY/FCM_CLIENT_EMAIL')
   } catch (error) {
     console.error('Failed to initialize Firebase Admin SDK:', error)
   }
