@@ -1,16 +1,27 @@
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import Link from 'next/link'
 import { ChevronLeft, Sparkles } from 'lucide-react'
 import { getMeUser } from '@/utilities/getMeUser'
-import type { Base } from '@/payload-types'
+import type { Base, Asset } from '@/payload-types'
 import { BaseChangeRequestForm } from '../bases/[slug]/BaseChangeRequestForm'
 
 export default async function SuggestBasePage() {
   await getMeUser({
     nullUserRedirect: `/login?unauthorized=bases&redirect=${encodeURIComponent('/suggest-base')}`,
   })
+
+  const payload = await getPayload({ config })
+
+  const assetsResult = await payload.find({
+    collection: 'assets',
+    limit: 200,
+  })
+
+  const assets = JSON.parse(JSON.stringify(assetsResult.docs)) as Asset[]
 
   // Create an empty base object for the "add" form
   const emptyBase: Base = {
@@ -68,7 +79,7 @@ export default async function SuggestBasePage() {
           </div>
         </div>
 
-        <BaseChangeRequestForm base={emptyBase} />
+        <BaseChangeRequestForm base={emptyBase} assets={assets} />
       </div>
     </div>
   )
