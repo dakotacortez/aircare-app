@@ -24,6 +24,8 @@ import { BaseChangeRequests } from './collections/BaseChangeRequests'
 import { Bases } from './collections/Bases'
 import { Assets } from './collections/Assets'
 import { Calculators } from './collections/Calculators'
+import { Notifications } from './collections/Notifications'
+import { AuditLog } from './collections/AuditLog'
 
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -101,6 +103,8 @@ export default buildConfig({
     Bases,
     Assets,
     Calculators,
+    Notifications,
+    AuditLog,
   ],
 
   cors: [getServerSideURL()].filter(Boolean),
