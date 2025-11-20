@@ -34,15 +34,15 @@ export const BaseChangeRequests: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
-      async ({ req, operation, data, previousDoc }) => {
+      async ({ req, operation, data, originalDoc }) => {
         if (operation === 'create' && req.user) {
           data.submittedBy = req.user.id
         }
 
         // Track amendments in audit trail
-        if (operation === 'update' && previousDoc && req.user && req.payload) {
+        if (operation === 'update' && originalDoc && req.user && req.payload) {
           const fieldsToCompare = ['name', 'squadPhone', 'coordinates', 'latitude', 'longitude']
-          const previousProposedData = previousDoc.proposedData || {}
+          const previousProposedData = originalDoc.proposedData || {}
           const newProposedData = data.proposedData || {}
 
           const changes = detectChanges(previousProposedData, newProposedData, fieldsToCompare)
@@ -51,11 +51,11 @@ export const BaseChangeRequests: CollectionConfig = {
             await logAuditTrail(req.payload, {
               action: 'amended',
               collection: 'base-change-requests',
-              documentId: previousDoc.id,
+              documentId: originalDoc.id,
               changedBy: req.user.id,
               changes,
               metadata: {
-                amendedBefore: previousDoc.status === 'pending' ? 'approval' : 'rejection',
+                amendedBefore: originalDoc.status === 'pending' ? 'approval' : 'rejection',
               },
             })
           }
