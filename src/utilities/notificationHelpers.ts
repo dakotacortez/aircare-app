@@ -308,8 +308,47 @@ export function stripHtml(html: string): string {
 }
 
 /**
+ * Initialize Firebase Admin SDK for push notifications
+ * Uses HTTP v1 API (legacy FCM API deprecated 6/20/2024)
+ */
+let firebaseInitialized = false
+
+function initializeFirebaseAdmin() {
+  if (firebaseInitialized) return
+
+  const projectId = process.env.FCM_PROJECT_ID
+  const privateKey = process.env.FCM_PRIVATE_KEY
+  const clientEmail = process.env.FCM_CLIENT_EMAIL
+
+  // Only initialize if credentials are provided
+  if (!projectId || !privateKey || !clientEmail) {
+    console.warn('Firebase credentials not configured - push notifications will be disabled')
+    return
+  }
+
+  try {
+    // Dynamic import to avoid issues if firebase-admin is not installed
+    const admin = require('firebase-admin')
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId,
+          privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
+          clientEmail,
+        }),
+      })
+      firebaseInitialized = true
+      console.log('Firebase Admin SDK initialized successfully')
+    }
+  } catch (error) {
+    console.error('Failed to initialize Firebase Admin SDK:', error)
+  }
+}
+
+/**
  * Send push notification to a user via FCM (Firebase Cloud Messaging)
- * This is infrastructure ready - actual FCM implementation can be added later
+ * Uses Firebase Admin SDK with HTTP v1 API
  */
 export async function sendPushNotificationToUser(
   payload: Payload,
@@ -338,41 +377,26 @@ export async function sendPushNotificationToUser(
       return
     }
 
-    // FCM implementation placeholder
-    // When ready to implement, install: pnpm add firebase-admin
-    // Then use firebase-admin to send push notifications
-    console.log(`[Push Notification] Would send to ${fcmTokens.length} devices:`, {
-      userId,
-      title: notification.title,
-      body: notification.body,
-      tokens: fcmTokens.map(t => t.token),
-    })
+    // Initialize Firebase Admin if needed
+    initializeFirebaseAdmin()
 
-    // TODO: Implement actual FCM push notification sending
-    // Example with firebase-admin:
-    /*
-    import admin from 'firebase-admin'
-
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.FCM_PROJECT_ID,
-          privateKey: process.env.FCM_PRIVATE_KEY,
-          clientEmail: process.env.FCM_CLIENT_EMAIL,
-        }),
-      })
+    if (!firebaseInitialized) {
+      console.warn('Firebase Admin SDK not initialized - skipping push notification')
+      return
     }
 
+    // Send push notification using Firebase Admin SDK (HTTP v1 API)
+    const admin = require('firebase-admin')
     const messaging = admin.messaging()
-    const tokens = fcmTokens.map(t => t.token)
+    const tokens = fcmTokens.map((t: any) => t.token)
 
-    const response = await messaging.sendMulticast({
+    const response = await messaging.sendEachForMulticast({
       tokens,
       notification: {
         title: notification.title,
         body: notification.body,
       },
-      data: notification.data,
+      data: notification.data || {},
       android: {
         priority: 'high',
       },
@@ -380,23 +404,38 @@ export async function sendPushNotificationToUser(
         headers: {
           'apns-priority': '10',
         },
+        payload: {
+          aps: {
+            sound: 'default',
+          },
+        },
       },
     })
 
     console.log(`Push notification sent to ${response.successCount}/${tokens.length} devices`)
 
-    // Remove invalid tokens
+    // Remove invalid tokens (expired, unregistered, or invalid)
     if (response.failureCount > 0) {
-      const validTokens = fcmTokens.filter((_, index) => response.responses[index].success)
-      await payload.update({
-        collection: 'users',
-        id: userId,
-        data: {
-          fcmTokens: validTokens,
-        },
+      const validTokens = fcmTokens.filter((_: any, index: number) => {
+        const result = response.responses[index]
+        if (!result.success) {
+          // Log the specific error for debugging
+          console.warn(`Failed to send to token ${index}:`, result.error?.code)
+        }
+        return result.success
       })
+
+      if (validTokens.length < fcmTokens.length) {
+        await payload.update({
+          collection: 'users',
+          id: userId,
+          data: {
+            fcmTokens: validTokens,
+          },
+        })
+        console.log(`Removed ${fcmTokens.length - validTokens.length} invalid FCM tokens for user ${userId}`)
+      }
     }
-    */
   } catch (error) {
     console.error(`Error sending push notification to user ${userId}:`, error)
   }
