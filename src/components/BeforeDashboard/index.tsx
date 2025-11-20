@@ -1,7 +1,7 @@
 import { Banner } from '@payloadcms/ui/elements/Banner'
 import React from 'react'
+import Link from 'next/link'
 
-import { SeedButton } from './SeedButton'
 import './index.scss'
 
 const baseClass = 'before-dashboard'
@@ -34,19 +34,19 @@ const BeforeDashboard: React.FC = () => {
       Quick Links:
       <ul className={`${baseClass}__instructions`}>
         <li>
-          <a href="/admin/collections/hospitals">Hospitals Directory</a>
+          <Link href="/admin/collections/hospitals">Hospitals Directory</Link>
           {' - Manage hospital information, capabilities, and contact details'}
         </li>
         <li>
-          <a href="/admin/collections/bases">Bases Directory</a>
+          <Link href="/admin/collections/bases">Bases Directory</Link>
           {' - Manage air medical base information'}
         </li>
         <li>
-          <a href="/admin/collections/protocols">Protocols</a>
+          <Link href="/admin/collections/protocols">Protocols</Link>
           {' - Clinical protocols and procedures'}
         </li>
         <li>
-          <a href="/admin/collections/hospital-change-requests">Hospital Change Requests</a>
+          <Link href="/admin/collections/hospital-change-requests">Hospital Change Requests</Link>
           {' - Review user-submitted updates'}
         </li>
       </ul>

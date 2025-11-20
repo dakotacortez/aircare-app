@@ -86,15 +86,7 @@ export function HospitalsClient({ hospitals, capabilities }: HospitalsClientProp
   const [sortOption, setSortOption] = useState<SortOption>('distanceAsc')
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [locationError, setLocationError] = useState<string | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const [selectedCapability, setSelectedCapability] = useState<{ name: string; level: string | null; description: string | null; color: CapabilityColorToken } | null>(null)
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   useEffect(() => {
     const fetchLocation = async () => {
