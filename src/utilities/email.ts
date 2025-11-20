@@ -1,8 +1,5 @@
 import { Resend } from 'resend'
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export interface EmailOptions {
   to: string | string[]
   subject: string
@@ -27,6 +24,8 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
     const from = options.from || process.env.FROM_EMAIL || 'onboarding@resend.dev'
     const fromName = process.env.FROM_NAME || 'Air Care & Mobile Care'
 
+    const resend = new Resend(process.env.RESEND_API_KEY)
+
     const result = await resend.emails.send({
       from: `${fromName} <${from}>`,
       to: Array.isArray(options.to) ? options.to : [options.to],
@@ -40,7 +39,7 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
     }
 
     console.log('Email sent successfully:', result.data?.id)
-    return { success: true, id: result.data?.id }
+    return { success: true, id: result.data?.id || undefined }
   } catch (error) {
     console.error('Error sending email:', error)
     return {
