@@ -17,7 +17,14 @@ ALTER TABLE "payload_locked_documents_rels"
   ADD COLUMN IF NOT EXISTS "base_change_requests_id" integer,
   ADD COLUMN IF NOT EXISTS "bases_id" integer,
   ADD COLUMN IF NOT EXISTS "assets_id" integer,
-  ADD COLUMN IF NOT EXISTS "calculators_id" integer;
+  ADD COLUMN IF NOT EXISTS "calculators_id" integer,
+  ADD COLUMN IF NOT EXISTS "notifications_id" integer,
+  ADD COLUMN IF NOT EXISTS "audit_log_id" integer,
+  ADD COLUMN IF NOT EXISTS "redirects_id" integer,
+  ADD COLUMN IF NOT EXISTS "forms_id" integer,
+  ADD COLUMN IF NOT EXISTS "form_submissions_id" integer,
+  ADD COLUMN IF NOT EXISTS "search_id" integer,
+  ADD COLUMN IF NOT EXISTS "payload_folders_id" integer;
 
 -- Create indexes for the new columns to improve query performance
 CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_hospital_networks_id_idx"
@@ -36,6 +43,20 @@ CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_assets_id_idx"
   ON "payload_locked_documents_rels" USING btree ("assets_id");
 CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_calculators_id_idx"
   ON "payload_locked_documents_rels" USING btree ("calculators_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_notifications_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("notifications_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_audit_log_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("audit_log_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_redirects_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("redirects_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_forms_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("forms_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_form_submissions_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("form_submissions_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_search_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("search_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_payload_folders_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("payload_folders_id");
 
 -- Add foreign key constraints for referential integrity
 DO $$
@@ -109,6 +130,69 @@ BEGIN
     ALTER TABLE "payload_locked_documents_rels"
       ADD CONSTRAINT "payload_locked_documents_rels_calculators_fk"
         FOREIGN KEY ("calculators_id") REFERENCES "calculators"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_notifications_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_notifications_fk"
+        FOREIGN KEY ("notifications_id") REFERENCES "notifications"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_audit_log_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_audit_log_fk"
+        FOREIGN KEY ("audit_log_id") REFERENCES "audit_log"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_redirects_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_redirects_fk"
+        FOREIGN KEY ("redirects_id") REFERENCES "redirects"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_forms_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_forms_fk"
+        FOREIGN KEY ("forms_id") REFERENCES "forms"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_form_submissions_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_form_submissions_fk"
+        FOREIGN KEY ("form_submissions_id") REFERENCES "form_submissions"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_search_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_search_fk"
+        FOREIGN KEY ("search_id") REFERENCES "search"("id")
+        ON DELETE cascade ON UPDATE no action;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_payload_folders_fk'
+  ) THEN
+    ALTER TABLE "payload_locked_documents_rels"
+      ADD CONSTRAINT "payload_locked_documents_rels_payload_folders_fk"
+        FOREIGN KEY ("payload_folders_id") REFERENCES "payload_folders"("id")
         ON DELETE cascade ON UPDATE no action;
   END IF;
 END $$;
