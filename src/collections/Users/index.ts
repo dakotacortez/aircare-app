@@ -371,6 +371,108 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      name: 'fcmTokens',
+      type: 'array',
+      label: 'FCM Tokens (Firebase Cloud Messaging)',
+      admin: {
+        description: 'Device tokens for push notifications (automatically managed by mobile app)',
+        readOnly: true,
+        hidden: true,
+      },
+      fields: [
+        {
+          name: 'token',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'platform',
+          type: 'select',
+          options: [
+            { label: 'Android', value: 'android' },
+            { label: 'iOS', value: 'ios' },
+            { label: 'Web', value: 'web' },
+          ],
+        },
+        {
+          name: 'lastUsed',
+          type: 'date',
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+      ],
+      access: {
+        create: () => true,
+        read: ({ req: { user }, id }) => {
+          // Users can read their own tokens, admins can read all
+          if (user && id && user.id === id) return true
+          return user?.role === 'admin-team'
+        },
+        update: ({ req: { user }, id }) => {
+          // Users can update their own tokens (mobile app registration)
+          if (user && id && user.id === id) return true
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'notificationPreferences',
+      type: 'group',
+      label: 'Email Notification Preferences',
+      admin: {
+        description: 'Choose which email notifications you want to receive',
+      },
+      fields: [
+        {
+          name: 'userRegistrations',
+          type: 'checkbox',
+          label: 'User Registrations',
+          defaultValue: true,
+          admin: {
+            description: 'Get notified when new users register (Admin/Content team only)',
+            condition: (data, siblingData, { user }) => {
+              return user?.role === 'admin-team' || user?.role === 'content-team'
+            },
+          },
+        },
+        {
+          name: 'changeRequests',
+          type: 'checkbox',
+          label: 'Hospital/Base Change Requests',
+          defaultValue: true,
+          admin: {
+            description: 'Get notified when users submit change requests (Admin/Content team only)',
+            condition: (data, siblingData, { user }) => {
+              return user?.role === 'admin-team' || user?.role === 'content-team'
+            },
+          },
+        },
+        {
+          name: 'systemNotifications',
+          type: 'checkbox',
+          label: 'System Notifications',
+          defaultValue: true,
+          admin: {
+            description: 'Get notified about system events and critical updates (Admin team only)',
+            condition: (data, siblingData, { user }) => {
+              return user?.role === 'admin-team'
+            },
+          },
+        },
+      ],
+      access: {
+        create: () => true,
+        update: ({ req: { user }, id }) => {
+          // Users can update their own preferences
+          if (user && id && user.id === id) return true
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
       name: 'profileImage',
       type: 'upload',
       relationTo: 'media',

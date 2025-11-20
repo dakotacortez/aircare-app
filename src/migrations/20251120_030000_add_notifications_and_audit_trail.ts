@@ -7,13 +7,16 @@ import { sql, MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
  * 1. Notifications collection - tracks all email notifications sent by the system
  * 2. AuditLog collection - detailed change tracking for amendments and status changes
  * 3. Rejection reason fields - allows admins to provide feedback when rejecting requests
+ * 4. FCM tokens - for push notifications (Android/iOS)
+ * 5. Notification preferences - per-user email notification settings
  *
  * Collections affected:
- * - users (new: rejection_reason)
+ * - users (new: rejection_reason, fcmTokens array, notificationPreferences group)
  * - hospital_change_requests (new: rejection_reason)
  * - base_change_requests (new: rejection_reason)
  * - notifications (new table)
  * - audit_log (new table)
+ * - users_fcm_tokens (new table for FCM token array)
  */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
@@ -152,7 +155,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     END $$;
 
     -- ========================================
-    -- REJECTION REASON FIELDS
+    -- USER FIELDS - REJECTION REASONS
     -- ========================================
 
     -- Add rejection_reason to users table
@@ -166,11 +169,62 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     -- Add rejection_reason to base_change_requests table
     ALTER TABLE "base_change_requests"
       ADD COLUMN IF NOT EXISTS "rejection_reason" text;
+
+    -- ========================================
+    -- USER FIELDS - NOTIFICATION PREFERENCES
+    -- ========================================
+
+    -- Add notification preference fields to users table
+    ALTER TABLE "users"
+      ADD COLUMN IF NOT EXISTS "notification_preferences_user_registrations" boolean DEFAULT true,
+      ADD COLUMN IF NOT EXISTS "notification_preferences_change_requests" boolean DEFAULT true,
+      ADD COLUMN IF NOT EXISTS "notification_preferences_system_notifications" boolean DEFAULT true;
+
+    -- ========================================
+    -- USER FIELDS - FCM TOKENS (Push Notifications)
+    -- ========================================
+
+    -- Create users_fcm_tokens table for push notification device tokens
+    CREATE TABLE IF NOT EXISTS "users_fcm_tokens" (
+      "_order" integer NOT NULL,
+      "_parent_id" integer NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
+      "token" varchar NOT NULL,
+      "platform" varchar,
+      "last_used" timestamp(3) with time zone
+    );
+
+    -- Create indexes for fcm_tokens
+    CREATE INDEX IF NOT EXISTS "users_fcm_tokens_order_idx" ON "users_fcm_tokens" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "users_fcm_tokens_parent_idx" ON "users_fcm_tokens" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "users_fcm_tokens_token_idx" ON "users_fcm_tokens" USING btree ("token");
+
+    -- Add foreign key for fcm_tokens
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'users_fcm_tokens_parent_fk'
+      ) THEN
+        ALTER TABLE "users_fcm_tokens"
+          ADD CONSTRAINT "users_fcm_tokens_parent_fk"
+            FOREIGN KEY ("_parent_id") REFERENCES "users"("id")
+            ON DELETE cascade ON UPDATE no action;
+      END IF;
+    END $$;
   `)
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
+    -- Drop FCM tokens table
+    DROP TABLE IF EXISTS "users_fcm_tokens" CASCADE;
+
+    -- Remove notification preference columns
+    ALTER TABLE "users"
+      DROP COLUMN IF EXISTS "notification_preferences_user_registrations",
+      DROP COLUMN IF EXISTS "notification_preferences_change_requests",
+      DROP COLUMN IF EXISTS "notification_preferences_system_notifications";
+
     -- Remove rejection_reason columns
     ALTER TABLE "users"
       DROP COLUMN IF EXISTS "rejection_reason";

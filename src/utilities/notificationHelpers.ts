@@ -1,9 +1,67 @@
 import type { Payload } from 'payload'
-import { sendEmail, sendAdminNotification } from './email'
+import { sendEmail } from './email'
 import type { User } from '@/payload-types'
 
 /**
- * Send notification and log it in the Notifications collection
+ * Notification category types that map to user notification preferences
+ */
+export type NotificationCategory = 'userRegistrations' | 'changeRequests' | 'systemNotifications'
+
+/**
+ * Get users who should receive notifications based on role and preferences
+ */
+export async function getNotificationRecipients(
+  payload: Payload,
+  category: NotificationCategory,
+  requiredRoles: Array<'admin-team' | 'content-team'> = ['admin-team', 'content-team']
+): Promise<User[]> {
+  try {
+    // Query users with the required roles who are active and approved
+    const { docs } = await payload.find({
+      collection: 'users',
+      where: {
+        and: [
+          {
+            role: {
+              in: requiredRoles,
+            },
+          },
+          {
+            approved: {
+              equals: true,
+            },
+          },
+          {
+            status: {
+              equals: 'active',
+            },
+          },
+        ],
+      },
+      limit: 1000, // Get all eligible users
+    })
+
+    // Filter by notification preferences
+    // Users opt-in by default, so only exclude if explicitly set to false
+    const recipients = docs.filter((user: User) => {
+      const prefs = user.notificationPreferences
+      if (!prefs) return true // If no preferences set, opt-in by default
+
+      // Check category-specific preference
+      const categoryPref = prefs[category]
+      return categoryPref !== false // Include if true or undefined (default opt-in)
+    })
+
+    console.log(`Found ${recipients.length} recipients for ${category} notifications`)
+    return recipients
+  } catch (error) {
+    console.error(`Error fetching notification recipients:`, error)
+    return []
+  }
+}
+
+/**
+ * Send notification to a single recipient and log it
  */
 export async function sendAndLogNotification(payload: Payload, params: {
   type: string
@@ -14,8 +72,9 @@ export async function sendAndLogNotification(payload: Payload, params: {
   relatedUser?: string | number | null
   relatedHospitalRequest?: string | number | null
   relatedBaseRequest?: string | number | null
+  sendPushNotification?: boolean
 }): Promise<void> {
-  const { type, recipient, recipientUser, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest } = params
+  const { type, recipient, recipientUser, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest, sendPushNotification } = params
 
   try {
     // Send the email
@@ -24,6 +83,20 @@ export async function sendAndLogNotification(payload: Payload, params: {
       subject,
       html,
     })
+
+    // Send push notification if requested and user has enabled it
+    if (sendPushNotification && recipientUser) {
+      await sendPushNotificationToUser(payload, recipientUser, {
+        title: subject,
+        body: stripHtml(html).substring(0, 200), // First 200 chars without HTML
+        data: {
+          type,
+          relatedUser: relatedUser?.toString(),
+          relatedHospitalRequest: relatedHospitalRequest?.toString(),
+          relatedBaseRequest: relatedBaseRequest?.toString(),
+        },
+      })
+    }
 
     // Log the notification in the database
     await payload.create({
@@ -76,7 +149,58 @@ export async function sendAndLogNotification(payload: Payload, params: {
 }
 
 /**
- * Send admin notification and log it
+ * Send team notification to admin/content team members based on their preferences
+ */
+export async function sendAndLogTeamNotification(payload: Payload, params: {
+  type: string
+  category: NotificationCategory
+  subject: string
+  html: string
+  requiredRoles?: Array<'admin-team' | 'content-team'>
+  relatedUser?: string | number | null
+  relatedHospitalRequest?: string | number | null
+  relatedBaseRequest?: string | number | null
+  sendPushNotification?: boolean
+}): Promise<void> {
+  const { type, category, subject, html, requiredRoles = ['admin-team', 'content-team'], relatedUser, relatedHospitalRequest, relatedBaseRequest, sendPushNotification } = params
+
+  try {
+    // Get all eligible recipients based on role and preferences
+    const recipients = await getNotificationRecipients(payload, category, requiredRoles)
+
+    if (recipients.length === 0) {
+      console.warn(`No recipients found for ${category} notifications`)
+      return
+    }
+
+    // Send notification to each recipient
+    for (const recipient of recipients) {
+      if (!recipient.email) {
+        console.warn(`Skipping user ${recipient.id} - no email address`)
+        continue
+      }
+
+      await sendAndLogNotification(payload, {
+        type,
+        recipient: recipient.email,
+        recipientUser: recipient.id,
+        subject,
+        html,
+        relatedUser,
+        relatedHospitalRequest,
+        relatedBaseRequest,
+        sendPushNotification,
+      })
+    }
+
+    console.log(`Sent ${category} notification to ${recipients.length} team members`)
+  } catch (error) {
+    console.error(`Error sending team notification:`, error)
+  }
+}
+
+/**
+ * Alias for backward compatibility - send to admin/content team for user registrations
  */
 export async function sendAndLogAdminNotification(payload: Payload, params: {
   type: string
@@ -86,64 +210,24 @@ export async function sendAndLogAdminNotification(payload: Payload, params: {
   relatedHospitalRequest?: string | number | null
   relatedBaseRequest?: string | number | null
 }): Promise<void> {
-  const { type, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest } = params
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL
+  // Determine category based on type
+  let category: NotificationCategory = 'systemNotifications'
+  let requiredRoles: Array<'admin-team' | 'content-team'> = ['admin-team', 'content-team']
 
-  if (!adminEmail) {
-    console.warn('ADMIN_NOTIFICATION_EMAIL not configured, skipping admin notification')
-    return
+  if (params.type.includes('user_registration')) {
+    category = 'userRegistrations'
+  } else if (params.type.includes('request')) {
+    category = 'changeRequests'
+  } else if (params.type.includes('system')) {
+    category = 'systemNotifications'
+    requiredRoles = ['admin-team'] // Only admins get system notifications
   }
 
-  try {
-    // Send the email
-    const result = await sendAdminNotification(subject, html)
-
-    // Log the notification in the database
-    await payload.create({
-      collection: 'notifications',
-      data: {
-        type,
-        recipient: adminEmail,
-        subject,
-        htmlContent: html,
-        status: result.success ? 'sent' : 'failed',
-        emailId: result.id,
-        error: result.error,
-        sentAt: result.success ? new Date().toISOString() : undefined,
-        relatedUser,
-        relatedHospitalRequest,
-        relatedBaseRequest,
-      },
-    })
-
-    if (!result.success) {
-      console.error(`Failed to send admin notification:`, result.error)
-    } else {
-      console.log(`Successfully sent admin notification`)
-    }
-  } catch (error) {
-    console.error(`Error sending and logging admin notification:`, error)
-
-    // Still try to log the failed notification
-    try {
-      await payload.create({
-        collection: 'notifications',
-        data: {
-          type,
-          recipient: adminEmail,
-          subject,
-          htmlContent: html,
-          status: 'failed',
-          error: error instanceof Error ? error.message : 'Unknown error',
-          relatedUser,
-          relatedHospitalRequest,
-          relatedBaseRequest,
-        },
-      })
-    } catch (logError) {
-      console.error('Failed to log admin notification error:', logError)
-    }
-  }
+  await sendAndLogTeamNotification(payload, {
+    ...params,
+    category,
+    requiredRoles,
+  })
 }
 
 /**
@@ -214,4 +298,106 @@ export function detectChanges(
   }
 
   return changes
+}
+
+/**
+ * Strip HTML tags from a string
+ */
+export function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Send push notification to a user via FCM (Firebase Cloud Messaging)
+ * This is infrastructure ready - actual FCM implementation can be added later
+ */
+export async function sendPushNotificationToUser(
+  payload: Payload,
+  userId: string | number,
+  notification: {
+    title: string
+    body: string
+    data?: Record<string, string>
+  }
+): Promise<void> {
+  try {
+    // Fetch user to check if push notifications are enabled and get FCM tokens
+    const user = await payload.findByID({
+      collection: 'users',
+      id: userId,
+    })
+
+    if (!user.pushNotificationsEnabled) {
+      console.log(`Push notifications disabled for user ${userId}`)
+      return
+    }
+
+    const fcmTokens = user.fcmTokens || []
+    if (fcmTokens.length === 0) {
+      console.log(`No FCM tokens found for user ${userId}`)
+      return
+    }
+
+    // FCM implementation placeholder
+    // When ready to implement, install: pnpm add firebase-admin
+    // Then use firebase-admin to send push notifications
+    console.log(`[Push Notification] Would send to ${fcmTokens.length} devices:`, {
+      userId,
+      title: notification.title,
+      body: notification.body,
+      tokens: fcmTokens.map(t => t.token),
+    })
+
+    // TODO: Implement actual FCM push notification sending
+    // Example with firebase-admin:
+    /*
+    import admin from 'firebase-admin'
+
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FCM_PROJECT_ID,
+          privateKey: process.env.FCM_PRIVATE_KEY,
+          clientEmail: process.env.FCM_CLIENT_EMAIL,
+        }),
+      })
+    }
+
+    const messaging = admin.messaging()
+    const tokens = fcmTokens.map(t => t.token)
+
+    const response = await messaging.sendMulticast({
+      tokens,
+      notification: {
+        title: notification.title,
+        body: notification.body,
+      },
+      data: notification.data,
+      android: {
+        priority: 'high',
+      },
+      apns: {
+        headers: {
+          'apns-priority': '10',
+        },
+      },
+    })
+
+    console.log(`Push notification sent to ${response.successCount}/${tokens.length} devices`)
+
+    // Remove invalid tokens
+    if (response.failureCount > 0) {
+      const validTokens = fcmTokens.filter((_, index) => response.responses[index].success)
+      await payload.update({
+        collection: 'users',
+        id: userId,
+        data: {
+          fcmTokens: validTokens,
+        },
+      })
+    }
+    */
+  } catch (error) {
+    console.error(`Error sending push notification to user ${userId}:`, error)
+  }
 }
