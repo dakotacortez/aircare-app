@@ -221,7 +221,7 @@ const CapabilityLevelSelect: React.FC<CapabilityLevelSelectProps> = ({ path, fie
           <strong>Level description:</strong> {selectedOption.description}
         </div>
       )}
-      {!loading && capabilityId && levels.length === 0 && !error && (
+      {!loading && !!capabilityId && levels.length === 0 && !error && (
         <div className="field-description" style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#6b7280' }}>
           No certification levels are configured for this capability. Add levels in the Capability Types collection to make
           them available here.
