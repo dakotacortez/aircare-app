@@ -363,7 +363,7 @@ export const Hospitals: CollectionConfig = {
           {
             name: 'nightOperations',
             type: 'checkbox',
-            label: 'Night Operations Supported',
+            label: 'IFR Approach',
             defaultValue: false,
           },
           {

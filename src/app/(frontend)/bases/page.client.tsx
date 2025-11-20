@@ -150,6 +150,17 @@ export function BasesClient({ bases }: BasesClientProps) {
               Quick view of base locations and distance from you
             </p>
           </div>
+          <div className="flex items-center gap-2 text-xs sm:text-sm">
+            <Link
+              href="/suggest-base"
+              className="h-9 flex items-center gap-1.5 rounded-lg border border-uc-light-border bg-uc-light-card px-3 text-xs font-medium text-uc-text-light-default cursor-pointer transition hover:border-neutral-400 hover:bg-uc-light-subtle focus:border-uc-red-500 focus:outline-none focus:ring-2 focus:ring-uc-red-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-uc-text-dark-default dark:hover:border-neutral-600 dark:hover:bg-neutral-750 dark:focus:border-uc-red-400 dark:focus:ring-uc-red-900/30"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span className="hidden sm:inline">Add Base</span>
+            </Link>
+          </div>
         </div>
 
         <div className="mb-3 text-xs text-uc-text-light-muted dark:text-uc-text-dark-muted">
