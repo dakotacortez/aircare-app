@@ -95,7 +95,7 @@ export const HospitalChangeRequests: CollectionConfig = {
             const emailTemplate = hospitalChangeRequestSubmittedAdminEmail({
               id: doc.id,
               type: doc.type,
-              submittedBy: submittedByUser,
+              submittedBy: submittedByUser || undefined,
               proposedData: doc.proposedData,
               targetHospital: doc.targetHospital,
             })
