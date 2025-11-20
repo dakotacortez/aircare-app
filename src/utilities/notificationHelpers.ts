@@ -1,11 +1,21 @@
 import type { Payload } from 'payload'
 import { sendEmail } from './email'
 import type { User } from '@/payload-types'
+import type admin from 'firebase-admin'
 
 /**
  * Notification category types that map to user notification preferences
  */
 export type NotificationCategory = 'userRegistrations' | 'changeRequests' | 'systemNotifications'
+
+/**
+ * Type for FCM token stored in user document
+ */
+type FCMToken = {
+  token: string
+  platform?: 'android' | 'ios' | 'web'
+  lastUsed?: string
+}
 
 /**
  * Get users who should receive notifications based on role and preferences
@@ -316,30 +326,32 @@ export function stripHtml(html: string): string {
  * 2. Individual FCM_PROJECT_ID, FCM_PRIVATE_KEY, FCM_CLIENT_EMAIL env vars
  */
 let firebaseInitialized = false
+let firebaseAdmin: typeof admin | null = null
 
-function initializeFirebaseAdmin() {
-  if (firebaseInitialized) return
+async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
+  if (firebaseInitialized && firebaseAdmin) return firebaseAdmin
 
   try {
     // Dynamic import to avoid issues if firebase-admin is not installed
-    const admin = require('firebase-admin')
+    const adminModule = await import('firebase-admin')
+    firebaseAdmin = adminModule.default
 
-    if (admin.apps.length > 0) {
+    if (firebaseAdmin.apps.length > 0) {
       firebaseInitialized = true
-      return
+      return firebaseAdmin
     }
 
     // Method 1 (Recommended): Use GOOGLE_APPLICATION_CREDENTIALS
     const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
     if (credentialsPath) {
-      admin.initializeApp({
-        credential: admin.credential.applicationDefault(),
+      firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.applicationDefault(),
         projectId: process.env.FCM_PROJECT_ID,
       })
       firebaseInitialized = true
       console.log('Firebase Admin SDK initialized successfully (using GOOGLE_APPLICATION_CREDENTIALS)')
-      return
+      return firebaseAdmin
     }
 
     // Method 2 (Fallback): Use individual credentials
@@ -348,8 +360,8 @@ function initializeFirebaseAdmin() {
     const clientEmail = process.env.FCM_CLIENT_EMAIL
 
     if (projectId && privateKey && clientEmail) {
-      admin.initializeApp({
-        credential: admin.credential.cert({
+      firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.cert({
           projectId,
           privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
           clientEmail,
@@ -357,14 +369,16 @@ function initializeFirebaseAdmin() {
       })
       firebaseInitialized = true
       console.log('Firebase Admin SDK initialized successfully (using individual credentials)')
-      return
+      return firebaseAdmin
     }
 
     // No credentials configured
     console.warn('Firebase credentials not configured - push notifications will be disabled')
     console.warn('Configure either GOOGLE_APPLICATION_CREDENTIALS or FCM_PROJECT_ID/FCM_PRIVATE_KEY/FCM_CLIENT_EMAIL')
+    return null
   } catch (error) {
     console.error('Failed to initialize Firebase Admin SDK:', error)
+    return null
   }
 }
 
@@ -393,24 +407,23 @@ export async function sendPushNotificationToUser(
       return
     }
 
-    const fcmTokens = user.fcmTokens || []
+    const fcmTokens = (user.fcmTokens || []) as FCMToken[]
     if (fcmTokens.length === 0) {
       console.log(`No FCM tokens found for user ${userId}`)
       return
     }
 
     // Initialize Firebase Admin if needed
-    initializeFirebaseAdmin()
+    const admin = await initializeFirebaseAdmin()
 
-    if (!firebaseInitialized) {
+    if (!admin) {
       console.warn('Firebase Admin SDK not initialized - skipping push notification')
       return
     }
 
     // Send push notification using Firebase Admin SDK (HTTP v1 API)
-    const admin = require('firebase-admin')
     const messaging = admin.messaging()
-    const tokens = fcmTokens.map((t: any) => t.token)
+    const tokens = fcmTokens.map((t) => t.token)
 
     const response = await messaging.sendEachForMulticast({
       tokens,
@@ -420,7 +433,7 @@ export async function sendPushNotificationToUser(
       },
       data: notification.data || {},
       android: {
-        priority: 'high',
+        priority: 'high' as const,
       },
       apns: {
         headers: {
@@ -438,7 +451,7 @@ export async function sendPushNotificationToUser(
 
     // Remove invalid tokens (expired, unregistered, or invalid)
     if (response.failureCount > 0) {
-      const validTokens = fcmTokens.filter((_: any, index: number) => {
+      const validTokens = fcmTokens.filter((_token, index) => {
         const result = response.responses[index]
         if (!result.success) {
           // Log the specific error for debugging

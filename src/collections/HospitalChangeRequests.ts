@@ -126,7 +126,7 @@ export const HospitalChangeRequests: CollectionConfig = {
       },
     ],
     afterChange: [
-      async ({ req, doc, previousDoc, operation }) => {
+      async ({ req, doc, previousDoc, operation: _operation }) => {
         if (!req.payload) return doc
 
         // Auto-apply approved changes
