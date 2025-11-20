@@ -81,6 +81,8 @@ export interface Config {
     bases: Base;
     assets: Asset;
     calculators: Calculator;
+    notifications: Notification;
+    'audit-log': AuditLog;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -112,6 +114,8 @@ export interface Config {
     bases: BasesSelect<false> | BasesSelect<true>;
     assets: AssetsSelect<false> | AssetsSelect<true>;
     calculators: CalculatorsSelect<false> | CalculatorsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -461,6 +465,10 @@ export interface User {
    */
   status: 'pending' | 'active' | 'inactive';
   /**
+   * Reason for rejecting this user registration (sent to user in notification email)
+   */
+  rejectionReason?: string | null;
+  /**
    * Default protocol level for this user. Users can still toggle between levels, but this will be their starting preference.
    */
   defaultServiceLine?: ('BLS' | 'ALS' | 'CCT') | null;
@@ -468,6 +476,34 @@ export interface User {
    * Opt-in to receive push notifications for protocol updates and announcements
    */
   pushNotificationsEnabled?: boolean | null;
+  /**
+   * Device tokens for push notifications (automatically managed by mobile app)
+   */
+  fcmTokens?:
+    | {
+        token: string;
+        platform?: ('android' | 'ios' | 'web') | null;
+        lastUsed?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Choose which email notifications you want to receive
+   */
+  notificationPreferences?: {
+    /**
+     * Get notified when new users register (Admin/Content team only)
+     */
+    userRegistrations?: boolean | null;
+    /**
+     * Get notified when users submit change requests (Admin/Content team only)
+     */
+    changeRequests?: boolean | null;
+    /**
+     * Get notified about system events and critical updates (Admin team only)
+     */
+    systemNotifications?: boolean | null;
+  };
   /**
    * Upload a profile picture
    */
@@ -1367,6 +1403,10 @@ export interface HospitalChangeRequest {
    */
   adminNotes?: string | null;
   /**
+   * Reason for rejecting this request (sent to user in notification email)
+   */
+  rejectionReason?: string | null;
+  /**
    * When the change was automatically applied
    */
   appliedAt?: string | null;
@@ -1442,6 +1482,10 @@ export interface BaseChangeRequest {
    * Internal notes about this request
    */
   adminNotes?: string | null;
+  /**
+   * Reason for rejecting this request (sent to user in notification email)
+   */
+  rejectionReason?: string | null;
   /**
    * When the change was automatically applied
    */
@@ -1585,6 +1629,141 @@ export interface Asset {
    * Additional internal notes about this asset
    */
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Track all email notifications sent by the system
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: number;
+  /**
+   * Type of notification sent
+   */
+  type:
+    | 'user_registration_admin'
+    | 'user_approved'
+    | 'user_rejected'
+    | 'hospital_request_submitted_admin'
+    | 'hospital_request_approved'
+    | 'hospital_request_rejected'
+    | 'base_request_submitted_admin'
+    | 'base_request_approved'
+    | 'base_request_rejected';
+  /**
+   * Email address of the recipient
+   */
+  recipient: string;
+  /**
+   * User who received the notification (if applicable)
+   */
+  recipientUser?: (number | null) | User;
+  /**
+   * Email subject line
+   */
+  subject: string;
+  /**
+   * HTML content of the email (for reference)
+   */
+  htmlContent?: string | null;
+  /**
+   * Status of the notification
+   */
+  status: 'pending' | 'sent' | 'failed';
+  /**
+   * Email ID from the email service provider (e.g., Resend)
+   */
+  emailId?: string | null;
+  /**
+   * Error message if the email failed to send
+   */
+  error?: string | null;
+  /**
+   * User related to this notification (e.g., user who registered)
+   */
+  relatedUser?: (number | null) | User;
+  /**
+   * Hospital change request related to this notification
+   */
+  relatedHospitalRequest?: (number | null) | HospitalChangeRequest;
+  /**
+   * Base change request related to this notification
+   */
+  relatedBaseRequest?: (number | null) | BaseChangeRequest;
+  /**
+   * When the notification was successfully sent
+   */
+  sentAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Detailed audit trail of all changes made to change requests
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log".
+ */
+export interface AuditLog {
+  id: number;
+  /**
+   * Type of action performed
+   */
+  action: 'created' | 'updated' | 'approved' | 'rejected' | 'amended' | 'status_changed';
+  /**
+   * Collection that was modified
+   */
+  collection: 'users' | 'hospital-change-requests' | 'base-change-requests' | 'hospitals' | 'bases';
+  /**
+   * ID of the document that was modified
+   */
+  documentId: string;
+  /**
+   * User who made the change
+   */
+  changedBy: number | User;
+  /**
+   * Detailed list of field changes
+   */
+  changes?:
+    | {
+        /**
+         * Name of the field that changed
+         */
+        field: string;
+        /**
+         * Previous value (JSON stringified if complex)
+         */
+        previousValue?: string | null;
+        /**
+         * New value (JSON stringified if complex)
+         */
+        newValue?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Additional metadata about the change
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * IP address of the user who made the change
+   */
+  ipAddress?: string | null;
+  /**
+   * User agent of the browser/client
+   */
+  userAgent?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1833,6 +2012,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'calculators';
         value: number | Calculator;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: number | Notification;
+      } | null)
+    | ({
+        relationTo: 'audit-log';
+        value: number | AuditLog;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2185,8 +2372,24 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   approved?: T;
   status?: T;
+  rejectionReason?: T;
   defaultServiceLine?: T;
   pushNotificationsEnabled?: T;
+  fcmTokens?:
+    | T
+    | {
+        token?: T;
+        platform?: T;
+        lastUsed?: T;
+        id?: T;
+      };
+  notificationPreferences?:
+    | T
+    | {
+        userRegistrations?: T;
+        changeRequests?: T;
+        systemNotifications?: T;
+      };
   profileImage?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2425,6 +2628,7 @@ export interface HospitalChangeRequestsSelect<T extends boolean = true> {
   submittedBy?: T;
   status?: T;
   adminNotes?: T;
+  rejectionReason?: T;
   appliedAt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2481,6 +2685,7 @@ export interface BaseChangeRequestsSelect<T extends boolean = true> {
   submittedBy?: T;
   status?: T;
   adminNotes?: T;
+  rejectionReason?: T;
   appliedAt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2572,6 +2777,49 @@ export interface CalculatorsSelect<T extends boolean = true> {
   showByDefault?: T;
   createdBy?: T;
   updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  type?: T;
+  recipient?: T;
+  recipientUser?: T;
+  subject?: T;
+  htmlContent?: T;
+  status?: T;
+  emailId?: T;
+  error?: T;
+  relatedUser?: T;
+  relatedHospitalRequest?: T;
+  relatedBaseRequest?: T;
+  sentAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log_select".
+ */
+export interface AuditLogSelect<T extends boolean = true> {
+  action?: T;
+  collection?: T;
+  documentId?: T;
+  changedBy?: T;
+  changes?:
+    | T
+    | {
+        field?: T;
+        previousValue?: T;
+        newValue?: T;
+        id?: T;
+      };
+  metadata?: T;
+  ipAddress?: T;
+  userAgent?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -1,7 +1,13 @@
 import type { Payload } from 'payload'
 import { sendEmail } from './email'
-import type { User } from '@/payload-types'
-import type admin from 'firebase-admin'
+import type {
+  AuditLog,
+  BaseChangeRequest,
+  HospitalChangeRequest,
+  Notification,
+  User,
+} from '@/payload-types'
+import admin from 'firebase-admin'
 
 /**
  * Notification category types that map to user notification preferences
@@ -74,17 +80,33 @@ export async function getNotificationRecipients(
  * Send notification to a single recipient and log it
  */
 export async function sendAndLogNotification(payload: Payload, params: {
-  type: string
+  type: Notification['type']
   recipient: string
-  recipientUser?: string | number | null
+  recipientUser?: User['id'] | User | null
   subject: string
   html: string
-  relatedUser?: string | number | null
-  relatedHospitalRequest?: string | number | null
-  relatedBaseRequest?: string | number | null
+  relatedUser?: User['id'] | User | null
+  relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
+  relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
   sendPushNotification?: boolean
 }): Promise<void> {
-  const { type, recipient, recipientUser, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest, sendPushNotification } = params
+  const {
+    type,
+    recipient,
+    recipientUser,
+    subject,
+    html,
+    relatedUser,
+    relatedHospitalRequest,
+    relatedBaseRequest,
+    sendPushNotification,
+  } = params
+
+  const pushRecipientId = typeof recipientUser === 'object' ? recipientUser?.id : recipientUser
+  const relatedUserId = typeof relatedUser === 'object' ? relatedUser?.id : relatedUser
+  const relatedHospitalRequestId =
+    typeof relatedHospitalRequest === 'object' ? relatedHospitalRequest?.id : relatedHospitalRequest
+  const relatedBaseRequestId = typeof relatedBaseRequest === 'object' ? relatedBaseRequest?.id : relatedBaseRequest
 
   try {
     // Send the email
@@ -95,14 +117,14 @@ export async function sendAndLogNotification(payload: Payload, params: {
     })
 
     // Send push notification if requested and user has enabled it
-    if (sendPushNotification && recipientUser) {
+    if (sendPushNotification && pushRecipientId) {
       // Build data object with only defined values (FCM requires Record<string, string>)
       const pushData: Record<string, string> = { type }
-      if (relatedUser) pushData.relatedUser = relatedUser.toString()
-      if (relatedHospitalRequest) pushData.relatedHospitalRequest = relatedHospitalRequest.toString()
-      if (relatedBaseRequest) pushData.relatedBaseRequest = relatedBaseRequest.toString()
+      if (relatedUserId) pushData.relatedUser = String(relatedUserId)
+      if (relatedHospitalRequestId) pushData.relatedHospitalRequest = String(relatedHospitalRequestId)
+      if (relatedBaseRequestId) pushData.relatedBaseRequest = String(relatedBaseRequestId)
 
-      await sendPushNotificationToUser(payload, recipientUser, {
+      await sendPushNotificationToUser(payload, pushRecipientId, {
         title: subject,
         body: stripHtml(html).substring(0, 200), // First 200 chars without HTML
         data: pushData,
@@ -110,7 +132,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
     }
 
     // Log the notification in the database
-    await payload.create({
+    await payload.create<Notification>({
       collection: 'notifications',
       data: {
         type,
@@ -138,7 +160,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
 
     // Still try to log the failed notification
     try {
-      await payload.create({
+      await payload.create<Notification>({
         collection: 'notifications',
         data: {
           type,
@@ -163,14 +185,14 @@ export async function sendAndLogNotification(payload: Payload, params: {
  * Send team notification to admin/content team members based on their preferences
  */
 export async function sendAndLogTeamNotification(payload: Payload, params: {
-  type: string
+  type: Notification['type']
   category: NotificationCategory
   subject: string
   html: string
   requiredRoles?: Array<'admin-team' | 'content-team'>
-  relatedUser?: string | number | null
-  relatedHospitalRequest?: string | number | null
-  relatedBaseRequest?: string | number | null
+  relatedUser?: User['id'] | User | null
+  relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
+  relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
   sendPushNotification?: boolean
 }): Promise<void> {
   const { type, category, subject, html, requiredRoles = ['admin-team', 'content-team'], relatedUser, relatedHospitalRequest, relatedBaseRequest, sendPushNotification } = params
@@ -214,12 +236,12 @@ export async function sendAndLogTeamNotification(payload: Payload, params: {
  * Alias for backward compatibility - send to admin/content team for user registrations
  */
 export async function sendAndLogAdminNotification(payload: Payload, params: {
-  type: string
+  type: Notification['type']
   subject: string
   html: string
-  relatedUser?: string | number | null
-  relatedHospitalRequest?: string | number | null
-  relatedBaseRequest?: string | number | null
+  relatedUser?: User['id'] | User | null
+  relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
+  relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
 }): Promise<void> {
   // Determine category based on type
   let category: NotificationCategory = 'systemNotifications'
@@ -245,10 +267,10 @@ export async function sendAndLogAdminNotification(payload: Payload, params: {
  * Log an audit trail entry
  */
 export async function logAuditTrail(payload: Payload, params: {
-  action: 'created' | 'updated' | 'approved' | 'rejected' | 'amended' | 'status_changed'
-  collection: 'users' | 'hospital-change-requests' | 'base-change-requests' | 'hospitals' | 'bases'
+  action: AuditLog['action']
+  collection: AuditLog['collection']
   documentId: string | number
-  changedBy: string | number
+  changedBy: User['id'] | User
   changes?: Array<{
     field: string
     previousValue?: string
@@ -261,7 +283,7 @@ export async function logAuditTrail(payload: Payload, params: {
   const { action, collection, documentId, changedBy, changes, metadata, ipAddress, userAgent } = params
 
   try {
-    await payload.create({
+    await payload.create<AuditLog>({
       collection: 'audit-log',
       data: {
         action,
@@ -327,32 +349,27 @@ export function stripHtml(html: string): string {
  * 2. Individual FCM_PROJECT_ID, FCM_PRIVATE_KEY, FCM_CLIENT_EMAIL env vars
  */
 let firebaseInitialized = false
-let firebaseAdmin: typeof admin | null = null
 
 async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
-  if (firebaseInitialized && firebaseAdmin) return firebaseAdmin
+  if (firebaseInitialized) return admin
 
   try {
-    // Dynamic import to avoid issues if firebase-admin is not installed
-    const adminModule = await import('firebase-admin')
-    firebaseAdmin = adminModule.default
-
-    if (firebaseAdmin.apps.length > 0) {
+    if (admin.apps.length > 0) {
       firebaseInitialized = true
-      return firebaseAdmin
+      return admin
     }
 
     // Method 1 (Recommended): Use GOOGLE_APPLICATION_CREDENTIALS
     const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
 
     if (credentialsPath) {
-      firebaseAdmin.initializeApp({
-        credential: firebaseAdmin.credential.applicationDefault(),
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault(),
         projectId: process.env.FCM_PROJECT_ID,
       })
       firebaseInitialized = true
       console.log('Firebase Admin SDK initialized successfully (using GOOGLE_APPLICATION_CREDENTIALS)')
-      return firebaseAdmin
+      return admin
     }
 
     // Method 2 (Fallback): Use individual credentials
@@ -361,8 +378,8 @@ async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
     const clientEmail = process.env.FCM_CLIENT_EMAIL
 
     if (projectId && privateKey && clientEmail) {
-      firebaseAdmin.initializeApp({
-        credential: firebaseAdmin.credential.cert({
+      admin.initializeApp({
+        credential: admin.credential.cert({
           projectId,
           privateKey: privateKey.replace(/\\n/g, '\n'), // Handle escaped newlines
           clientEmail,
@@ -370,7 +387,7 @@ async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
       })
       firebaseInitialized = true
       console.log('Firebase Admin SDK initialized successfully (using individual credentials)')
-      return firebaseAdmin
+      return admin
     }
 
     // No credentials configured
