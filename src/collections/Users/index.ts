@@ -91,47 +91,50 @@ export const Users: CollectionConfig = {
     },
   },
   hooks: {
-      afterCreate: [
-        async ({ req, doc }) => {
-          // Send admin notification when a new user registers
-          // Only send if this is a self-registration (no logged-in user or user registering is themselves)
-          const isNewUserRegistration = !req.user || req.user.id === doc.id
-
-          if (isNewUserRegistration && req.payload) {
-            const emailTemplate = newUserRegistrationAdminEmail({
-              name: doc.name,
-              email: doc.email,
-              id: doc.id,
-            })
-
-            await sendAndLogAdminNotification(req.payload, {
-              type: 'user_registration_admin',
-              subject: emailTemplate.subject,
-              html: emailTemplate.html,
-              relatedUser: doc.id,
-            })
-
-            // Log audit trail
-            await logAuditTrail(req.payload, {
-              action: 'created',
-              collection: 'users',
-              documentId: doc.id,
-              changedBy: doc.id, // User created themselves
-              metadata: {
-                role: doc.role,
-                status: doc.status,
-                approved: doc.approved,
-              },
-            })
-          }
-
-          return doc
-        },
-      ],
       afterChange: [
         async ({ req, doc, previousDoc, operation }) => {
-          // Only send notifications on updates, not creates
-          if (operation !== 'update' || !req.payload || !previousDoc) {
+          if (!req.payload) {
+            return doc
+          }
+
+          // Handle creation - send admin notification when a new user registers
+          if (operation === 'create') {
+            // Only send if this is a self-registration (no logged-in user or user registering is themselves)
+            const isNewUserRegistration = !req.user || req.user.id === doc.id
+
+            if (isNewUserRegistration) {
+              const emailTemplate = newUserRegistrationAdminEmail({
+                name: doc.name,
+                email: doc.email,
+                id: doc.id,
+              })
+
+              await sendAndLogAdminNotification(req.payload, {
+                type: 'user_registration_admin',
+                subject: emailTemplate.subject,
+                html: emailTemplate.html,
+                relatedUser: doc.id,
+              })
+
+              // Log audit trail
+              await logAuditTrail(req.payload, {
+                action: 'created',
+                collection: 'users',
+                documentId: doc.id,
+                changedBy: doc.id, // User created themselves
+                metadata: {
+                  role: doc.role,
+                  status: doc.status,
+                  approved: doc.approved,
+                },
+              })
+            }
+
+            return doc
+          }
+
+          // Handle updates - send notifications on approval/rejection
+          if (operation !== 'update' || !previousDoc) {
             return doc
           }
 
