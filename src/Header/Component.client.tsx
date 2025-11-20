@@ -107,7 +107,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
       }
     }
     checkAuth()
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
