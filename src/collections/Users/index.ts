@@ -1,10 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import type { User } from '@/payload-types'
-import { sendAndLogNotification, sendAndLogAdminNotification, logAuditTrail } from '@/utilities/notificationHelpers'
+import { sendAndLogNotification, sendNotificationByType, logAuditTrail } from '@/utilities/notificationHelpers'
 import {
   newUserRegistrationAdminEmail,
   userApprovedEmail,
   userRejectedEmail,
+  userDeletedEmail,
 } from '@/utilities/emailTemplates'
 
 class AuthBlockedError extends Error {
@@ -109,8 +110,9 @@ export const Users: CollectionConfig = {
                 id: doc.id,
               })
 
-              await sendAndLogAdminNotification(req.payload, {
-                type: 'user_registration_admin',
+              // Send notification to admins/content team based on role settings
+              await sendNotificationByType(req.payload, {
+                notificationType: 'user_registers',
                 subject: emailTemplate.subject,
                 html: emailTemplate.html,
                 relatedUser: doc.id,
@@ -360,6 +362,26 @@ export const Users: CollectionConfig = {
       defaultValue: false,
       admin: {
         description: 'Opt-in to receive push notifications for protocol updates and announcements',
+        position: 'sidebar',
+      },
+      // Users can update their own preference, admins can update for anyone
+      access: {
+        create: () => true,
+        update: ({ req: { user }, id }) => {
+          // Users can update their own preference
+          if (user && id && user.id === id) return true
+          // Admins can update for anyone
+          return user?.role === 'admin-team'
+        },
+      },
+    },
+    {
+      name: 'emailNotificationsEnabled',
+      type: 'checkbox',
+      label: 'Enable Email Notifications',
+      defaultValue: true,
+      admin: {
+        description: 'Opt-in to receive email notifications for account updates and requests',
         position: 'sidebar',
       },
       // Users can update their own preference, admins can update for anyone

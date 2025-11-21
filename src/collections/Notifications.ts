@@ -23,17 +23,26 @@ export const Notifications: CollectionConfig = {
       required: true,
       options: [
         // User notifications
-        { label: 'User Registration - Admin', value: 'user_registration_admin' },
+        { label: 'User Registers', value: 'user_registers' },
         { label: 'User Approved', value: 'user_approved' },
-        { label: 'User Rejected', value: 'user_rejected' },
-        // Hospital change request notifications
-        { label: 'Hospital Request Submitted - Admin', value: 'hospital_request_submitted_admin' },
-        { label: 'Hospital Request Approved', value: 'hospital_request_approved' },
-        { label: 'Hospital Request Rejected', value: 'hospital_request_rejected' },
-        // Base change request notifications
-        { label: 'Base Request Submitted - Admin', value: 'base_request_submitted_admin' },
-        { label: 'Base Request Approved', value: 'base_request_approved' },
-        { label: 'Base Request Rejected', value: 'base_request_rejected' },
+        { label: 'User Deactivated/Perms Removed', value: 'user_deactivated' },
+        { label: 'User Deleted', value: 'user_deleted' },
+        // Change request notifications
+        { label: 'Base Change Request Submitted', value: 'base_change_request_submitted' },
+        { label: 'Hospital Change Request Submitted', value: 'hospital_change_request_submitted' },
+        { label: 'New Base Submitted', value: 'new_base_submitted' },
+        { label: 'New Hospital Submitted', value: 'new_hospital_submitted' },
+        { label: 'Request Approved', value: 'request_approved' },
+        { label: 'Request Denied', value: 'request_denied' },
+        // Legacy types for backward compatibility
+        { label: 'User Registration - Admin (Legacy)', value: 'user_registration_admin' },
+        { label: 'User Rejected (Legacy)', value: 'user_rejected' },
+        { label: 'Hospital Request Submitted - Admin (Legacy)', value: 'hospital_request_submitted_admin' },
+        { label: 'Hospital Request Approved (Legacy)', value: 'hospital_request_approved' },
+        { label: 'Hospital Request Rejected (Legacy)', value: 'hospital_request_rejected' },
+        { label: 'Base Request Submitted - Admin (Legacy)', value: 'base_request_submitted_admin' },
+        { label: 'Base Request Approved (Legacy)', value: 'base_request_approved' },
+        { label: 'Base Request Rejected (Legacy)', value: 'base_request_rejected' },
       ],
       admin: {
         description: 'Type of notification sent',

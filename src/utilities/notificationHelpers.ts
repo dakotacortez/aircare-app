@@ -5,14 +5,11 @@ import type {
   BaseChangeRequest,
   HospitalChangeRequest,
   Notification,
+  NotificationSetting,
   User,
 } from '@/payload-types'
 import admin from 'firebase-admin'
-
-/**
- * Notification category types that map to user notification preferences
- */
-export type NotificationCategory = 'userRegistrations' | 'changeRequests' | 'systemNotifications'
+import type { NotificationType } from '@/collections/NotificationSettings'
 
 /**
  * Type for FCM token stored in user document
@@ -24,14 +21,50 @@ type FCMToken = {
 }
 
 /**
- * Get users who should receive notifications based on role and preferences
+ * Get users who should receive notifications based on notification type and role-based settings
  */
 export async function getNotificationRecipients(
   payload: Payload,
-  category: NotificationCategory,
-  requiredRoles: Array<'admin-team' | 'content-team'> = ['admin-team', 'content-team']
-): Promise<User[]> {
+  notificationType: NotificationType,
+  notificationMethod: 'email' | 'push'
+): Promise<{ user: User; sendEmail: boolean; sendPush: boolean }[]> {
   try {
+    // Fetch notification settings for this notification type
+    const { docs: settings } = await payload.find({
+      collection: 'notification-settings',
+      where: {
+        notificationType: {
+          equals: notificationType,
+        },
+      },
+      limit: 1,
+    })
+
+    const setting = settings[0] as NotificationSetting | undefined
+
+    if (!setting) {
+      console.warn(`No notification settings found for ${notificationType}`)
+      return []
+    }
+
+    // Determine which roles should receive this notification based on settings
+    const rolesToNotify: Array<'admin-team' | 'content-team' | 'user'> = []
+
+    if (notificationMethod === 'email') {
+      if (setting.adminNotifications?.emailEnabled) rolesToNotify.push('admin-team')
+      if (setting.contentTeamNotifications?.emailEnabled) rolesToNotify.push('content-team')
+      if (setting.userNotifications?.emailEnabled) rolesToNotify.push('user')
+    } else {
+      if (setting.adminNotifications?.pushEnabled) rolesToNotify.push('admin-team')
+      if (setting.contentTeamNotifications?.pushEnabled) rolesToNotify.push('content-team')
+      if (setting.userNotifications?.pushEnabled) rolesToNotify.push('user')
+    }
+
+    if (rolesToNotify.length === 0) {
+      console.log(`No roles enabled for ${notificationType} ${notificationMethod} notifications`)
+      return []
+    }
+
     // Query users with the required roles who are active and approved
     const { docs } = await payload.find({
       collection: 'users',
@@ -39,7 +72,7 @@ export async function getNotificationRecipients(
         and: [
           {
             role: {
-              in: requiredRoles,
+              in: rolesToNotify,
             },
           },
           {
@@ -54,22 +87,51 @@ export async function getNotificationRecipients(
           },
         ],
       },
-      limit: 1000, // Get all eligible users
+      limit: 1000,
     })
 
-    // Filter by notification preferences
-    // Users opt-in by default, so only exclude if explicitly set to false
-    const recipients = docs.filter((user: User) => {
-      const prefs = user.notificationPreferences
-      if (!prefs) return true // If no preferences set, opt-in by default
+    // Map users to notification preferences, respecting user overrides
+    const recipients = docs.map((user: User) => {
+      let sendEmail = false
+      let sendPush = false
 
-      // Check category-specific preference
-      const categoryPref = prefs[category]
-      return categoryPref !== false // Include if true or undefined (default opt-in)
+      // Check global settings for this user's role
+      if (user.role === 'admin-team') {
+        sendEmail = setting.adminNotifications?.emailEnabled || false
+        sendPush = setting.adminNotifications?.pushEnabled || false
+      } else if (user.role === 'content-team') {
+        sendEmail = setting.contentTeamNotifications?.emailEnabled || false
+        sendPush = setting.contentTeamNotifications?.pushEnabled || false
+      } else if (user.role === 'user') {
+        sendEmail = setting.userNotifications?.emailEnabled || false
+        sendPush = setting.userNotifications?.pushEnabled || false
+      }
+
+      // User preferences override global settings
+      // If user has disabled push notifications globally, respect that
+      if (!user.pushNotificationsEnabled) {
+        sendPush = false
+      }
+
+      // If user has disabled email notifications in their preferences, respect that
+      if (!user.emailNotificationsEnabled) {
+        sendEmail = false
+      }
+
+      return {
+        user,
+        sendEmail,
+        sendPush,
+      }
     })
 
-    console.log(`Found ${recipients.length} recipients for ${category} notifications`)
-    return recipients
+    // Filter out users who shouldn't receive the requested notification method
+    const filtered = recipients.filter(r =>
+      notificationMethod === 'email' ? r.sendEmail : r.sendPush
+    )
+
+    console.log(`Found ${filtered.length} recipients for ${notificationType} ${notificationMethod} notifications`)
+    return filtered
   } catch (error) {
     console.error(`Error fetching notification recipients:`, error)
     return []
@@ -183,58 +245,76 @@ export async function sendAndLogNotification(payload: Payload, params: {
 }
 
 /**
- * Send team notification to admin/content team members based on their preferences
+ * Send notification based on role-based notification settings
  */
-export async function sendAndLogTeamNotification(payload: Payload, params: {
-  type: Notification['type']
-  category: NotificationCategory
+export async function sendNotificationByType(payload: Payload, params: {
+  notificationType: NotificationType
   subject: string
   html: string
-  requiredRoles?: Array<'admin-team' | 'content-team'>
   relatedUser?: User['id'] | User | null
   relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
-  sendPushNotification?: boolean
 }): Promise<void> {
-  const { type, category, subject, html, requiredRoles = ['admin-team', 'content-team'], relatedUser, relatedHospitalRequest, relatedBaseRequest, sendPushNotification } = params
+  const { notificationType, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest } = params
 
   try {
-    // Get all eligible recipients based on role and preferences
-    const recipients = await getNotificationRecipients(payload, category, requiredRoles)
+    // Get recipients for both email and push notifications
+    const emailRecipients = await getNotificationRecipients(payload, notificationType, 'email')
+    const pushRecipients = await getNotificationRecipients(payload, notificationType, 'push')
 
-    if (recipients.length === 0) {
-      console.warn(`No recipients found for ${category} notifications`)
+    // Combine recipients (some may receive both email and push)
+    const allRecipients = new Map<string, { user: User; sendEmail: boolean; sendPush: boolean }>()
+
+    for (const { user, sendEmail } of emailRecipients) {
+      allRecipients.set(user.id, { user, sendEmail, sendPush: false })
+    }
+
+    for (const { user, sendPush } of pushRecipients) {
+      const existing = allRecipients.get(user.id)
+      if (existing) {
+        existing.sendPush = sendPush
+      } else {
+        allRecipients.set(user.id, { user, sendEmail: false, sendPush })
+      }
+    }
+
+    if (allRecipients.size === 0) {
+      console.warn(`No recipients found for ${notificationType} notifications`)
       return
     }
 
-    // Send notification to each recipient
-    for (const recipient of recipients) {
-      if (!recipient.email) {
-        console.warn(`Skipping user ${recipient.id} - no email address`)
+    // Send notifications to each recipient
+    for (const { user, sendEmail: shouldSendEmail, sendPush: shouldSendPush } of allRecipients.values()) {
+      if (!user.email && shouldSendEmail) {
+        console.warn(`Skipping user ${user.id} - no email address`)
         continue
       }
 
+      // Map notification type to the type expected by Notification collection
+      const notificationTypeForLog = notificationType as Notification['type']
+
       await sendAndLogNotification(payload, {
-        type,
-        recipient: recipient.email,
-        recipientUser: recipient.id,
+        type: notificationTypeForLog,
+        recipient: user.email || '',
+        recipientUser: user.id,
         subject,
         html,
         relatedUser,
         relatedHospitalRequest,
         relatedBaseRequest,
-        sendPushNotification,
+        sendPushNotification: shouldSendPush,
       })
     }
 
-    console.log(`Sent ${category} notification to ${recipients.length} team members`)
+    console.log(`Sent ${notificationType} notification to ${allRecipients.size} recipients`)
   } catch (error) {
-    console.error(`Error sending team notification:`, error)
+    console.error(`Error sending notification by type:`, error)
   }
 }
 
 /**
- * Alias for backward compatibility - send to admin/content team for user registrations
+ * Alias for backward compatibility - maps old notification types to new system
+ * @deprecated Use sendNotificationByType instead
  */
 export async function sendAndLogAdminNotification(payload: Payload, params: {
   type: Notification['type']
@@ -244,23 +324,36 @@ export async function sendAndLogAdminNotification(payload: Payload, params: {
   relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
 }): Promise<void> {
-  // Determine category based on type
-  let category: NotificationCategory = 'systemNotifications'
-  let requiredRoles: Array<'admin-team' | 'content-team'> = ['admin-team', 'content-team']
+  // Map old notification types to new NotificationType
+  let notificationType: NotificationType = 'user_registers'
 
-  if (params.type.includes('user_registration')) {
-    category = 'userRegistrations'
-  } else if (params.type.includes('request')) {
-    category = 'changeRequests'
-  } else if (params.type.includes('system')) {
-    category = 'systemNotifications'
-    requiredRoles = ['admin-team'] // Only admins get system notifications
+  if (params.type === 'user_registration') {
+    notificationType = 'user_registers'
+  } else if (params.type === 'user_approved') {
+    notificationType = 'user_approved'
+  } else if (params.type === 'user_rejected') {
+    notificationType = 'user_deactivated'
+  } else if (params.type === 'hospital_request_submitted') {
+    notificationType = 'hospital_change_request_submitted'
+  } else if (params.type === 'hospital_request_approved') {
+    notificationType = 'request_approved'
+  } else if (params.type === 'hospital_request_rejected') {
+    notificationType = 'request_denied'
+  } else if (params.type === 'base_request_submitted') {
+    notificationType = 'base_change_request_submitted'
+  } else if (params.type === 'base_request_approved') {
+    notificationType = 'request_approved'
+  } else if (params.type === 'base_request_rejected') {
+    notificationType = 'request_denied'
   }
 
-  await sendAndLogTeamNotification(payload, {
-    ...params,
-    category,
-    requiredRoles,
+  await sendNotificationByType(payload, {
+    notificationType,
+    subject: params.subject,
+    html: params.html,
+    relatedUser: params.relatedUser,
+    relatedHospitalRequest: params.relatedHospitalRequest,
+    relatedBaseRequest: params.relatedBaseRequest,
   })
 }
 
