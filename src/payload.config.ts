@@ -88,7 +88,6 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || '',
     },
     migrationDir: path.resolve(dirname, 'migrations'),
-    push: false, // Disable auto-push to prevent schema conflicts with migrations
   }),
 
   collections: [
