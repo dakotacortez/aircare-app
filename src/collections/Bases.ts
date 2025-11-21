@@ -149,12 +149,14 @@ export const Bases: CollectionConfig = {
           },
         ],
         afterRead: [
-          ({ data }) => {
-            // Reconstruct the display value from lat/lng
+          ({ data, value }) => {
+            // Reconstruct the display value from lat/lng when present to avoid wiping the user-entered string
             if (data?.latitude && data?.longitude) {
               return `${data.latitude}, ${data.longitude}`
             }
-            return ''
+
+            // Fall back to whatever was originally stored so editors do not lose unparsed coordinates
+            return value || ''
           },
         ],
       },

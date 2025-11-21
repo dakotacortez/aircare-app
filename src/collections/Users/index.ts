@@ -91,6 +91,26 @@ export const Users: CollectionConfig = {
     },
   },
   hooks: {
+      beforeChange: [
+        async ({ data, originalDoc }) => {
+          const nextData = { ...data }
+
+          const nextStatus = nextData.status || originalDoc?.status
+          const nextApproved =
+            typeof nextData.approved === 'boolean' ? nextData.approved : originalDoc?.approved
+
+          // Prevent contradictory states that would confuse downstream auth/notifications
+          if (nextApproved && nextStatus === 'inactive') {
+            throw new Error('Approved users cannot be marked inactive')
+          }
+
+          if (nextStatus === 'active' && nextApproved === false) {
+            throw new Error('Active users must be approved')
+          }
+
+          return data
+        },
+      ],
       afterChange: [
         async ({ req, doc, previousDoc, operation }) => {
           if (!req.payload) {

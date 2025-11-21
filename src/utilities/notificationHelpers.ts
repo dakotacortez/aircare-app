@@ -150,6 +150,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
   relatedUser?: User['id'] | User | null
   relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
+  sendEmail?: boolean
   sendPushNotification?: boolean
 }): Promise<void> {
   const {
@@ -161,6 +162,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
     relatedUser,
     relatedHospitalRequest,
     relatedBaseRequest,
+    sendEmail: sendEmailEnabled = true,
     sendPushNotification,
   } = params
 
@@ -172,11 +174,13 @@ export async function sendAndLogNotification(payload: Payload, params: {
 
   try {
     // Send the email
-    const result = await sendEmail({
-      to: recipient,
-      subject,
-      html,
-    })
+    const result = sendEmailEnabled
+      ? await sendEmail({
+          to: recipient,
+          subject,
+          html,
+        })
+      : { success: true, id: undefined, error: undefined }
 
     // Send push notification if requested and user has enabled it
     if (sendPushNotification && pushRecipientId) {
@@ -213,10 +217,12 @@ export async function sendAndLogNotification(payload: Payload, params: {
       },
     })
 
-    if (!result.success) {
-      console.error(`Failed to send ${type} notification to ${recipient}:`, result.error)
-    } else {
-      console.log(`Successfully sent ${type} notification to ${recipient}`)
+    if (sendEmailEnabled) {
+      if (!result.success) {
+        console.error(`Failed to send ${type} notification to ${recipient}:`, result.error)
+      } else {
+        console.log(`Successfully sent ${type} notification to ${recipient}`)
+      }
     }
   } catch (error) {
     console.error(`Error sending and logging notification:`, error)
@@ -285,6 +291,11 @@ export async function sendNotificationByType(payload: Payload, params: {
 
     // Send notifications to each recipient
     for (const { user, sendEmail: shouldSendEmail, sendPush: shouldSendPush } of allRecipients.values()) {
+      // Skip if no notification channels are enabled for this user
+      if (!shouldSendEmail && !shouldSendPush) {
+        continue
+      }
+
       if (!user.email && shouldSendEmail) {
         console.warn(`Skipping user ${user.id} - no email address`)
         continue
@@ -293,15 +304,18 @@ export async function sendNotificationByType(payload: Payload, params: {
       // Map notification type to the type expected by Notification collection
       const notificationTypeForLog = notificationType as Notification['type']
 
+      const recipientAddress = user.email || 'push-only'
+
       await sendAndLogNotification(payload, {
         type: notificationTypeForLog,
-        recipient: user.email || '',
+        recipient: recipientAddress,
         recipientUser: user.id,
         subject,
         html,
         relatedUser,
         relatedHospitalRequest,
         relatedBaseRequest,
+        sendEmail: shouldSendEmail,
         sendPushNotification: shouldSendPush,
       })
     }
