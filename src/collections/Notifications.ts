@@ -5,7 +5,7 @@ export const Notifications: CollectionConfig = {
   slug: 'notifications',
   admin: {
     useAsTitle: 'subject',
-    defaultColumns: ['subject', 'type', 'recipient', 'status', 'createdAt'],
+    defaultColumns: ['subject', 'type', 'recipient', 'createdBy', 'status', 'createdAt'],
     group: 'System',
     description: 'Track all email notifications sent by the system',
   },
@@ -63,6 +63,14 @@ export const Notifications: CollectionConfig = {
       relationTo: 'users',
       admin: {
         description: 'User who received the notification (if applicable)',
+      },
+    },
+    {
+      name: 'createdBy',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        description: 'User who triggered/created this notification',
       },
     },
     {

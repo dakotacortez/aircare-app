@@ -132,6 +132,7 @@ export const Users: CollectionConfig = {
                     subject: emailTemplate.subject,
                     html: emailTemplate.html,
                     relatedUser: doc.id,
+                    createdBy: doc.id, // User registered themselves
                   })
 
                   // Log audit trail
@@ -186,6 +187,7 @@ export const Users: CollectionConfig = {
                           subject: emailTemplate.subject,
                           html: emailTemplate.html,
                           relatedUser: typedDoc.id,
+                          createdBy: req.user?.id, // Admin/content who approved the user
                         })
 
                         // Log audit trail
@@ -217,6 +219,7 @@ export const Users: CollectionConfig = {
                           subject: emailTemplate.subject,
                           html: emailTemplate.html,
                           relatedUser: typedDoc.id,
+                          createdBy: req.user?.id, // Admin/content who rejected the user
                         })
 
                         // Log audit trail

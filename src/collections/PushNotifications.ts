@@ -6,7 +6,7 @@ const PushNotifications: CollectionConfig = {
   slug: 'push-notifications',
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'targetRoles', 'status', 'createdAt'],
+    defaultColumns: ['title', 'targetRoles', 'createdBy', 'status', 'createdAt'],
     group: 'System',
     description: 'Send push notifications to users by role',
   },
@@ -48,6 +48,15 @@ const PushNotifications: CollectionConfig = {
       ],
       admin: {
         description: 'Select which user roles should receive this notification',
+      },
+    },
+    {
+      name: 'createdBy',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        description: 'User who created this push notification',
+        readOnly: true,
       },
     },
     {
@@ -94,6 +103,15 @@ const PushNotifications: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        // Automatically set createdBy field when creating a new push notification
+        if (operation === 'create' && req.user) {
+          data.createdBy = req.user.id
+        }
+        return data
+      },
+    ],
     afterChange: [
       async ({ doc, req, operation }) => {
         // Automatically send notifications when a new document is saved

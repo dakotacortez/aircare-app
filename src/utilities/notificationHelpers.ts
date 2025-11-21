@@ -152,6 +152,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
   sendEmail?: boolean
   sendPushNotification?: boolean
+  createdBy?: User['id'] | User | null
 }): Promise<void> {
   const {
     type,
@@ -164,6 +165,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
     relatedBaseRequest,
     sendEmail: sendEmailEnabled = true,
     sendPushNotification,
+    createdBy,
   } = params
 
   const pushRecipientId = typeof recipientUser === 'object' ? recipientUser?.id : recipientUser
@@ -214,6 +216,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
         relatedUser,
         relatedHospitalRequest,
         relatedBaseRequest,
+        createdBy,
       },
       overrideAccess: true, // Allow system to create notifications
     })
@@ -243,6 +246,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
           relatedUser,
           relatedHospitalRequest,
           relatedBaseRequest,
+          createdBy,
         },
         overrideAccess: true, // Allow system to create notifications
       })
@@ -262,8 +266,9 @@ export async function sendNotificationByType(payload: Payload, params: {
   relatedUser?: User['id'] | User | null
   relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
+  createdBy?: User['id'] | User | null
 }): Promise<void> {
-  const { notificationType, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest } = params
+  const { notificationType, subject, html, relatedUser, relatedHospitalRequest, relatedBaseRequest, createdBy } = params
 
   try {
     // Get recipients for both email and push notifications
@@ -319,6 +324,7 @@ export async function sendNotificationByType(payload: Payload, params: {
         relatedBaseRequest,
         sendEmail: shouldSendEmail,
         sendPushNotification: shouldSendPush,
+        createdBy,
       })
     }
 
@@ -339,6 +345,7 @@ export async function sendAndLogAdminNotification(payload: Payload, params: {
   relatedUser?: User['id'] | User | null
   relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
+  createdBy?: User['id'] | User | null
 }): Promise<void> {
   // Map old notification types to new NotificationType
   let notificationType: NotificationType = 'user_registers'
@@ -391,6 +398,7 @@ export async function sendAndLogAdminNotification(payload: Payload, params: {
     relatedUser: params.relatedUser,
     relatedHospitalRequest: params.relatedHospitalRequest,
     relatedBaseRequest: params.relatedBaseRequest,
+    createdBy: params.createdBy,
   })
 }
 

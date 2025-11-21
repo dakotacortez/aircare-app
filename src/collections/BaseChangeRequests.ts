@@ -92,6 +92,7 @@ export const BaseChangeRequests: CollectionConfig = {
               html: emailTemplate.html,
               relatedBaseRequest: doc.id,
               relatedUser: submittedByUser?.id,
+              createdBy: submittedByUser?.id, // User who submitted the request
             })
 
             await logAuditTrail(req.payload, {
@@ -193,6 +194,7 @@ export const BaseChangeRequests: CollectionConfig = {
                 html: emailTemplate.html,
                 relatedBaseRequest: doc.id,
                 relatedUser: submittedByUser.id,
+                createdBy: req.user?.id, // Admin/content who approved the request
               })
             }
 
@@ -240,6 +242,7 @@ export const BaseChangeRequests: CollectionConfig = {
                 html: emailTemplate.html,
                 relatedBaseRequest: doc.id,
                 relatedUser: submittedByUser.id,
+                createdBy: req.user?.id, // Admin/content who rejected the request
               })
             }
 
