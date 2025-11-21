@@ -99,13 +99,16 @@ export const Users: CollectionConfig = {
           const nextApproved =
             typeof nextData.approved === 'boolean' ? nextData.approved : originalDoc?.approved
 
-          // Prevent contradictory states that would confuse downstream auth/notifications
-          if (nextApproved && nextStatus === 'inactive') {
-            throw new Error('Approved users cannot be marked inactive')
+          // Auto-approve users when setting them to active
+          if (nextStatus === 'active' && !nextApproved) {
+            console.log('[Users Hook] Auto-approving user being set to active status')
+            data.approved = true
           }
 
-          if (nextStatus === 'active' && nextApproved === false) {
-            throw new Error('Active users must be approved')
+          // Prevent contradictory state: approved users cannot be inactive
+          const finalApproved = typeof data.approved === 'boolean' ? data.approved : nextApproved
+          if (finalApproved && nextStatus === 'inactive') {
+            throw new Error('Approved users cannot be marked inactive')
           }
 
           return data
