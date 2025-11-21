@@ -13,7 +13,26 @@ FCM_PROJECT_ID=aircare-app
 
 PM2 doesn't automatically load `.env` files by default. This is likely why you're seeing 404 errors from Firebase.
 
-### Solution 1: Update PM2 Ecosystem File (Recommended)
+### Solution 1: Auto-Generate PM2 Config (Easiest!)
+
+We've included a script that automatically generates the PM2 config from your `.env` file:
+
+```bash
+cd /home/ucair/apps/payload
+node generate-pm2-config.js
+```
+
+This will create `ecosystem.config.js` with all your environment variables.
+
+Then restart PM2:
+```bash
+pm2 delete ucair
+pm2 start ecosystem.config.js
+pm2 save
+pm2 logs ucair --lines 50
+```
+
+### Solution 2: Update PM2 Ecosystem File (Manual)
 
 Create or update `ecosystem.config.js` in your project root:
 
