@@ -151,6 +151,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
   relatedHospitalRequest?: HospitalChangeRequest['id'] | HospitalChangeRequest | null
   relatedBaseRequest?: BaseChangeRequest['id'] | BaseChangeRequest | null
   sendPushNotification?: boolean
+  sendEmail?: boolean
 }): Promise<void> {
   const {
     type,
@@ -162,6 +163,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
     relatedHospitalRequest,
     relatedBaseRequest,
     sendPushNotification,
+    sendEmail,
   } = params
 
   const pushRecipientId = typeof recipientUser === 'object' ? recipientUser?.id : recipientUser
@@ -170,16 +172,22 @@ export async function sendAndLogNotification(payload: Payload, params: {
     typeof relatedHospitalRequest === 'object' ? relatedHospitalRequest?.id : relatedHospitalRequest
   const relatedBaseRequestId = typeof relatedBaseRequest === 'object' ? relatedBaseRequest?.id : relatedBaseRequest
 
+  const shouldSendEmail = sendEmail ?? true
+  const shouldSendPush = sendPushNotification ?? false
+  let emailResult: { success: boolean; id?: string; error?: string } = { success: true }
+
   try {
-    // Send the email
-    const result = await sendEmail({
-      to: recipient,
-      subject,
-      html,
-    })
+    // Send the email if enabled
+    if (shouldSendEmail) {
+      emailResult = await sendEmail({
+        to: recipient,
+        subject,
+        html,
+      })
+    }
 
     // Send push notification if requested and user has enabled it
-    if (sendPushNotification && pushRecipientId) {
+    if (shouldSendPush && pushRecipientId) {
       // Build data object with only defined values (FCM requires Record<string, string>)
       const pushData: Record<string, string> = { type }
       if (relatedUserId) pushData.relatedUser = String(relatedUserId)
@@ -203,18 +211,18 @@ export async function sendAndLogNotification(payload: Payload, params: {
         recipientUser,
         subject,
         htmlContent: html,
-        status: result.success ? 'sent' : 'failed',
-        emailId: result.id,
-        error: result.error,
-        sentAt: result.success ? new Date().toISOString() : undefined,
+        status: emailResult.success ? 'sent' : 'failed',
+        emailId: shouldSendEmail ? emailResult.id : undefined,
+        error: shouldSendEmail ? emailResult.error : undefined,
+        sentAt: emailResult.success ? new Date().toISOString() : undefined,
         relatedUser,
         relatedHospitalRequest,
         relatedBaseRequest,
       },
     })
 
-    if (!result.success) {
-      console.error(`Failed to send ${type} notification to ${recipient}:`, result.error)
+    if (shouldSendEmail && !emailResult.success) {
+      console.error(`Failed to send ${type} notification to ${recipient}:`, emailResult.error)
     } else {
       console.log(`Successfully sent ${type} notification to ${recipient}`)
     }
@@ -303,6 +311,7 @@ export async function sendNotificationByType(payload: Payload, params: {
         relatedHospitalRequest,
         relatedBaseRequest,
         sendPushNotification: shouldSendPush,
+        sendEmail: shouldSendEmail,
       })
     }
 

@@ -10,7 +10,7 @@ import { sql } from '@payloadcms/db-postgres'
  * 3. Adds emailNotificationsEnabled field to users table
  * 4. Seeds initial notification settings with sensible defaults
  */
-export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ payload, req: _req }: MigrateUpArgs): Promise<void> {
   // Create notification_settings table
   await payload.db.drizzle.execute(sql`
     CREATE TABLE IF NOT EXISTS notification_settings (
@@ -170,7 +170,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   console.log('✓ Notification settings migration completed successfully')
 }
 
-export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ payload, req: _req }: MigrateDownArgs): Promise<void> {
   // Remove emailNotificationsEnabled column from users table
   await payload.db.drizzle.execute(sql`
     ALTER TABLE users

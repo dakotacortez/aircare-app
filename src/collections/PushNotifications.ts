@@ -1,6 +1,5 @@
-import { CollectionConfig } from 'payload/types'
+import { CollectionConfig } from 'payload'
 import { isAdmin } from '../access/roles'
-import type { PayloadRequest } from 'payload'
 import { sendPushNotificationToUser } from '../utilities/notificationHelpers'
 
 const PushNotifications: CollectionConfig = {
