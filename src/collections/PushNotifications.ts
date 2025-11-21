@@ -10,11 +10,7 @@ const PushNotifications: CollectionConfig = {
     group: 'System',
     description: 'Send push notifications to users by role',
     components: {
-      views: {
-        edit: {
-          actions: ['@/components/PushNotifications/SendPushNotificationButton'],
-        },
-      },
+      BeforeDocument: ['@/components/PushNotifications/SendPushNotificationButton'],
     },
   },
   access: {
