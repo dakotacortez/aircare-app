@@ -1,4 +1,5 @@
 import type { Migration } from 'payload';
+import type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres';
 
 import * as migration_20250214_000000_protocols from './20250214_000000_protocols';
 import * as migration_20251111_035941 from './20251111_035941';
@@ -34,9 +35,14 @@ import * as migration_20251121_000001_add_audit_log_id_to_locked_docs_rels from 
 import * as migration_20251121_120000_add_notification_settings from './20251121_120000_add_notification_settings';
 import * as migration_20251121_143000_fix_push_notifications_target_roles from './20251121_143000_fix_push_notifications_target_roles';
 
+interface MigrationModule {
+  up: (args: MigrateUpArgs) => Promise<void>;
+  down: (args: MigrateDownArgs) => Promise<void>;
+}
+
 const toMigration = (
   name: string,
-  migration: { up: (...args: unknown[]) => Promise<void>; down: (...args: unknown[]) => Promise<void> },
+  migration: MigrationModule,
 ): Migration => ({
   name,
   up: migration.up as Migration['up'],
