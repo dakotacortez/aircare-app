@@ -37,7 +37,7 @@ const SendPushNotificationButton: React.FC = () => {
         try {
           const body = await response.json()
           message = body?.errors?.[0]?.message ?? message
-        } catch (error) {
+        } catch (_error) {
           // Ignore JSON parse errors and use default message
         }
 
