@@ -108,6 +108,7 @@ const PushNotifications: CollectionConfig = {
               data: {
                 status: 'sending',
               },
+              overrideAccess: true,
             })
             console.log('[Push Notifications Hook] Step 1: Status updated to sending')
 
@@ -115,6 +116,7 @@ const PushNotifications: CollectionConfig = {
             console.log('[Push Notifications Hook] Step 2: Querying users with roles:', doc.targetRoles)
             const { docs: users } = await req.payload.find({
               collection: 'users',
+              overrideAccess: true,
               where: {
                 and: [
                   {
@@ -153,6 +155,7 @@ const PushNotifications: CollectionConfig = {
                   status: 'failed',
                   error: 'No users found with push notifications enabled for the selected roles',
                 },
+                overrideAccess: true,
               })
               return doc
             }
@@ -183,6 +186,7 @@ const PushNotifications: CollectionConfig = {
                 recipientCount: users.length,
                 sentAt: new Date().toISOString(),
               },
+              overrideAccess: true,
             })
 
             console.log(`Push notification sent to ${users.length} users`)
@@ -202,6 +206,7 @@ const PushNotifications: CollectionConfig = {
                 status: 'failed',
                 error: error instanceof Error ? error.message : String(error),
               },
+              overrideAccess: true,
             })
           }
         }
