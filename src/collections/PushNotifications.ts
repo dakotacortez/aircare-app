@@ -98,8 +98,10 @@ const PushNotifications: CollectionConfig = {
       async ({ doc, req, operation }) => {
         // Automatically send notifications when a new document is saved
         if (operation === 'create') {
+          console.log('[Push Notifications Hook] Starting afterChange hook for push notification:', doc.id)
           try {
             // Mark as sending while the notification is dispatched
+            console.log('[Push Notifications Hook] Step 1: Updating status to sending...')
             await req.payload.update({
               collection: 'push-notifications',
               id: doc.id,
@@ -107,8 +109,10 @@ const PushNotifications: CollectionConfig = {
                 status: 'sending',
               },
             })
+            console.log('[Push Notifications Hook] Step 1: Status updated to sending')
 
             // Get all users matching the target roles
+            console.log('[Push Notifications Hook] Step 2: Querying users with roles:', doc.targetRoles)
             const { docs: users } = await req.payload.find({
               collection: 'users',
               where: {
@@ -137,9 +141,11 @@ const PushNotifications: CollectionConfig = {
               },
               limit: 1000,
             })
+            console.log('[Push Notifications Hook] Step 2: Found', users.length, 'users')
 
             if (users.length === 0) {
               // No recipients found
+              console.log('[Push Notifications Hook] No recipients found, marking as failed')
               await req.payload.update({
                 collection: 'push-notifications',
                 id: doc.id,
@@ -152,6 +158,7 @@ const PushNotifications: CollectionConfig = {
             }
 
             // Send push notification to each user
+            console.log('[Push Notifications Hook] Step 3: Sending push notifications to', users.length, 'users...')
             const sendPromises = users.map((user) =>
               sendPushNotificationToUser(req.payload, user.id, {
                 title: doc.title,
@@ -163,7 +170,9 @@ const PushNotifications: CollectionConfig = {
               })
             )
 
+            console.log('[Push Notifications Hook] Step 3: Waiting for all notifications to send...')
             await Promise.all(sendPromises)
+            console.log('[Push Notifications Hook] Step 3: All notifications sent successfully')
 
             // Update status to sent
             await req.payload.update({
