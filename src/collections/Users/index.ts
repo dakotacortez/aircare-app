@@ -111,125 +111,128 @@ export const Users: CollectionConfig = {
             return doc
           }
 
-          // Handle creation - send admin notification when a new user registers
-          if (operation === 'create') {
-            // Only send if this is a self-registration (no logged-in user or user registering is themselves)
-            const isNewUserRegistration = !req.user || req.user.id === doc.id
+          // Defer all email/notification operations to prevent blocking the save
+          setImmediate(async () => {
+            try {
+              // Handle creation - send admin notification when a new user registers
+              if (operation === 'create') {
+                // Only send if this is a self-registration (no logged-in user or user registering is themselves)
+                const isNewUserRegistration = !req.user || req.user.id === doc.id
 
-            if (isNewUserRegistration) {
-              const emailTemplate = newUserRegistrationAdminEmail({
-                name: doc.name,
-                email: doc.email,
-                id: doc.id,
-              })
+                if (isNewUserRegistration) {
+                  const emailTemplate = newUserRegistrationAdminEmail({
+                    name: doc.name,
+                    email: doc.email,
+                    id: doc.id,
+                  })
 
-              // Send notification to admins/content team based on role settings
-              await sendNotificationByType(req.payload, {
-                notificationType: 'user_registers',
-                subject: emailTemplate.subject,
-                html: emailTemplate.html,
-                relatedUser: doc.id,
-              })
+                  // Send notification to admins/content team based on role settings
+                  await sendNotificationByType(req.payload, {
+                    notificationType: 'user_registers',
+                    subject: emailTemplate.subject,
+                    html: emailTemplate.html,
+                    relatedUser: doc.id,
+                  })
 
-              // Log audit trail
-              await logAuditTrail(req.payload, {
-                action: 'created',
-                collection: 'users',
-                documentId: doc.id,
-                changedBy: doc.id, // User created themselves
-                metadata: {
-                  role: doc.role,
-                  status: doc.status,
-                  approved: doc.approved,
-                },
-              })
+                  // Log audit trail
+                  await logAuditTrail(req.payload, {
+                    action: 'created',
+                    collection: 'users',
+                    documentId: doc.id,
+                    changedBy: doc.id, // User created themselves
+                    metadata: {
+                      role: doc.role,
+                      status: doc.status,
+                      approved: doc.approved,
+                    },
+                  })
+                }
+              }
+
+              // Handle updates - send notifications on approval/rejection
+              if (operation === 'update' && previousDoc) {
+                const typedDoc = doc as User
+                const typedPrevDoc = previousDoc as User
+
+                // Check if user was just approved (status changed from pending to active AND approved changed to true)
+                const wasJustApproved =
+                  typedPrevDoc.status !== 'active' &&
+                  typedDoc.status === 'active' &&
+                  !typedPrevDoc.approved &&
+                  typedDoc.approved
+
+                if (wasJustApproved && typedDoc.email) {
+                  const emailTemplate = userApprovedEmail({
+                    name: typedDoc.name,
+                    email: typedDoc.email,
+                  })
+
+                  await sendAndLogNotification(req.payload, {
+                    type: 'user_approved',
+                    recipient: typedDoc.email,
+                    recipientUser: typedDoc.id,
+                    subject: emailTemplate.subject,
+                    html: emailTemplate.html,
+                    relatedUser: typedDoc.id,
+                  })
+
+                  // Log audit trail
+                  await logAuditTrail(req.payload, {
+                    action: 'approved',
+                    collection: 'users',
+                    documentId: typedDoc.id,
+                    changedBy: req.user?.id || typedDoc.id,
+                    changes: [
+                      { field: 'status', previousValue: typedPrevDoc.status, newValue: typedDoc.status },
+                      { field: 'approved', previousValue: String(typedPrevDoc.approved), newValue: String(typedDoc.approved) },
+                    ],
+                  })
+                }
+
+                // Check if user was just rejected (status changed to inactive AND approved is false)
+                const wasJustRejected =
+                  typedPrevDoc.status === 'pending' &&
+                  typedDoc.status === 'inactive' &&
+                  !typedDoc.approved
+
+                if (wasJustRejected && typedDoc.email) {
+                  const emailTemplate = userRejectedEmail(
+                    {
+                      name: typedDoc.name,
+                      email: typedDoc.email,
+                    },
+                    typedDoc.rejectionReason || undefined
+                  )
+
+                  await sendAndLogNotification(req.payload, {
+                    type: 'user_rejected',
+                    recipient: typedDoc.email,
+                    recipientUser: typedDoc.id,
+                    subject: emailTemplate.subject,
+                    html: emailTemplate.html,
+                    relatedUser: typedDoc.id,
+                  })
+
+                  // Log audit trail
+                  await logAuditTrail(req.payload, {
+                    action: 'rejected',
+                    collection: 'users',
+                    documentId: typedDoc.id,
+                    changedBy: req.user?.id || typedDoc.id,
+                    changes: [
+                      { field: 'status', previousValue: typedPrevDoc.status, newValue: typedDoc.status },
+                      { field: 'approved', previousValue: String(typedPrevDoc.approved), newValue: String(typedDoc.approved) },
+                    ],
+                    metadata: {
+                      rejectionReason: typedDoc.rejectionReason,
+                    },
+                  })
+                }
+              }
+            } catch (error) {
+              console.error('[Users Hook] Error in deferred afterChange operations:', error)
             }
-
-            return doc
-          }
-
-          // Handle updates - send notifications on approval/rejection
-          if (operation !== 'update' || !previousDoc) {
-            return doc
-          }
-
-          const typedDoc = doc as User
-          const typedPrevDoc = previousDoc as User
-
-          // Check if user was just approved (status changed from pending to active AND approved changed to true)
-          const wasJustApproved =
-            typedPrevDoc.status !== 'active' &&
-            typedDoc.status === 'active' &&
-            !typedPrevDoc.approved &&
-            typedDoc.approved
-
-          if (wasJustApproved && typedDoc.email) {
-            const emailTemplate = userApprovedEmail({
-              name: typedDoc.name,
-              email: typedDoc.email,
-            })
-
-            await sendAndLogNotification(req.payload, {
-              type: 'user_approved',
-              recipient: typedDoc.email,
-              recipientUser: typedDoc.id,
-              subject: emailTemplate.subject,
-              html: emailTemplate.html,
-              relatedUser: typedDoc.id,
-            })
-
-            // Log audit trail
-            await logAuditTrail(req.payload, {
-              action: 'approved',
-              collection: 'users',
-              documentId: typedDoc.id,
-              changedBy: req.user?.id || typedDoc.id,
-              changes: [
-                { field: 'status', previousValue: typedPrevDoc.status, newValue: typedDoc.status },
-                { field: 'approved', previousValue: String(typedPrevDoc.approved), newValue: String(typedDoc.approved) },
-              ],
-            })
-          }
-
-          // Check if user was just rejected (status changed to inactive AND approved is false)
-          const wasJustRejected =
-            typedPrevDoc.status === 'pending' &&
-            typedDoc.status === 'inactive' &&
-            !typedDoc.approved
-
-          if (wasJustRejected && typedDoc.email) {
-            const emailTemplate = userRejectedEmail(
-              {
-                name: typedDoc.name,
-                email: typedDoc.email,
-              },
-              typedDoc.rejectionReason || undefined
-            )
-
-            await sendAndLogNotification(req.payload, {
-              type: 'user_rejected',
-              recipient: typedDoc.email,
-              recipientUser: typedDoc.id,
-              subject: emailTemplate.subject,
-              html: emailTemplate.html,
-              relatedUser: typedDoc.id,
-            })
-
-            // Log audit trail
-            await logAuditTrail(req.payload, {
-              action: 'rejected',
-              collection: 'users',
-              documentId: typedDoc.id,
-              changedBy: req.user?.id || typedDoc.id,
-              changes: [
-                { field: 'status', previousValue: typedPrevDoc.status, newValue: typedDoc.status },
-                { field: 'approved', previousValue: String(typedPrevDoc.approved), newValue: String(typedDoc.approved) },
-              ],
-              metadata: {
-                rejectionReason: typedDoc.rejectionReason,
-              },
-            })
-          }
+          })
 
           return doc
         },
