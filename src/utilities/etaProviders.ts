@@ -140,11 +140,14 @@ export class HereProvider implements EtaProvider {
       url.searchParams.set('departureTime', 'any')
     }
 
+    console.log('[HERE API] Request URL:', url.toString().replace(this.apiKey, 'REDACTED'))
+
     const response = await fetch(url.toString())
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(`HERE API error: ${response.status} - ${error.title || 'Unknown error'}`)
+      console.error('[HERE API] Error response:', JSON.stringify(error, null, 2))
+      throw new Error(`HERE API error: ${response.status} - ${error.title || error.detail || 'Unknown error'}`)
     }
 
     const data = await response.json()
