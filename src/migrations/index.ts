@@ -34,6 +34,7 @@ import * as migration_20251121_000000_fix_missing_columns from './20251121_00000
 import * as migration_20251121_000001_add_audit_log_id_to_locked_docs_rels from './20251121_000001_add_audit_log_id_to_locked_docs_rels';
 import * as migration_20251121_120000_add_notification_settings from './20251121_120000_add_notification_settings';
 import * as migration_20251121_143000_fix_push_notifications_target_roles from './20251121_143000_fix_push_notifications_target_roles';
+import * as migration_20251121_200000_force_fix_parent_id_columns from './20251121_200000_force_fix_parent_id_columns';
 
 interface MigrationModule {
   up: (args: MigrateUpArgs) => Promise<void>;
@@ -113,6 +114,7 @@ export const migrations: Migration[] = [
   ),
   toMigration('20251121_120000_add_notification_settings', migration_20251121_120000_add_notification_settings),
   toMigration('20251121_143000_fix_push_notifications_target_roles', migration_20251121_143000_fix_push_notifications_target_roles),
+  toMigration('20251121_200000_force_fix_parent_id_columns', migration_20251121_200000_force_fix_parent_id_columns),
 ];
 
 export default migrations;
