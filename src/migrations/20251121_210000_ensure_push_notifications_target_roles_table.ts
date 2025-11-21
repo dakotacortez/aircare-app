@@ -15,7 +15,7 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
 
   await payload.db.drizzle.execute(sql`
     CREATE TABLE push_notifications_target_roles (
-      id VARCHAR PRIMARY KEY NOT NULL,
+      id VARCHAR PRIMARY KEY NOT NULL DEFAULT gen_random_uuid()::text,
       "order" INTEGER NOT NULL,
       parent_id INTEGER NOT NULL,
       value VARCHAR NOT NULL,

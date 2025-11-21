@@ -37,6 +37,7 @@ import * as migration_20251121_143000_fix_push_notifications_target_roles from '
 import * as migration_20251121_200000_force_fix_parent_id_columns from './20251121_200000_force_fix_parent_id_columns';
 import * as migration_20251121_210000_ensure_push_notifications_target_roles_table from './20251121_210000_ensure_push_notifications_target_roles_table';
 import * as migration_20251121_220000_add_notification_cols_to_locked_docs_rels from './20251121_220000_add_notification_cols_to_locked_docs_rels';
+import * as migration_20251121_230000_add_default_id_to_target_roles from './20251121_230000_add_default_id_to_target_roles';
 
 interface MigrationModule {
   up: (args: MigrateUpArgs) => Promise<void>;
@@ -119,6 +120,7 @@ export const migrations: Migration[] = [
   toMigration('20251121_200000_force_fix_parent_id_columns', migration_20251121_200000_force_fix_parent_id_columns),
   toMigration('20251121_210000_ensure_push_notifications_target_roles_table', migration_20251121_210000_ensure_push_notifications_target_roles_table),
   toMigration('20251121_220000_add_notification_cols_to_locked_docs_rels', migration_20251121_220000_add_notification_cols_to_locked_docs_rels),
+  toMigration('20251121_230000_add_default_id_to_target_roles', migration_20251121_230000_add_default_id_to_target_roles),
 ];
 
 export default migrations;
