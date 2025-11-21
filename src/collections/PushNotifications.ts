@@ -99,22 +99,26 @@ const PushNotifications: CollectionConfig = {
         // Automatically send notifications when a new document is saved
         if (operation === 'create') {
           console.log('[Push Notifications Hook] Starting afterChange hook for push notification:', doc.id)
-          try {
-            // Mark as sending while the notification is dispatched
-            console.log('[Push Notifications Hook] Step 1: Updating status to sending...')
-            await req.payload.update({
-              collection: 'push-notifications',
-              id: doc.id,
-              data: {
-                status: 'sending',
-              },
-              overrideAccess: true,
-            })
-            console.log('[Push Notifications Hook] Step 1: Status updated to sending')
 
-            // Get all users matching the target roles
-            console.log('[Push Notifications Hook] Step 2: Querying users with roles:', doc.targetRoles)
-            const { docs: users } = await req.payload.find({
+          // Run the notification sending asynchronously AFTER the hook completes
+          // This prevents issues with updating the document from within its own afterChange hook
+          setImmediate(async () => {
+            try {
+              // Mark as sending while the notification is dispatched
+              console.log('[Push Notifications Hook] Step 1: Updating status to sending...')
+              await req.payload.update({
+                collection: 'push-notifications',
+                id: doc.id,
+                data: {
+                  status: 'sending',
+                },
+                overrideAccess: true,
+              })
+              console.log('[Push Notifications Hook] Step 1: Status updated to sending')
+
+              // Get all users matching the target roles
+              console.log('[Push Notifications Hook] Step 2: Querying users with roles:', doc.targetRoles)
+              const { docs: users } = await req.payload.find({
               collection: 'users',
               overrideAccess: true,
               where: {
@@ -189,26 +193,27 @@ const PushNotifications: CollectionConfig = {
               overrideAccess: true,
             })
 
-            console.log(`Push notification sent to ${users.length} users`)
-          } catch (error) {
-            console.error('❌ [Push Notifications Collection] Error in afterChange hook:', error)
-            if (error instanceof Error) {
-              console.error('❌ [Push Notifications Collection] Error message:', error.message)
-              console.error('❌ [Push Notifications Collection] Error stack:', error.stack)
-            }
-            console.error('❌ [Push Notifications Collection] Full error object:', JSON.stringify(error, null, 2))
+              console.log(`Push notification sent to ${users.length} users`)
+            } catch (error) {
+              console.error('❌ [Push Notifications Collection] Error in afterChange hook:', error)
+              if (error instanceof Error) {
+                console.error('❌ [Push Notifications Collection] Error message:', error.message)
+                console.error('❌ [Push Notifications Collection] Error stack:', error.stack)
+              }
+              console.error('❌ [Push Notifications Collection] Full error object:', JSON.stringify(error, null, 2))
 
-            // Update status to failed
-            await req.payload.update({
-              collection: 'push-notifications',
-              id: doc.id,
-              data: {
-                status: 'failed',
-                error: error instanceof Error ? error.message : String(error),
-              },
-              overrideAccess: true,
-            })
-          }
+              // Update status to failed
+              await req.payload.update({
+                collection: 'push-notifications',
+                id: doc.id,
+                data: {
+                  status: 'failed',
+                  error: error instanceof Error ? error.message : String(error),
+                },
+                overrideAccess: true,
+              })
+            }
+          })
         }
 
         return doc
