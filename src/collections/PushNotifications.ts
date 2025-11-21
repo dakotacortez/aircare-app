@@ -9,9 +9,6 @@ const PushNotifications: CollectionConfig = {
     defaultColumns: ['title', 'targetRoles', 'status', 'createdAt'],
     group: 'System',
     description: 'Send push notifications to users by role',
-    components: {
-      BeforeDocument: ['@/components/PushNotifications/SendPushNotificationButton'],
-    },
   },
   access: {
     read: isAdmin,
@@ -67,6 +64,16 @@ const PushNotifications: CollectionConfig = {
       admin: {
         description: 'Status of the notification',
         readOnly: true,
+      },
+    },
+    {
+      name: 'sendNotification',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/PushNotifications/SendPushNotificationButton',
+        },
+        description: 'Save the draft before sending the notification.',
       },
     },
     {
