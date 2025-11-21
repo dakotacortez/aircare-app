@@ -26,7 +26,8 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
   `)
 
   // If the table already exists with the old column names, rename them to match
-  // what Payload expects (parent_id/order)
+  // what Payload expects (parent_id/order). Also ensure the columns exist even
+  // if the rename didn't happen (e.g. a partially-created table).
   await payload.db.drizzle.execute(sql`
     DO $$
     BEGIN
@@ -46,6 +47,40 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
       ) THEN
         ALTER TABLE push_notifications_target_roles
         RENAME COLUMN _order TO "order";
+      END IF;
+
+      -- If parent_id still does not exist (e.g. table created with only _parent_id
+      -- or missing columns), add it and backfill from the old column if present.
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = 'parent_id'
+      ) THEN
+        ALTER TABLE push_notifications_target_roles
+        ADD COLUMN parent_id INTEGER;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = '_parent_id'
+      ) THEN
+        UPDATE push_notifications_target_roles
+        SET parent_id = _parent_id
+        WHERE parent_id IS NULL;
+
+        ALTER TABLE push_notifications_target_roles
+        DROP COLUMN _parent_id;
+      END IF;
+
+      -- Ensure the order column exists as well
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = 'order'
+      ) THEN
+        ALTER TABLE push_notifications_target_roles
+        ADD COLUMN "order" INTEGER;
       END IF;
     END $$;
   `)
