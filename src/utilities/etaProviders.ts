@@ -134,8 +134,8 @@ export class HereProvider implements EtaProvider {
 
     // Traffic mode: 'enabled' for live traffic, 'disabled' for baseline
     if (withTraffic) {
-      url.searchParams.set('departureTime', 'now')
-      // 'enabled' uses real-time traffic
+      // HERE API requires ISO 8601 datetime, not the literal string 'now'
+      url.searchParams.set('departureTime', new Date().toISOString())
     } else {
       url.searchParams.set('departureTime', 'any')
     }
