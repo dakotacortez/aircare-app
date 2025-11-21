@@ -5,7 +5,6 @@ import {
   newUserRegistrationAdminEmail,
   userApprovedEmail,
   userRejectedEmail,
-  userDeletedEmail,
 } from '@/utilities/emailTemplates'
 
 class AuthBlockedError extends Error {
