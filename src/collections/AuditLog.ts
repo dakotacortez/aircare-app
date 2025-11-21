@@ -12,8 +12,8 @@ export const AuditLog: CollectionConfig = {
   access: {
     // Only content team and admins can view audit logs
     read: isContentOrAdmin,
-    // Audit logs are created automatically, not manually
-    create: () => true, // Allow system to create
+    // Audit logs are created automatically by the system, not manually
+    create: () => false,
     update: () => false, // Never update audit logs
     delete: isContentOrAdmin, // Only admins can delete (for cleanup)
   },

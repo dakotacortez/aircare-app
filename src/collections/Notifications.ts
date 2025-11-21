@@ -12,7 +12,8 @@ export const Notifications: CollectionConfig = {
   access: {
     // Only content team and admins can view notifications
     read: isContentOrAdmin,
-    create: isContentOrAdmin,
+    // Notifications are created automatically by the system, not manually
+    create: () => false,
     update: isContentOrAdmin,
     delete: isContentOrAdmin,
   },

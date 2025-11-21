@@ -215,6 +215,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
         relatedHospitalRequest,
         relatedBaseRequest,
       },
+      overrideAccess: true, // Allow system to create notifications
     })
 
     if (sendEmailEnabled) {
@@ -243,6 +244,7 @@ export async function sendAndLogNotification(payload: Payload, params: {
           relatedHospitalRequest,
           relatedBaseRequest,
         },
+        overrideAccess: true, // Allow system to create notifications
       })
     } catch (logError) {
       console.error('Failed to log notification error:', logError)
@@ -424,6 +426,7 @@ export async function logAuditTrail(payload: Payload, params: {
         ipAddress,
         userAgent,
       },
+      overrideAccess: true, // Allow system to create audit logs
     })
 
     console.log(`Audit log created: ${action} on ${collection}/${documentId}`)
@@ -564,13 +567,16 @@ export async function sendPushNotificationToUser(
     const admin = await initializeFirebaseAdmin()
 
     if (!admin) {
-      console.warn('Firebase Admin SDK not initialized - skipping push notification')
-      return
+      const errorMsg = 'Firebase Admin SDK not initialized - push notifications disabled. Check Firebase credentials (GOOGLE_APPLICATION_CREDENTIALS or FCM_PROJECT_ID/FCM_PRIVATE_KEY/FCM_CLIENT_EMAIL)'
+      console.error(errorMsg)
+      throw new Error(errorMsg)
     }
 
     // Send push notification using Firebase Admin SDK (HTTP v1 API)
     const messaging = admin.messaging()
     const tokens = fcmTokens.map((t) => t.token)
+
+    console.log(`Attempting to send push notification to user ${userId} with ${tokens.length} FCM token(s)`)
 
     const response = await messaging.sendEachForMulticast({
       tokens,
@@ -602,7 +608,7 @@ export async function sendPushNotificationToUser(
         const result = response.responses[index]
         if (!result.success) {
           // Log the specific error for debugging
-          console.warn(`Failed to send to token ${index}:`, result.error?.code)
+          console.warn(`Failed to send to token ${index}:`, result.error?.code, result.error?.message)
         }
         return result.success
       })
@@ -618,7 +624,20 @@ export async function sendPushNotificationToUser(
         console.log(`Removed ${fcmTokens.length - validTokens.length} invalid FCM tokens for user ${userId}`)
       }
     }
+
+    // If all tokens failed, throw an error
+    if (response.successCount === 0) {
+      const firstError = response.responses[0]?.error
+      throw new Error(`Failed to send push notification to any device. Error: ${firstError?.code} - ${firstError?.message}`)
+    }
   } catch (error) {
-    console.error(`Error sending push notification to user ${userId}:`, error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : ''
+    console.error(`Error sending push notification to user ${userId}:`, errorMessage)
+    if (errorStack) {
+      console.error('Stack trace:', errorStack)
+    }
+    // Re-throw to allow caller to handle
+    throw error
   }
 }
