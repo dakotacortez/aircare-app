@@ -483,24 +483,32 @@ export function stripHtml(html: string): string {
 let firebaseInitialized = false
 
 async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
-  if (firebaseInitialized) return admin
+  console.log('[Firebase Init] Starting Firebase Admin SDK initialization...')
+
+  if (firebaseInitialized) {
+    console.log('[Firebase Init] Already initialized, returning existing instance')
+    return admin
+  }
 
   try {
     if (admin.apps.length > 0) {
+      console.log('[Firebase Init] Firebase app already exists')
       firebaseInitialized = true
       return admin
     }
 
     // Method 1 (Recommended): Use GOOGLE_APPLICATION_CREDENTIALS
     const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    console.log('[Firebase Init] GOOGLE_APPLICATION_CREDENTIALS:', credentialsPath || 'NOT SET')
 
     if (credentialsPath) {
+      console.log('[Firebase Init] Attempting to initialize with GOOGLE_APPLICATION_CREDENTIALS...')
       admin.initializeApp({
         credential: admin.credential.applicationDefault(),
         projectId: process.env.FCM_PROJECT_ID,
       })
       firebaseInitialized = true
-      console.log('Firebase Admin SDK initialized successfully (using GOOGLE_APPLICATION_CREDENTIALS)')
+      console.log('✅ Firebase Admin SDK initialized successfully (using GOOGLE_APPLICATION_CREDENTIALS)')
       return admin
     }
 
@@ -508,8 +516,12 @@ async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
     const projectId = process.env.FCM_PROJECT_ID
     const privateKey = process.env.FCM_PRIVATE_KEY
     const clientEmail = process.env.FCM_CLIENT_EMAIL
+    console.log('[Firebase Init] Method 2 - FCM_PROJECT_ID:', projectId || 'NOT SET')
+    console.log('[Firebase Init] Method 2 - FCM_CLIENT_EMAIL:', clientEmail || 'NOT SET')
+    console.log('[Firebase Init] Method 2 - FCM_PRIVATE_KEY:', privateKey ? 'SET' : 'NOT SET')
 
     if (projectId && privateKey && clientEmail) {
+      console.log('[Firebase Init] Attempting to initialize with individual credentials...')
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId,
@@ -518,16 +530,20 @@ async function initializeFirebaseAdmin(): Promise<typeof admin | null> {
         }),
       })
       firebaseInitialized = true
-      console.log('Firebase Admin SDK initialized successfully (using individual credentials)')
+      console.log('✅ Firebase Admin SDK initialized successfully (using individual credentials)')
       return admin
     }
 
     // No credentials configured
-    console.warn('Firebase credentials not configured - push notifications will be disabled')
-    console.warn('Configure either GOOGLE_APPLICATION_CREDENTIALS or FCM_PROJECT_ID/FCM_PRIVATE_KEY/FCM_CLIENT_EMAIL')
+    console.error('❌ Firebase credentials not configured - push notifications will be disabled')
+    console.error('❌ Configure either GOOGLE_APPLICATION_CREDENTIALS or FCM_PROJECT_ID/FCM_PRIVATE_KEY/FCM_CLIENT_EMAIL')
     return null
   } catch (error) {
-    console.error('Failed to initialize Firebase Admin SDK:', error)
+    console.error('❌ Failed to initialize Firebase Admin SDK:', error)
+    if (error instanceof Error) {
+      console.error('❌ Error message:', error.message)
+      console.error('❌ Error stack:', error.stack)
+    }
     return null
   }
 }
@@ -545,6 +561,8 @@ export async function sendPushNotificationToUser(
     data?: Record<string, string>
   }
 ): Promise<void> {
+  console.log(`[Push Notification] Attempting to send push to user ${userId}:`, notification.title)
+
   try {
     // Fetch user to check if push notifications are enabled and get FCM tokens
     const user = await payload.findByID({
@@ -552,25 +570,32 @@ export async function sendPushNotificationToUser(
       id: userId,
     })
 
+    console.log(`[Push Notification] User ${userId} found, pushNotificationsEnabled:`, user.pushNotificationsEnabled)
+
     if (!user.pushNotificationsEnabled) {
-      console.log(`Push notifications disabled for user ${userId}`)
+      console.log(`[Push Notification] Push notifications disabled for user ${userId}`)
       return
     }
 
     const fcmTokens = (user.fcmTokens || []) as FCMToken[]
+    console.log(`[Push Notification] User ${userId} has ${fcmTokens.length} FCM token(s)`)
+
     if (fcmTokens.length === 0) {
-      console.log(`No FCM tokens found for user ${userId}`)
+      console.log(`[Push Notification] No FCM tokens found for user ${userId}`)
       return
     }
 
     // Initialize Firebase Admin if needed
+    console.log('[Push Notification] Initializing Firebase Admin SDK...')
     const admin = await initializeFirebaseAdmin()
 
     if (!admin) {
       const errorMsg = 'Firebase Admin SDK not initialized - push notifications disabled. Check Firebase credentials (GOOGLE_APPLICATION_CREDENTIALS or FCM_PROJECT_ID/FCM_PRIVATE_KEY/FCM_CLIENT_EMAIL)'
-      console.error(errorMsg)
+      console.error(`[Push Notification] ❌ ${errorMsg}`)
       throw new Error(errorMsg)
     }
+
+    console.log('[Push Notification] Firebase Admin SDK ready, proceeding to send...')
 
     // Send push notification using Firebase Admin SDK (HTTP v1 API)
     const messaging = admin.messaging()
