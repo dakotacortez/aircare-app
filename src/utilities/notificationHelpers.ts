@@ -266,15 +266,15 @@ export async function sendNotificationByType(payload: Payload, params: {
     const allRecipients = new Map<string, { user: User; sendEmail: boolean; sendPush: boolean }>()
 
     for (const { user, sendEmail } of emailRecipients) {
-      allRecipients.set(user.id, { user, sendEmail, sendPush: false })
+      allRecipients.set(String(user.id), { user, sendEmail, sendPush: false })
     }
 
     for (const { user, sendPush } of pushRecipients) {
-      const existing = allRecipients.get(user.id)
+      const existing = allRecipients.get(String(user.id))
       if (existing) {
         existing.sendPush = sendPush
       } else {
-        allRecipients.set(user.id, { user, sendEmail: false, sendPush })
+        allRecipients.set(String(user.id), { user, sendEmail: false, sendPush })
       }
     }
 
@@ -327,23 +327,44 @@ export async function sendAndLogAdminNotification(payload: Payload, params: {
   // Map old notification types to new NotificationType
   let notificationType: NotificationType = 'user_registers'
 
-  if (params.type === 'user_registration') {
+  // Handle legacy types
+  if (params.type === 'user_registration_admin') {
     notificationType = 'user_registers'
   } else if (params.type === 'user_approved') {
     notificationType = 'user_approved'
   } else if (params.type === 'user_rejected') {
     notificationType = 'user_deactivated'
-  } else if (params.type === 'hospital_request_submitted') {
+  } else if (params.type === 'hospital_request_submitted_admin') {
     notificationType = 'hospital_change_request_submitted'
   } else if (params.type === 'hospital_request_approved') {
     notificationType = 'request_approved'
   } else if (params.type === 'hospital_request_rejected') {
     notificationType = 'request_denied'
-  } else if (params.type === 'base_request_submitted') {
+  } else if (params.type === 'base_request_submitted_admin') {
     notificationType = 'base_change_request_submitted'
   } else if (params.type === 'base_request_approved') {
     notificationType = 'request_approved'
   } else if (params.type === 'base_request_rejected') {
+    notificationType = 'request_denied'
+  }
+  // Handle new types directly
+  else if (params.type === 'user_registers') {
+    notificationType = 'user_registers'
+  } else if (params.type === 'user_deactivated') {
+    notificationType = 'user_deactivated'
+  } else if (params.type === 'user_deleted') {
+    notificationType = 'user_deleted'
+  } else if (params.type === 'base_change_request_submitted') {
+    notificationType = 'base_change_request_submitted'
+  } else if (params.type === 'hospital_change_request_submitted') {
+    notificationType = 'hospital_change_request_submitted'
+  } else if (params.type === 'new_base_submitted') {
+    notificationType = 'new_base_submitted'
+  } else if (params.type === 'new_hospital_submitted') {
+    notificationType = 'new_hospital_submitted'
+  } else if (params.type === 'request_approved') {
+    notificationType = 'request_approved'
+  } else if (params.type === 'request_denied') {
     notificationType = 'request_denied'
   }
 

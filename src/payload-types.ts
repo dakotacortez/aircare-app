@@ -83,6 +83,8 @@ export interface Config {
     calculators: Calculator;
     notifications: Notification;
     'audit-log': AuditLog;
+    'notification-settings': NotificationSetting;
+    'push-notifications': PushNotification;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -116,6 +118,8 @@ export interface Config {
     calculators: CalculatorsSelect<false> | CalculatorsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     'audit-log': AuditLogSelect<false> | AuditLogSelect<true>;
+    'notification-settings': NotificationSettingsSelect<false> | NotificationSettingsSelect<true>;
+    'push-notifications': PushNotificationsSelect<false> | PushNotificationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -476,6 +480,10 @@ export interface User {
    * Opt-in to receive push notifications for protocol updates and announcements
    */
   pushNotificationsEnabled?: boolean | null;
+  /**
+   * Opt-in to receive email notifications for account updates and requests
+   */
+  emailNotificationsEnabled?: boolean | null;
   /**
    * Device tokens for push notifications (automatically managed by mobile app)
    */
@@ -1644,8 +1652,17 @@ export interface Notification {
    * Type of notification sent
    */
   type:
-    | 'user_registration_admin'
+    | 'user_registers'
     | 'user_approved'
+    | 'user_deactivated'
+    | 'user_deleted'
+    | 'base_change_request_submitted'
+    | 'hospital_change_request_submitted'
+    | 'new_base_submitted'
+    | 'new_hospital_submitted'
+    | 'request_approved'
+    | 'request_denied'
+    | 'user_registration_admin'
     | 'user_rejected'
     | 'hospital_request_submitted_admin'
     | 'hospital_request_approved'
@@ -1764,6 +1781,77 @@ export interface AuditLog {
    * User agent of the browser/client
    */
   userAgent?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notification-settings".
+ */
+export interface NotificationSetting {
+  id: number;
+  notificationType:
+    | 'user_registers'
+    | 'user_approved'
+    | 'user_deactivated'
+    | 'user_deleted'
+    | 'base_change_request_submitted'
+    | 'hospital_change_request_submitted'
+    | 'new_base_submitted'
+    | 'new_hospital_submitted'
+    | 'request_approved'
+    | 'request_denied';
+  adminNotifications?: {
+    pushEnabled?: boolean | null;
+    emailEnabled?: boolean | null;
+  };
+  contentTeamNotifications?: {
+    pushEnabled?: boolean | null;
+    emailEnabled?: boolean | null;
+  };
+  userNotifications?: {
+    pushEnabled?: boolean | null;
+    emailEnabled?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Send push notifications to users by role
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-notifications".
+ */
+export interface PushNotification {
+  id: number;
+  /**
+   * The title that appears in the push notification
+   */
+  title: string;
+  /**
+   * The message content (max 200 characters recommended)
+   */
+  body: string;
+  /**
+   * Select which user roles should receive this notification
+   */
+  targetRoles: ('admin-team' | 'content-team' | 'user')[];
+  /**
+   * Status of the notification
+   */
+  status: 'draft' | 'sending' | 'sent' | 'failed';
+  /**
+   * Number of users who received this notification
+   */
+  recipientCount?: number | null;
+  /**
+   * Error message if the notification failed
+   */
+  error?: string | null;
+  /**
+   * When the notification was sent
+   */
+  sentAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2020,6 +2108,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'audit-log';
         value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'notification-settings';
+        value: number | NotificationSetting;
+      } | null)
+    | ({
+        relationTo: 'push-notifications';
+        value: number | PushNotification;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2375,6 +2471,7 @@ export interface UsersSelect<T extends boolean = true> {
   rejectionReason?: T;
   defaultServiceLine?: T;
   pushNotificationsEnabled?: T;
+  emailNotificationsEnabled?: T;
   fcmTokens?:
     | T
     | {
@@ -2820,6 +2917,48 @@ export interface AuditLogSelect<T extends boolean = true> {
   metadata?: T;
   ipAddress?: T;
   userAgent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notification-settings_select".
+ */
+export interface NotificationSettingsSelect<T extends boolean = true> {
+  notificationType?: T;
+  adminNotifications?:
+    | T
+    | {
+        pushEnabled?: T;
+        emailEnabled?: T;
+      };
+  contentTeamNotifications?:
+    | T
+    | {
+        pushEnabled?: T;
+        emailEnabled?: T;
+      };
+  userNotifications?:
+    | T
+    | {
+        pushEnabled?: T;
+        emailEnabled?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-notifications_select".
+ */
+export interface PushNotificationsSelect<T extends boolean = true> {
+  title?: T;
+  body?: T;
+  targetRoles?: T;
+  status?: T;
+  recipientCount?: T;
+  error?: T;
+  sentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
