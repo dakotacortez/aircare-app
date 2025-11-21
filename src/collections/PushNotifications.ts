@@ -10,6 +10,13 @@ const PushNotifications: CollectionConfig = {
     defaultColumns: ['title', 'targetRoles', 'status', 'createdAt'],
     group: 'System',
     description: 'Send push notifications to users by role',
+    components: {
+      views: {
+        Edit: {
+          actions: ['@/components/PushNotifications/SendPushNotificationButton'],
+        },
+      },
+    },
   },
   access: {
     read: isAdmin,
