@@ -67,16 +67,6 @@ const PushNotifications: CollectionConfig = {
       },
     },
     {
-      name: 'sendNotification',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/PushNotifications/SendPushNotificationButton',
-        },
-        description: 'Save the draft before sending the notification.',
-      },
-    },
-    {
       name: 'recipientCount',
       type: 'number',
       admin: {
@@ -105,11 +95,19 @@ const PushNotifications: CollectionConfig = {
   ],
   hooks: {
     afterChange: [
-      async ({ doc, req, operation, previousDoc }) => {
-        // Only send when transitioning from draft to sending (via admin action)
-        // This prevents accidental sends on create
-        if (operation === 'update' && previousDoc.status === 'draft' && doc.status === 'sending') {
+      async ({ doc, req, operation }) => {
+        // Automatically send notifications when a new document is saved
+        if (operation === 'create') {
           try {
+            // Mark as sending while the notification is dispatched
+            await req.payload.update({
+              collection: 'push-notifications',
+              id: doc.id,
+              data: {
+                status: 'sending',
+              },
+            })
+
             // Get all users matching the target roles
             const { docs: users } = await req.payload.find({
               collection: 'users',
