@@ -4,8 +4,12 @@
  * Run this on your production server to diagnose Firebase setup issues
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 console.log('\n=== Firebase Configuration Diagnostic ===\n');
 
@@ -27,7 +31,12 @@ if (credPath) {
 
     try {
       const stats = fs.statSync(credPath);
-      console.log('   Readable:', fs.accessSync(credPath, fs.constants.R_OK) === undefined ? '✅ YES' : '❌ NO');
+      try {
+        fs.accessSync(credPath, fs.constants.R_OK);
+        console.log('   Readable: ✅ YES');
+      } catch {
+        console.log('   Readable: ❌ NO');
+      }
       console.log('   File size:', stats.size, 'bytes');
 
       // Try to parse the JSON
@@ -67,11 +76,9 @@ if (credPath) {
 // Check if firebase-admin is installed
 console.log('\n4. Firebase Admin SDK:');
 try {
-  require.resolve('firebase-admin');
+  const admin = await import('firebase-admin');
   console.log('   ✅ firebase-admin package is installed');
-
-  const admin = require('firebase-admin');
-  console.log('   Version:', admin.SDK_VERSION);
+  console.log('   Version:', admin.default.SDK_VERSION || 'Unknown');
 } catch (error) {
   console.log('   ❌ firebase-admin package not found:', error.message);
 }
