@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types'
+import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../access/roles'
 
 export type NotificationType =
