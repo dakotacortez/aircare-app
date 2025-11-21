@@ -26,6 +26,8 @@ import { Assets } from './collections/Assets'
 import { Calculators } from './collections/Calculators'
 import { Notifications } from './collections/Notifications'
 import { AuditLog } from './collections/AuditLog'
+import NotificationSettings from './collections/NotificationSettings'
+import PushNotifications from './collections/PushNotifications'
 
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -105,6 +107,8 @@ export default buildConfig({
     Calculators,
     Notifications,
     AuditLog,
+    NotificationSettings,
+    PushNotifications,
   ],
 
   cors: [getServerSideURL()].filter(Boolean),

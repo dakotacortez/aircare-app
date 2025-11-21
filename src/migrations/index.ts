@@ -29,6 +29,7 @@ import * as migration_20251120_030000_add_notifications_and_audit_trail from './
 import * as migration_20251120_120000_readd_hospital_cr_source_attribution from './20251120_120000_readd_hospital_cr_source_attribution';
 import * as migration_20251121_000000_fix_missing_columns from './20251121_000000_fix_missing_columns';
 import * as migration_20251121_000001_add_audit_log_id_to_locked_docs_rels from './20251121_000001_add_audit_log_id_to_locked_docs_rels';
+import * as migration_20251121_120000_add_notification_settings from './20251121_120000_add_notification_settings';
 
 export const migrations = [
   {
@@ -184,5 +185,10 @@ export const migrations = [
       up: migration_20251121_000001_add_audit_log_id_to_locked_docs_rels.up,
       down: migration_20251121_000001_add_audit_log_id_to_locked_docs_rels.down,
       name: '20251121_000001_add_audit_log_id_to_locked_docs_rels'
+    },
+    {
+      up: migration_20251121_120000_add_notification_settings.up,
+      down: migration_20251121_120000_add_notification_settings.down,
+      name: '20251121_120000_add_notification_settings'
     },
   ];

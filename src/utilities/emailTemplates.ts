@@ -126,7 +126,7 @@ export function userApprovedEmail(user: {
 }
 
 /**
- * Email to user when their account is rejected
+ * Email to user when their account is rejected/deactivated
  */
 export function userRejectedEmail(user: {
   name?: string | null
@@ -135,12 +135,12 @@ export function userRejectedEmail(user: {
   const userName = user.name || user.email || 'there'
 
   const content = `
-    <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px;">Account Registration Update</h2>
+    <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px;">Account Update</h2>
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
       Hi ${userName},
     </p>
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
-      Thank you for your interest in Air Care & Mobile Care. Unfortunately, we are unable to approve your account at this time.
+      Your account access has been changed. Please contact support if you have questions.
     </p>
     ${reason ? `
       <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0;">
@@ -154,7 +154,35 @@ export function userRejectedEmail(user: {
   `
 
   return {
-    subject: 'Account Registration Update',
+    subject: 'Account Update',
+    html: wrapEmail(content),
+  }
+}
+
+/**
+ * Email to user when their account is deleted
+ */
+export function userDeletedEmail(user: {
+  name?: string | null
+  email?: string | null
+}): { subject: string; html: string } {
+  const userName = user.name || user.email || 'there'
+
+  const content = `
+    <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 20px;">Account Deleted</h2>
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      Hi ${userName},
+    </p>
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      Your account has been deleted as requested.
+    </p>
+    <p style="margin: 20px 0 0 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      If you did not request this deletion, please contact our support team immediately.
+    </p>
+  `
+
+  return {
+    subject: 'Account Deleted',
     html: wrapEmail(content),
   }
 }
