@@ -93,22 +93,13 @@ export const Users: CollectionConfig = {
   hooks: {
       beforeChange: [
         async ({ data, originalDoc }) => {
-          const nextData = { ...data }
-
-          const nextStatus = nextData.status || originalDoc?.status
-          const nextApproved =
-            typeof nextData.approved === 'boolean' ? nextData.approved : originalDoc?.approved
-
           // Auto-approve users when setting them to active
-          if (nextStatus === 'active' && !nextApproved) {
-            console.log('[Users Hook] Auto-approving user being set to active status')
-            data.approved = true
-          }
-
-          // Prevent contradictory state: approved users cannot be inactive
-          const finalApproved = typeof data.approved === 'boolean' ? data.approved : nextApproved
-          if (finalApproved && nextStatus === 'inactive') {
-            throw new Error('Approved users cannot be marked inactive')
+          if (data.status === 'active') {
+            const currentApproved = typeof data.approved === 'boolean' ? data.approved : originalDoc?.approved
+            if (!currentApproved) {
+              console.log('[Users Hook] Auto-approving user being set to active status')
+              data.approved = true
+            }
           }
 
           return data
