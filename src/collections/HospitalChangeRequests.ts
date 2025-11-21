@@ -106,6 +106,7 @@ export const HospitalChangeRequests: CollectionConfig = {
               html: emailTemplate.html,
               relatedHospitalRequest: doc.id,
               relatedUser: submittedByUser?.id,
+              createdBy: submittedByUser?.id, // User who submitted the request
             })
 
             // Log audit trail
@@ -220,6 +221,7 @@ export const HospitalChangeRequests: CollectionConfig = {
                 html: emailTemplate.html,
                 relatedHospitalRequest: doc.id,
                 relatedUser: submittedByUser.id,
+                createdBy: req.user?.id, // Admin/content who approved the request
               })
             }
 
@@ -270,6 +272,7 @@ export const HospitalChangeRequests: CollectionConfig = {
                 html: emailTemplate.html,
                 relatedHospitalRequest: doc.id,
                 relatedUser: submittedByUser.id,
+                createdBy: req.user?.id, // Admin/content who rejected the request
               })
             }
 
