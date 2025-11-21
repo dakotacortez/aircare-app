@@ -13,36 +13,61 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
   // First, create the target_roles join table
   await payload.db.drizzle.execute(sql`
     CREATE TABLE IF NOT EXISTS push_notifications_target_roles (
-      _order INTEGER NOT NULL,
-      _parent_id INTEGER NOT NULL,
+      "order" INTEGER NOT NULL,
+      parent_id INTEGER NOT NULL,
       id VARCHAR PRIMARY KEY NOT NULL,
       value VARCHAR NOT NULL,
       CONSTRAINT push_notifications_target_roles_parent_fk
-        FOREIGN KEY (_parent_id)
+        FOREIGN KEY (parent_id)
         REFERENCES push_notifications(id)
         ON DELETE CASCADE
         ON UPDATE NO ACTION
     )
   `)
 
+  // If the table already exists with the old column names, rename them to match
+  // what Payload expects (parent_id/order)
+  await payload.db.drizzle.execute(sql`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = '_parent_id'
+      ) THEN
+        ALTER TABLE push_notifications_target_roles
+        RENAME COLUMN _parent_id TO parent_id;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = '_order'
+      ) THEN
+        ALTER TABLE push_notifications_target_roles
+        RENAME COLUMN _order TO "order";
+      END IF;
+    END $$;
+  `)
+
   // Create indexes
   await payload.db.drizzle.execute(sql`
     CREATE INDEX IF NOT EXISTS push_notifications_target_roles_order_idx
-      ON push_notifications_target_roles USING btree (_order)
+      ON push_notifications_target_roles USING btree ("order")
   `)
 
   await payload.db.drizzle.execute(sql`
     CREATE INDEX IF NOT EXISTS push_notifications_target_roles_parent_idx
-      ON push_notifications_target_roles USING btree (_parent_id)
+      ON push_notifications_target_roles USING btree (parent_id)
   `)
 
   // Migrate existing data from JSONB column to new table
   await payload.db.drizzle.execute(sql`
-    INSERT INTO push_notifications_target_roles (id, _parent_id, _order, value)
+    INSERT INTO push_notifications_target_roles (id, parent_id, "order", value)
     SELECT
       gen_random_uuid()::text as id,
-      pn.id as _parent_id,
-      (row_number() OVER (PARTITION BY pn.id ORDER BY role_value)) - 1 as _order,
+      pn.id as parent_id,
+      (row_number() OVER (PARTITION BY pn.id ORDER BY role_value)) - 1 as "order",
       role_value as value
     FROM push_notifications pn,
     jsonb_array_elements_text(pn.target_roles) AS role_value
@@ -70,13 +95,13 @@ export async function down({ payload }: MigrateDownArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
     UPDATE push_notifications pn
     SET target_roles = (
-      SELECT jsonb_agg(ptr.value ORDER BY ptr._order)
+      SELECT jsonb_agg(ptr.value ORDER BY ptr."order")
       FROM push_notifications_target_roles ptr
-      WHERE ptr._parent_id = pn.id
+      WHERE ptr.parent_id = pn.id
     )
     WHERE EXISTS (
       SELECT 1 FROM push_notifications_target_roles ptr
-      WHERE ptr._parent_id = pn.id
+      WHERE ptr.parent_id = pn.id
     )
   `)
 
