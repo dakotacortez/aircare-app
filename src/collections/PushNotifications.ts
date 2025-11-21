@@ -178,7 +178,12 @@ const PushNotifications: CollectionConfig = {
 
             console.log(`Push notification sent to ${users.length} users`)
           } catch (error) {
-            console.error('Error sending push notification:', error)
+            console.error('❌ [Push Notifications Collection] Error in afterChange hook:', error)
+            if (error instanceof Error) {
+              console.error('❌ [Push Notifications Collection] Error message:', error.message)
+              console.error('❌ [Push Notifications Collection] Error stack:', error.stack)
+            }
+            console.error('❌ [Push Notifications Collection] Full error object:', JSON.stringify(error, null, 2))
 
             // Update status to failed
             await req.payload.update({
@@ -186,7 +191,7 @@ const PushNotifications: CollectionConfig = {
               id: doc.id,
               data: {
                 status: 'failed',
-                error: error instanceof Error ? error.message : 'Unknown error',
+                error: error instanceof Error ? error.message : String(error),
               },
             })
           }
