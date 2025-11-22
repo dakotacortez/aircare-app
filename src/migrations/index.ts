@@ -45,6 +45,7 @@ import * as migration_20251122_190000_add_protocol_defaults_global from './20251
 import * as migration_20251122_203500_fix_protocol_defaults_tables from './20251122_203500_fix_protocol_defaults_tables';
 import * as migration_20251122_210000_fallback_fix_push_notifications_ids from './20251122_210000_fallback_fix_push_notifications_ids';
 import * as migration_20251122_214500_fix_protocol_sections_ids from './20251122_214500_fix_protocol_sections_ids';
+import * as migration_20251122_220000_remove_uuid_from_protocol_sections from './20251122_220000_remove_uuid_from_protocol_sections';
 
 export const migrations = [
   {
@@ -281,5 +282,10 @@ export const migrations = [
     up: migration_20251122_214500_fix_protocol_sections_ids.up,
     down: migration_20251122_214500_fix_protocol_sections_ids.down,
     name: '20251122_214500_fix_protocol_sections_ids',
+  },
+  {
+    up: migration_20251122_220000_remove_uuid_from_protocol_sections.up,
+    down: migration_20251122_220000_remove_uuid_from_protocol_sections.down,
+    name: '20251122_220000_remove_uuid_from_protocol_sections',
   },
 ];
