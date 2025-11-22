@@ -82,9 +82,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     ALTER TABLE "medications" DROP COLUMN IF EXISTS "doses";
   `)
 
-  // Create protocols_version_sections table
+  // Create protocols_sections table (for main protocols table)
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_sections" (
+    CREATE TABLE IF NOT EXISTS "protocols_sections" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
@@ -101,22 +101,22 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_sections_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_sections_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections" ADD CONSTRAINT "protocols_version_sections_parent_fk"
+        ALTER TABLE "protocols_sections" ADD CONSTRAINT "protocols_sections_parent_fk"
           FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_order_idx" ON "protocols_version_sections" USING btree ("_order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_parent_idx" ON "protocols_version_sections" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_order_idx" ON "protocols_sections" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_parent_idx" ON "protocols_sections" USING btree ("_parent_id");
   `)
 
-  // Create protocols_version_sections_scope table
+  // Create protocols_sections_scope table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_sections_scope" (
+    CREATE TABLE IF NOT EXISTS "protocols_sections_scope" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "value" varchar,
@@ -128,22 +128,22 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_sections_scope_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_sections_scope_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections_scope" ADD CONSTRAINT "protocols_version_sections_scope_parent_fk"
-          FOREIGN KEY ("parent_id") REFERENCES "public"."protocols_version_sections"("id") ON DELETE cascade ON UPDATE no action;
+        ALTER TABLE "protocols_sections_scope" ADD CONSTRAINT "protocols_sections_scope_parent_fk"
+          FOREIGN KEY ("parent_id") REFERENCES "public"."protocols_sections"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_scope_order_idx" ON "protocols_version_sections_scope" USING btree ("order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_scope_parent_idx" ON "protocols_version_sections_scope" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_scope_order_idx" ON "protocols_sections_scope" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_scope_parent_idx" ON "protocols_sections_scope" USING btree ("parent_id");
   `)
 
-  // Create protocols_version_sections_action_steps table
+  // Create protocols_sections_action_steps table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_sections_action_steps" (
+    CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
@@ -159,22 +159,22 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_sections_action_steps_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_sections_action_steps_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections_action_steps" ADD CONSTRAINT "protocols_version_sections_action_steps_parent_fk"
-          FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols_version_sections"("id") ON DELETE cascade ON UPDATE no action;
+        ALTER TABLE "protocols_sections_action_steps" ADD CONSTRAINT "protocols_sections_action_steps_parent_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols_sections"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_action_steps_order_idx" ON "protocols_version_sections_action_steps" USING btree ("_order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_action_steps_parent_idx" ON "protocols_version_sections_action_steps" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_order_idx" ON "protocols_sections_action_steps" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_parent_idx" ON "protocols_sections_action_steps" USING btree ("_parent_id");
   `)
 
-  // Create protocols_version_sections_action_steps_scope table
+  // Create protocols_sections_action_steps_scope table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_sections_action_steps_scope" (
+    CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps_scope" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "value" varchar,
@@ -186,22 +186,22 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_sections_action_steps_scope_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_sections_action_steps_scope_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections_action_steps_scope" ADD CONSTRAINT "protocols_version_sections_action_steps_scope_parent_fk"
-          FOREIGN KEY ("parent_id") REFERENCES "public"."protocols_version_sections_action_steps"("id") ON DELETE cascade ON UPDATE no action;
+        ALTER TABLE "protocols_sections_action_steps_scope" ADD CONSTRAINT "protocols_sections_action_steps_scope_parent_fk"
+          FOREIGN KEY ("parent_id") REFERENCES "public"."protocols_sections_action_steps"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_action_steps_scope_order_idx" ON "protocols_version_sections_action_steps_scope" USING btree ("order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_action_steps_scope_parent_idx" ON "protocols_version_sections_action_steps_scope" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_scope_order_idx" ON "protocols_sections_action_steps_scope" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_scope_parent_idx" ON "protocols_sections_action_steps_scope" USING btree ("parent_id");
   `)
 
-  // Create protocols_version_sections_action_steps_protocol_references table
+  // Create protocols_sections_action_steps_protocol_references table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_sections_action_steps_protocol_references" (
+    CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps_protocol_references" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
@@ -217,8 +217,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'protocols_v_s_a_s_protocol_references_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections_action_steps_protocol_references" ADD CONSTRAINT "protocols_v_s_a_s_protocol_references_parent_fk"
-          FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols_version_sections_action_steps"("id") ON DELETE cascade ON UPDATE no action;
+        ALTER TABLE "protocols_sections_action_steps_protocol_references" ADD CONSTRAINT "protocols_v_s_a_s_protocol_references_parent_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols_sections_action_steps"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
@@ -229,21 +229,21 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'protocols_v_s_a_s_protocol_references_protocol_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections_action_steps_protocol_references" ADD CONSTRAINT "protocols_v_s_a_s_protocol_references_protocol_fk"
+        ALTER TABLE "protocols_sections_action_steps_protocol_references" ADD CONSTRAINT "protocols_v_s_a_s_protocol_references_protocol_fk"
           FOREIGN KEY ("protocol_id") REFERENCES "public"."protocols"("id") ON DELETE set null ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_order_idx" ON "protocols_version_sections_action_steps_protocol_references" USING btree ("_order");
-    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_parent_idx" ON "protocols_version_sections_action_steps_protocol_references" USING btree ("_parent_id");
-    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_protocol_idx" ON "protocols_version_sections_action_steps_protocol_references" USING btree ("protocol_id");
+    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_order_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_parent_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_protocol_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("protocol_id");
   `)
 
-  // Create protocols_version_sections_action_steps_details table
+  // Create protocols_sections_action_steps_details table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_sections_action_steps_details" (
+    CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps_details" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
@@ -256,22 +256,22 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_sections_action_steps_details_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_sections_action_steps_details_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_sections_action_steps_details" ADD CONSTRAINT "protocols_version_sections_action_steps_details_parent_fk"
-          FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols_version_sections_action_steps"("id") ON DELETE cascade ON UPDATE no action;
+        ALTER TABLE "protocols_sections_action_steps_details" ADD CONSTRAINT "protocols_sections_action_steps_details_parent_fk"
+          FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols_sections_action_steps"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_action_steps_details_order_idx" ON "protocols_version_sections_action_steps_details" USING btree ("_order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_sections_action_steps_details_parent_idx" ON "protocols_version_sections_action_steps_details" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_details_order_idx" ON "protocols_sections_action_steps_details" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_details_parent_idx" ON "protocols_sections_action_steps_details" USING btree ("_parent_id");
   `)
 
-  // Create protocols_version_tags table
+  // Create protocols_tags table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_tags" (
+    CREATE TABLE IF NOT EXISTS "protocols_tags" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "value" varchar,
@@ -283,22 +283,22 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_tags_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_tags_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_tags" ADD CONSTRAINT "protocols_version_tags_parent_fk"
+        ALTER TABLE "protocols_tags" ADD CONSTRAINT "protocols_tags_parent_fk"
           FOREIGN KEY ("parent_id") REFERENCES "public"."protocols"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_tags_order_idx" ON "protocols_version_tags" USING btree ("order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_tags_parent_idx" ON "protocols_version_tags" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_tags_order_idx" ON "protocols_tags" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "protocols_tags_parent_idx" ON "protocols_tags" USING btree ("parent_id");
   `)
 
-  // Create protocols_version_calculator_overrides table
+  // Create protocols_calculator_overrides table
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS "protocols_version_calculator_overrides" (
+    CREATE TABLE IF NOT EXISTS "protocols_calculator_overrides" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
       "id" serial PRIMARY KEY NOT NULL,
@@ -313,9 +313,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_calculator_overrides_parent_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_calculator_overrides_parent_fk'
       ) THEN
-        ALTER TABLE "protocols_version_calculator_overrides" ADD CONSTRAINT "protocols_version_calculator_overrides_parent_fk"
+        ALTER TABLE "protocols_calculator_overrides" ADD CONSTRAINT "protocols_calculator_overrides_parent_fk"
           FOREIGN KEY ("_parent_id") REFERENCES "public"."protocols"("id") ON DELETE cascade ON UPDATE no action;
       END IF;
     END $$;
@@ -325,18 +325,18 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DO $$
     BEGIN
       IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_version_calculator_overrides_calculator_fk'
+        SELECT 1 FROM pg_constraint WHERE conname = 'protocols_calculator_overrides_calculator_fk'
       ) THEN
-        ALTER TABLE "protocols_version_calculator_overrides" ADD CONSTRAINT "protocols_version_calculator_overrides_calculator_fk"
+        ALTER TABLE "protocols_calculator_overrides" ADD CONSTRAINT "protocols_calculator_overrides_calculator_fk"
           FOREIGN KEY ("calculator_id") REFERENCES "public"."calculators"("id") ON DELETE set null ON UPDATE no action;
       END IF;
     END $$;
   `)
 
   await db.execute(sql`
-    CREATE INDEX IF NOT EXISTS "protocols_version_calculator_overrides_order_idx" ON "protocols_version_calculator_overrides" USING btree ("_order");
-    CREATE INDEX IF NOT EXISTS "protocols_version_calculator_overrides_parent_idx" ON "protocols_version_calculator_overrides" USING btree ("_parent_id");
-    CREATE INDEX IF NOT EXISTS "protocols_version_calculator_overrides_calculator_idx" ON "protocols_version_calculator_overrides" USING btree ("calculator_id");
+    CREATE INDEX IF NOT EXISTS "protocols_calculator_overrides_order_idx" ON "protocols_calculator_overrides" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_calculator_overrides_parent_idx" ON "protocols_calculator_overrides" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_calculator_overrides_calculator_idx" ON "protocols_calculator_overrides" USING btree ("calculator_id");
   `)
 
   // Drop JSONB columns from protocols table
@@ -625,14 +625,14 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
     DROP TABLE IF EXISTS "_protocols_v_version_sections_scope";
     DROP TABLE IF EXISTS "_protocols_v_version_sections";
 
-    DROP TABLE IF EXISTS "protocols_version_calculator_overrides";
-    DROP TABLE IF EXISTS "protocols_version_tags";
-    DROP TABLE IF EXISTS "protocols_version_sections_action_steps_details";
-    DROP TABLE IF EXISTS "protocols_version_sections_action_steps_protocol_references";
-    DROP TABLE IF EXISTS "protocols_version_sections_action_steps_scope";
-    DROP TABLE IF EXISTS "protocols_version_sections_action_steps";
-    DROP TABLE IF EXISTS "protocols_version_sections_scope";
-    DROP TABLE IF EXISTS "protocols_version_sections";
+    DROP TABLE IF EXISTS "protocols_calculator_overrides";
+    DROP TABLE IF EXISTS "protocols_tags";
+    DROP TABLE IF EXISTS "protocols_sections_action_steps_details";
+    DROP TABLE IF EXISTS "protocols_sections_action_steps_protocol_references";
+    DROP TABLE IF EXISTS "protocols_sections_action_steps_scope";
+    DROP TABLE IF EXISTS "protocols_sections_action_steps";
+    DROP TABLE IF EXISTS "protocols_sections_scope";
+    DROP TABLE IF EXISTS "protocols_sections";
 
     DROP TABLE IF EXISTS "medications_doses";
     DROP TABLE IF EXISTS "medications_scope";
