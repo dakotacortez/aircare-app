@@ -59,11 +59,11 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
     await PushNotifications.register()
 
     // Wait for registration to complete and get the token
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       let resolved = false
 
       // Set up one-time listener for registration
-      const registrationListener = PushNotifications.addListener('registration', async (token) => {
+      const registrationListener = await PushNotifications.addListener('registration', async (token) => {
         if (resolved) return
         resolved = true
 
@@ -119,7 +119,7 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
       })
 
       // Set up error listener
-      const errorListener = PushNotifications.addListener('registrationError', async (error) => {
+      const errorListener = await PushNotifications.addListener('registrationError', async (error) => {
         if (resolved) return
         resolved = true
 
