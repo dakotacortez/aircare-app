@@ -6,10 +6,12 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { notFound } from 'next/navigation'
+import { draftMode } from 'next/headers'
 import { ProtocolContent } from './ProtocolContent'
 import { getMeUser } from '@/utilities/getMeUser'
 import { checkProtocolAccess } from '@/utilities/checkProtocolAccess'
 import { ProtocolAccessDenied } from '@/components/ProtocolAccessDenied'
+import { LivePreviewListener } from '@/components/LivePreviewListener'
 
 type Args = {
   params: Promise<{ protocolNumber: string }>
@@ -17,6 +19,7 @@ type Args = {
 
 export default async function ProtocolPage({ params: paramsPromise }: Args) {
   const { protocolNumber } = await paramsPromise
+  const { isEnabled: isDraftMode } = await draftMode()
 
   // Check authentication first
   const { user } = await getMeUser()
@@ -32,16 +35,25 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
     )
   }
 
+  const currentUser = accessStatus.user
+  const canPreviewDraft = isDraftMode && (currentUser.role === 'content-team' || currentUser.role === 'admin-team')
+
   // User has access, fetch protocols
   const payload = await getPayload({ config })
 
   // Get the current protocol by code
   const result = await payload.find({
     collection: 'protocols',
-    where: {
-      code: { equals: protocolNumber },
-      _status: { equals: 'published' },
-    },
+    draft: canPreviewDraft,
+    overrideAccess: canPreviewDraft,
+    where: canPreviewDraft
+      ? {
+          code: { equals: protocolNumber },
+        }
+      : {
+          code: { equals: protocolNumber },
+          _status: { equals: 'published' },
+        },
     limit: 1,
     depth: 2, // Fetch related medications and protocols
   })
@@ -55,26 +67,45 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
   // Get all protocols for sidebar navigation
   const allProtocols = await payload.find({
     collection: 'protocols',
-    where: {
-      _status: { equals: 'published' },
-    },
+    draft: canPreviewDraft,
+    overrideAccess: canPreviewDraft,
+    ...(canPreviewDraft
+      ? {}
+      : {
+          where: {
+            _status: { equals: 'published' },
+          },
+        }),
     sort: '_order',
     limit: 1000,
   })
 
-  return <ProtocolContent protocol={protocol} allProtocols={allProtocols.docs} />
+  return (
+    <>
+      {canPreviewDraft && <LivePreviewListener />}
+      <ProtocolContent protocol={protocol} allProtocols={allProtocols.docs} />
+    </>
+  )
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   const { protocolNumber } = await paramsPromise
+  const { isEnabled: isDraftMode } = await draftMode()
   const payload = await getPayload({ config })
 
   try {
     const result = await payload.find({
       collection: 'protocols',
-      where: {
-        code: { equals: protocolNumber },
-      },
+      draft: isDraftMode,
+      overrideAccess: isDraftMode,
+      where: isDraftMode
+        ? {
+            code: { equals: protocolNumber },
+          }
+        : {
+            code: { equals: protocolNumber },
+            _status: { equals: 'published' },
+          },
       limit: 1,
     })
 
