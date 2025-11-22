@@ -1,7 +1,7 @@
 import React from 'react'
 import './index.scss'
 
-export const AdminLogo = () => {
+const AdminLogo = () => {
   return (
     <div className="admin-logo">
       <div className="admin-logo__icon">AC</div>
@@ -12,3 +12,5 @@ export const AdminLogo = () => {
     </div>
   )
 }
+
+export default AdminLogo
