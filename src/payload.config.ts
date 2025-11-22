@@ -92,7 +92,7 @@ export default buildConfig({
     },
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
-  email: () => resendAdapter(),
+  email: resendAdapter(),
 
   collections: [
     Pages,
