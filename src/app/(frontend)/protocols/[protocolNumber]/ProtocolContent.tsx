@@ -297,60 +297,66 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
         {/* Main Content */}
         <main className="flex-1 overflow-auto bg-neutral-50 dark:bg-neutral-900">
           <div className="px-4 md:px-6 py-6 max-w-4xl mx-auto">
-            {/* Protocol Header with View Mode Toggle */}
+            {/* Protocol Header */}
             <div className="mb-6">
               <div className="flex items-center gap-4 text-sm text-neutral-500 mb-2">
                 {protocol.code && <span className="font-mono font-bold text-blue-600">{protocol.code}</span>}
                 {protocol.lastModified && <span>Modified: {protocol.lastModified}</span>}
               </div>
-              <h1 className="text-3xl font-bold mb-2">{protocol.title}</h1>
+
+              {/* Title and View Mode Toggle Row */}
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <h1 className="text-3xl font-bold">{protocol.title}</h1>
+
+                {/* View Mode Toggle - Top Right */}
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => setViewMode('study')}
+                    className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                      viewMode === 'study'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+                    }`}
+                    title="Study Mode"
+                  >
+                    <Book size={18} />
+                    <span className="text-sm">Study</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('active')}
+                    className={`p-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                      viewMode === 'active'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
+                    }`}
+                    title="Active Mode"
+                  >
+                    <Activity size={18} />
+                    <span className="text-sm">Active</span>
+                  </button>
+                </div>
+              </div>
+
               {protocol.subcategory && (
                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                   {protocol.subcategory}
                 </p>
               )}
 
-              {/* View Mode Controls */}
-              <div className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl p-4 space-y-3">
-                {/* View Mode Toggle */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setViewMode('study')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                      viewMode === 'study'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                    }`}
-                  >
-                    <Book size={16} />
-                    <span>Study Mode</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('active')}
-                    className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
-                      viewMode === 'active'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                    }`}
-                  >
-                    <Activity size={16} />
-                    <span>Active Mode</span>
-                  </button>
-                </div>
-
-                {/* Show Out of Scope checkbox (only in active mode) */}
-                {viewMode === 'active' && (
-                  <label className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
+              {/* Show Out of Scope checkbox - Below toggles */}
+              {viewMode === 'active' && (
+                <div className="flex justify-end">
+                  <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
                     <input
                       type="checkbox"
                       checked={showOutOfScope}
                       onChange={(e) => setShowOutOfScope(e.target.checked)}
                       className="rounded"
                     />
-                    Show actions outside my scope (grayed out)
+                    Show greyed out levels
                   </label>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Protocol Sections */}
