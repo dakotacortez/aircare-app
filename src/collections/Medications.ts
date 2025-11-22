@@ -74,15 +74,15 @@ export const Medications: CollectionConfig = {
         placeholder: 'e.g., Epinephrine, Amiodarone',
       },
     },
-    {
-      name: 'genericName',
-      type: 'text',
-      label: 'Generic Name',
-      admin: {
-        description: 'Generic name if different from brand name',
-        placeholder: 'e.g., Acetaminophen for Tylenol',
+      {
+        name: 'genericName',
+        type: 'text',
+        label: 'Alternate Names',
+        admin: {
+          description: 'List any alternate brand or generic names users may search for',
+          placeholder: 'e.g., Acetaminophen, Tylenol, Paracetamol',
+        },
       },
-    },
     {
       name: 'class',
       type: 'select',
