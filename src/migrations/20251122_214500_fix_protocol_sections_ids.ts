@@ -65,8 +65,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_sections_order_idx" ON "protocols_sections" USING btree ("_order");
-    CREATE INDEX "protocols_sections_parent_idx" ON "protocols_sections" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_order_idx" ON "protocols_sections" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_parent_idx" ON "protocols_sections" USING btree ("_parent_id");
   `)
 
   // Create protocols_sections_scope table
@@ -85,8 +85,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_sections_scope_order_idx" ON "protocols_sections_scope" USING btree ("order");
-    CREATE INDEX "protocols_sections_scope_parent_idx" ON "protocols_sections_scope" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_scope_order_idx" ON "protocols_sections_scope" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_scope_parent_idx" ON "protocols_sections_scope" USING btree ("parent_id");
   `)
 
   // Create protocols_sections_action_steps table
@@ -109,8 +109,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_sections_action_steps_order_idx" ON "protocols_sections_action_steps" USING btree ("_order");
-    CREATE INDEX "protocols_sections_action_steps_parent_idx" ON "protocols_sections_action_steps" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_order_idx" ON "protocols_sections_action_steps" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_parent_idx" ON "protocols_sections_action_steps" USING btree ("_parent_id");
   `)
 
   // Create protocols_sections_action_steps_scope table
@@ -129,8 +129,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_sections_action_steps_scope_order_idx" ON "protocols_sections_action_steps_scope" USING btree ("order");
-    CREATE INDEX "protocols_sections_action_steps_scope_parent_idx" ON "protocols_sections_action_steps_scope" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_scope_order_idx" ON "protocols_sections_action_steps_scope" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_scope_parent_idx" ON "protocols_sections_action_steps_scope" USING btree ("parent_id");
   `)
 
   // Create protocols_sections_action_steps_protocol_references table
@@ -156,9 +156,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_v_s_a_s_protocol_references_order_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("_order");
-    CREATE INDEX "protocols_v_s_a_s_protocol_references_parent_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("_parent_id");
-    CREATE INDEX "protocols_v_s_a_s_protocol_references_protocol_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("protocol_id");
+    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_order_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_parent_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_v_s_a_s_protocol_references_protocol_idx" ON "protocols_sections_action_steps_protocol_references" USING btree ("protocol_id");
   `)
 
   // Create protocols_sections_action_steps_details table
@@ -178,8 +178,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_sections_action_steps_details_order_idx" ON "protocols_sections_action_steps_details" USING btree ("_order");
-    CREATE INDEX "protocols_sections_action_steps_details_parent_idx" ON "protocols_sections_action_steps_details" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_details_order_idx" ON "protocols_sections_action_steps_details" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_sections_action_steps_details_parent_idx" ON "protocols_sections_action_steps_details" USING btree ("_parent_id");
   `)
 
   // Create protocols_tags table
@@ -198,8 +198,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_tags_order_idx" ON "protocols_tags" USING btree ("order");
-    CREATE INDEX "protocols_tags_parent_idx" ON "protocols_tags" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_tags_order_idx" ON "protocols_tags" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "protocols_tags_parent_idx" ON "protocols_tags" USING btree ("parent_id");
   `)
 
   // Create protocols_calculator_overrides table
@@ -226,9 +226,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "protocols_calculator_overrides_order_idx" ON "protocols_calculator_overrides" USING btree ("_order");
-    CREATE INDEX "protocols_calculator_overrides_parent_idx" ON "protocols_calculator_overrides" USING btree ("_parent_id");
-    CREATE INDEX "protocols_calculator_overrides_calculator_idx" ON "protocols_calculator_overrides" USING btree ("calculator_id");
+    CREATE INDEX IF NOT EXISTS "protocols_calculator_overrides_order_idx" ON "protocols_calculator_overrides" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "protocols_calculator_overrides_parent_idx" ON "protocols_calculator_overrides" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "protocols_calculator_overrides_calculator_idx" ON "protocols_calculator_overrides" USING btree ("calculator_id");
   `)
 
   // =====================================================================
@@ -256,8 +256,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_version_sections_order_idx" ON "_protocols_v_version_sections" USING btree ("_order");
-    CREATE INDEX "_protocols_v_version_sections_parent_idx" ON "_protocols_v_version_sections" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_sections_order_idx" ON "_protocols_v_version_sections" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_sections_parent_idx" ON "_protocols_v_version_sections" USING btree ("_parent_id");
   `)
 
   // Create _protocols_v_version_sections_scope table
@@ -276,8 +276,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_version_sections_scope_order_idx" ON "_protocols_v_version_sections_scope" USING btree ("order");
-    CREATE INDEX "_protocols_v_version_sections_scope_parent_idx" ON "_protocols_v_version_sections_scope" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_sections_scope_order_idx" ON "_protocols_v_version_sections_scope" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_sections_scope_parent_idx" ON "_protocols_v_version_sections_scope" USING btree ("parent_id");
   `)
 
   // Create _protocols_v_version_sections_action_steps table
@@ -300,8 +300,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_version_sections_action_steps_order_idx" ON "_protocols_v_version_sections_action_steps" USING btree ("_order");
-    CREATE INDEX "_protocols_v_version_sections_action_steps_parent_idx" ON "_protocols_v_version_sections_action_steps" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_sections_action_steps_order_idx" ON "_protocols_v_version_sections_action_steps" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_sections_action_steps_parent_idx" ON "_protocols_v_version_sections_action_steps" USING btree ("_parent_id");
   `)
 
   // Create _protocols_v_version_sections_action_steps_scope table
@@ -320,8 +320,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_v_s_action_steps_scope_order_idx" ON "_protocols_v_version_sections_action_steps_scope" USING btree ("order");
-    CREATE INDEX "_protocols_v_v_s_action_steps_scope_parent_idx" ON "_protocols_v_version_sections_action_steps_scope" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_action_steps_scope_order_idx" ON "_protocols_v_version_sections_action_steps_scope" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_action_steps_scope_parent_idx" ON "_protocols_v_version_sections_action_steps_scope" USING btree ("parent_id");
   `)
 
   // Create _protocols_v_version_sections_action_steps_protocol_references table
@@ -347,9 +347,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_v_s_a_s_protocol_references_order_idx" ON "_protocols_v_version_sections_action_steps_protocol_references" USING btree ("_order");
-    CREATE INDEX "_protocols_v_v_s_a_s_protocol_references_parent_idx" ON "_protocols_v_version_sections_action_steps_protocol_references" USING btree ("_parent_id");
-    CREATE INDEX "_protocols_v_v_s_a_s_protocol_references_protocol_idx" ON "_protocols_v_version_sections_action_steps_protocol_references" USING btree ("protocol_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_a_s_protocol_references_order_idx" ON "_protocols_v_version_sections_action_steps_protocol_references" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_a_s_protocol_references_parent_idx" ON "_protocols_v_version_sections_action_steps_protocol_references" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_a_s_protocol_references_protocol_idx" ON "_protocols_v_version_sections_action_steps_protocol_references" USING btree ("protocol_id");
   `)
 
   // Create _protocols_v_version_sections_action_steps_details table
@@ -369,8 +369,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_v_s_action_steps_details_order_idx" ON "_protocols_v_version_sections_action_steps_details" USING btree ("_order");
-    CREATE INDEX "_protocols_v_v_s_action_steps_details_parent_idx" ON "_protocols_v_version_sections_action_steps_details" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_action_steps_details_order_idx" ON "_protocols_v_version_sections_action_steps_details" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_v_s_action_steps_details_parent_idx" ON "_protocols_v_version_sections_action_steps_details" USING btree ("_parent_id");
   `)
 
   // Create _protocols_v_version_tags table
@@ -389,8 +389,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_version_tags_order_idx" ON "_protocols_v_version_tags" USING btree ("order");
-    CREATE INDEX "_protocols_v_version_tags_parent_idx" ON "_protocols_v_version_tags" USING btree ("parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_tags_order_idx" ON "_protocols_v_version_tags" USING btree ("order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_tags_parent_idx" ON "_protocols_v_version_tags" USING btree ("parent_id");
   `)
 
   // Create _protocols_v_version_calculator_overrides table
@@ -417,9 +417,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    CREATE INDEX "_protocols_v_version_calculator_overrides_order_idx" ON "_protocols_v_version_calculator_overrides" USING btree ("_order");
-    CREATE INDEX "_protocols_v_version_calculator_overrides_parent_idx" ON "_protocols_v_version_calculator_overrides" USING btree ("_parent_id");
-    CREATE INDEX "_protocols_v_version_calculator_overrides_calculator_idx" ON "_protocols_v_version_calculator_overrides" USING btree ("calculator_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_calculator_overrides_order_idx" ON "_protocols_v_version_calculator_overrides" USING btree ("_order");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_calculator_overrides_parent_idx" ON "_protocols_v_version_calculator_overrides" USING btree ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "_protocols_v_version_calculator_overrides_calculator_idx" ON "_protocols_v_version_calculator_overrides" USING btree ("calculator_id");
   `)
 }
 
