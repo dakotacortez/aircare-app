@@ -4,6 +4,7 @@ import { HeaderThemeProvider } from './HeaderTheme'
 import { ThemeProvider } from './Theme'
 import { ServiceLineProvider } from './ServiceLine'
 import { ReferenceCardProvider } from '@/hooks/useReferenceCard'
+import { PushNotificationProvider } from './PushNotifications'
 
 export const Providers: React.FC<{
   children: React.ReactNode
@@ -11,9 +12,11 @@ export const Providers: React.FC<{
   return (
     <ThemeProvider>
       <ServiceLineProvider>
-        <HeaderThemeProvider>
-          <ReferenceCardProvider>{children}</ReferenceCardProvider>
-        </HeaderThemeProvider>
+        <PushNotificationProvider>
+          <HeaderThemeProvider>
+            <ReferenceCardProvider>{children}</ReferenceCardProvider>
+          </HeaderThemeProvider>
+        </PushNotificationProvider>
       </ServiceLineProvider>
     </ThemeProvider>
   )

@@ -7,6 +7,7 @@ import type { ServiceLineType } from '@/providers/ServiceLine'
 import { useServiceLine } from '@/providers/ServiceLine'
 import { useRouter } from 'next/navigation'
 import { Upload, Trash2, Bell, BellOff } from 'lucide-react'
+import { usePushNotifications } from '@/providers/PushNotifications'
 
 const SERVICE_LINE_LABELS: Record<ServiceLineType, string> = {
   BLS: 'BLS (Basic Life Support)',
@@ -38,8 +39,30 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { setServiceLine } = useServiceLine()
+  const { isSupported: isPushSupported, register: registerPushNotifications } = usePushNotifications()
 
   const isAdminUser = initialUser.role === 'admin-team' || initialUser.role === 'content-team'
+
+  const handlePushNotificationToggle = async () => {
+    const newValue = !pushNotificationsEnabled
+
+    // If enabling push notifications on a mobile device, request permission and register
+    if (newValue && isPushSupported) {
+      setSuccessMessage(null)
+      setErrorMessage(null)
+
+      const result = await registerPushNotifications()
+
+      if (!result.success) {
+        setErrorMessage(
+          result.error || 'Failed to enable push notifications. Please try again.'
+        )
+        return
+      }
+    }
+
+    setPushNotificationsEnabled(newValue)
+  }
 
   const handleImageUpload = async (file: File): Promise<string | null> => {
     try {
@@ -387,7 +410,7 @@ export function EditProfileForm({ initialUser }: EditProfileFormProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setPushNotificationsEnabled(!pushNotificationsEnabled)}
+                onClick={handlePushNotificationToggle}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
                   pushNotificationsEnabled
                     ? 'bg-blue-600'
