@@ -1,10 +1,12 @@
 import React from 'react'
 import './index.scss'
 
-export const AdminIcon = () => {
+const AdminIcon = () => {
   return (
     <div className="admin-icon">
       AC
     </div>
   )
 }
+
+export default AdminIcon
