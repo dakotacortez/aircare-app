@@ -1,84 +1,148 @@
-# ACMC Reference Card Platform
+# Air Care & Mobile Care Platform
 
-ACMC now runs a purpose-built medical operations portal that sits on top of Payload CMS and Next.js. The repo powers the public site, the authenticated clinician workspace, the offline-friendly calculator suite, and the native shell (via Capacitor) that we ship to the field. This README describes the product we actually run—not the stock Payload template it started from.
+> **Mission-critical medical operations platform for emergency medical services in the field**
 
-## What the App Delivers
+When every second counts and lives are on the line, Air Care & Mobile Care (ACMC) clinicians need instant access to protocols, calculators, and reference data—whether they're 30,000 feet in the air or in the back of a ground ambulance. This platform is their digital command center.
 
-- **Quick Reference Cards:** Mobile/tablet-only drawer that stores calculator outputs and free-form notes for 24 hours in `localStorage`, complete with export flows (copy, print, email, SMS).
-- **Medical Calculators:** Ventilator and pediatric drug calculators (with hooks to add more) that can hand results directly to the reference-card system.
-- **Clinical Content Library:** Draftable, orderable protocol collection with service-line tabs (Universal, BLS, ALS, CCT), hospital asset catalogs, bases, calculators, and more.
-- **Role-aware Access Control:** Users must be active and approved; content-team and admin-team roles unlock authoring tools, while field crews only see published material.
-- **Next.js Frontend + Payload Backend:** Shared repo using the App Router, Tailwind, shadcn/ui, Payload SEO/Search/Redirect plugins, and on-demand revalidation.
-- **Native Packaging:** The `android/` folder plus `capacitor.config.ts` provide a wrapper that points the native shell to the live deployment at `https://acmc.app`.
+Built on a modern stack of Next.js and Payload CMS, the ACMC platform delivers a complete medical operations ecosystem: from quick-reference cards that clinicians can jot notes on during patient care, to sophisticated ventilator and drug calculators, to a comprehensive clinical protocol library managed by medical directors and content teams. Everything is designed to work seamlessly across devices, offline-capable where it matters, and packaged as both a web app and native mobile application.
 
-## Tech Stack at a Glance
+## What This Platform Does
 
-- **Frontend:** Next.js 15 App Router, React 19, TypeScript, TailwindCSS, shadcn/ui, React Hook Form.
-- **CMS & API:** Payload 3.64 with Postgres adapter, Lexical-based editors, Payload plugins (SEO, Search, Redirects, Nested Docs, Form Builder).
-- **Data:** Postgres (primary), `localStorage` for quick cards, Media uploads via Payload.
-- **Tooling:** pnpm, Vitest, Playwright, ESLint, Prettier.
-- **Native shell:** Capacitor 7 with Android project checked in.
+### 🚁 In the Field: Real-Time Clinical Support
 
-## Core Feature Details
+Picture a paramedic in a helicopter at 2 AM, treating a critical pediatric patient. They pull up the ACMC app on their tablet, run a quick weight-based drug calculation, tap "Save to Reference Card," and instantly have a timestamped record they can reference throughout the flight. When they hand off to the ER, they can export the entire reference card via SMS or print—no fumbling with paper forms in turbulence.
 
-### Quick Reference Cards
-- Mobile/tablet-gated via `useDeviceType`.
-- Stored entirely client-side under the `acmc-reference-cards` key with 24-hour auto-expiration.
-- FAB + drawer UI (`src/components/ReferenceCard`) integrated globally in `src/app/(frontend)/layout.tsx`.
-- Users can add timestamped notes, save calculator outputs, and export/share cards without touching the server.
+**Quick Reference Cards** are the digital notepad every clinician needs. Store calculator outputs, jot down timestamped notes, and keep everything locally on the device for 24 hours with automatic expiration. Export via copy/paste, print, email, or SMS. No server required, no PHI to worry about—just fast, offline-first documentation that works when connectivity doesn't.
 
-### Calculator Suite
-- Located at `/calculators` and built from `src/components/Calculators`.
-- Demonstrates how to capture structured inputs/outputs and pass them to the reference-card modals.
-- Acts as the integration pattern for future calculators (IV drips, RSI, burn charts, etc.).
+**Medical Calculators** power clinical decision-making in seconds. The ventilator calculator helps set optimal respiratory parameters. The pediatric drug calculator eliminates mental math errors when dosing critical medications for children. Each calculator feeds results directly into reference cards, creating a seamless workflow from calculation to documentation.
 
-### Clinical Content Model
-- Collections include `Protocols`, `Hospitals`, `HospitalNetworks`, `HospitalCapabilities`, `Bases`, `Assets`, and `Calculators`, each with tailored access rules in `src/collections`.
-- Protocols feature tabbed Lexical editors, certification-level callouts, sanitization hooks, and approval workflows.
-- Globals (`Header`, `Footer`, `SiteSettings`) power site chrome and system-wide settings.
+### 🏥 Command Center: Clinical Content Management
 
-### Security & Roles
-- Roles live in `src/access` with helpers such as `isAdmin`, `isContentTeamOrAdmin`, and status-aware guards.
-- End users must be `status === 'active'` and `approved` before they can read published protocols.
-- Jobs endpoints require either an authenticated admin or a valid `CRON_SECRET` bearer.
+Medical directors and content teams have a powerful authoring environment where they can draft, review, and publish clinical protocols. The platform organizes everything by certification level—Universal, BLS (Basic Life Support), ALS (Advanced Life Support), and CCT (Critical Care Transport)—ensuring clinicians only see protocols relevant to their training.
 
-### Native & Offline Story
-- Capacitor config (`capacitor.config.ts`) points the Android wrapper at the production URL with SSL enforced.
-- Local-only storage avoids PHI drift and works fully offline; documentation lives in `docs/REFERENCE_CARD_SYSTEM.md`.
+**Clinical Protocol Library** features rich-text editors with specialized callouts, certification-level indicators, and tabbed content sections. Protocols can be drafted, reordered, previewed, and published with on-demand cache revalidation so updates appear instantly in the field.
 
-## Repository Tour
+**Hospital & Base Management** gives operations teams a single source of truth for facility capabilities, contact information, accepted patients, and equipment inventories. Change requests flow through an approval workflow, and the audit log tracks every modification.
 
-- `src/app/(frontend)` – customer-facing application, including the calculator route, reference-card drawer, and global styles.
-- `src/app/(payload)` – admin UI customizations plus shared styles.
-- `src/components/ReferenceCard` – drawers, modals, export helpers, and hooks for the card system.
-- `src/hooks` – `useReferenceCard`, `useDeviceType`, and other shared logic.
-- `src/collections` – Payload collection definitions for protocols, hospitals, assets, calculators, etc.
-- `src/migrations` – SQL migrations tracked alongside the Postgres adapter.
-- `android/` – native Android project produced by Capacitor (kept in sync with `npx cap sync android`).
-- `docs/REFERENCE_CARD_SYSTEM.md` – full functional/technical spec for the quick-reference feature.
+**Push Notifications** keep teams informed about critical updates—new protocols, system alerts, or operational changes—delivered via Firebase Cloud Messaging to native and web clients.
+
+### 🔐 Security & Access Control
+
+Not everyone needs to see everything. Field clinicians access published protocols and calculators. Content teams can draft and preview. Admins control user approvals, role assignments, and system settings. Role-based access rules enforce the principle of least privilege, and all users must be both active and approved before accessing clinical content.
+
+### 📱 Native Mobile Experience
+
+The platform isn't just responsive—it's native. Capacitor wraps the web app into an Android shell (with iOS support ready to go) that clinicians install on their tablets. The app points to the live production site, delivering web update speeds with native device capabilities like push notifications and geolocation.
+
+### ⚡ Modern Architecture, Field-Ready Performance
+
+Under the hood, this is Next.js 15 with the App Router, React 19, TypeScript, Tailwind CSS, and shadcn/ui components. Payload CMS 3.x powers the admin interface and API layer. Postgres handles persistence. The platform leverages Payload plugins for SEO, search, redirects, nested docs, and form building—plus custom hooks for sanitization, revalidation, and workflow automation.
+
+Everything is designed for speed: on-demand revalidation keeps cached pages fresh, optimistic UI updates provide instant feedback, and local storage keeps critical features working offline.
+
+## Tech Stack
+
+**Frontend**
+Next.js 15 (App Router) • React 19 • TypeScript • Tailwind CSS • shadcn/ui • React Hook Form • Framer Motion
+
+**Backend & CMS**
+Payload CMS 3.64 • Postgres • Lexical Rich Text Editor • GraphQL API
+
+**Payload Plugins**
+SEO • Search • Redirects • Nested Docs • Form Builder
+
+**External Services**
+Firebase Cloud Messaging (push notifications) • Resend (email delivery) • Google Maps / HERE (ETA calculations)
+
+**Native Mobile**
+Capacitor 7 • Android (iOS-ready)
+
+**Developer Tools**
+pnpm • Vitest • Playwright • ESLint • Prettier
+
+## How It Works
+
+### Quick Reference Cards: Your Digital Clipboard
+
+Reference cards are accessed via a floating action button (FAB) that opens a drawer interface—but only on mobile and tablet devices where they're most useful. Behind the scenes, cards are stored client-side in `localStorage` under the `acmc-reference-cards` key with automatic 24-hour expiration. This design keeps Protected Health Information (PHI) local to the device and enables full offline functionality.
+
+Clinicians can add timestamped free-text notes, save structured calculator outputs, and export/share entire cards via multiple channels—all without a single server request. The drawer UI (`src/components/ReferenceCard`) integrates globally in the frontend layout, making it available throughout the application.
+
+### Calculator Suite: Precision Medicine at Your Fingertips
+
+The calculator suite lives at `/calculators` and currently includes ventilator settings and pediatric drug dosing calculators. Each calculator captures structured inputs (patient weight, medication, target dose) and generates outputs that can be instantly saved to a reference card.
+
+This architecture (`src/components/Calculators`) serves as the integration pattern for future calculators—IV drip rates, RSI protocols, burn surface area charts, and more. The pattern is extensible: build a calculator, wire it to the reference card system, and clinicians have instant access.
+
+### Clinical Content: Structured, Searchable, Secure
+
+The content model is built around Payload collections that reflect real-world EMS operations:
+
+- **Protocols** are the heart of clinical care, featuring tabbed Lexical rich-text editors organized by certification level (Universal, BLS, ALS, CCT). Custom callout blocks highlight critical information, and sanitization hooks ensure clean, consistent output.
+- **Hospitals & Networks** catalog receiving facilities with detailed capability matrices, contact information, and accepted patient types. Change requests flow through approval workflows tracked in the audit log.
+- **Bases & Assets** help operations teams manage equipment inventories, vehicle assignments, and station locations.
+- **Calculators** are content-managed entries that can be featured, categorized, and linked from protocols.
+
+Global collections (`Header`, `Footer`, `SiteSettings`) control site-wide chrome and configuration, while Payload's draft/publish workflow ensures content goes live only when ready.
+
+### Security Model: Role-Based, Status-Aware
+
+Access control operates on two axes: **role** and **status**. Users are assigned roles (`field-crew`, `content-team`, `admin-team`) that determine what they can create and edit. But role alone isn't enough—users must also have `status === 'active'` and `approved === true` before accessing any clinical content.
+
+Access helpers (`src/access`) like `isAdmin`, `isContentTeamOrAdmin`, and custom guards enforce these rules across collections and operations. Job endpoints add an extra layer, requiring either an authenticated admin session or a valid `CRON_SECRET` bearer token for automated tasks.
+
+### Offline-First, Native-Ready
+
+The native shell is a Capacitor project (`capacitor.config.ts`) that wraps the web app and points to the production URL (`https://acmc.app`) with SSL enforcement. This hybrid approach delivers the best of both worlds: web-speed updates without app store delays, plus native capabilities like push notifications and geolocation.
+
+Quick reference cards use local storage exclusively, so they work even when the device is offline—critical for air ambulances that routinely lose connectivity. For deeper technical specs and implementation details, see `docs/REFERENCE_CARD_SYSTEM.md`.
+
+## Repository Structure
+
+```
+src/
+├── app/
+│   ├── (frontend)/          # Public-facing app, calculators, reference cards
+│   └── (payload)/           # Admin UI customizations
+├── collections/             # Payload collections: Protocols, Hospitals, Users, etc.
+├── components/
+│   ├── ReferenceCard/       # FAB, drawer, export modals, localStorage hooks
+│   └── Calculators/         # Ventilator, pediatric drug calculators
+├── hooks/                   # useReferenceCard, useDeviceType, shared logic
+├── lexical/                 # Custom Lexical editor features (callouts, certification levels)
+├── access/                  # Role-based access control helpers
+├── utilities/               # Email, ETA providers, sanitization, revalidation
+└── migrations/              # Postgres schema migrations
+
+android/                     # Capacitor native Android project
+docs/                        # Technical specs and implementation guides
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20.9+ (or 18.20.2 for parity with CI)
-- pnpm 9+
-- Postgres database (local Docker, cloud instance, or Supabase)
-- `PAYLOAD_SECRET`, `DATABASE_URI`, and `NEXT_PUBLIC_SERVER_URL` environment variables
-- Optional: `CRON_SECRET`, `SMTP_*`, `PAYLOAD_PUBLIC_SERVER_URL`, storage credentials, etc.
+- **Node.js** 20.9+ (or 18.20.2 for CI parity)
+- **pnpm** 9+
+- **Postgres** database (local Docker, cloud instance, or Supabase)
 
-### Environment Variables
+### Environment Setup
 
-Create an `.env` file in the project root. At minimum you will need:
+Copy `.env.example` to `.env` and configure at minimum:
 
-```
-PAYLOAD_SECRET=dev-secret
-DATABASE_URI=postgres://user:pass@localhost:5432/acmc
+```bash
+# Required
+PAYLOAD_SECRET=your-secret-key-here
+DATABASE_URI=postgresql://user:pass@localhost:5432/acmc
 NEXT_PUBLIC_SERVER_URL=http://localhost:3000
-CRON_SECRET=optional-cron-token
+
+# Optional but recommended
+CRON_SECRET=your-cron-secret
+RESEND_API_KEY=re_your_api_key
+GOOGLE_MAPS_API_KEY=your_google_maps_key
 ```
 
-Add any other keys referenced in `src/payload.config.ts`, `ecosystem.config.cjs`, or deployment targets.
+See `.env.example` for the complete list of configuration options including Firebase (push notifications), email settings, and ETA provider configuration.
 
 ### Local Development
 
@@ -87,55 +151,121 @@ pnpm install
 pnpm dev
 ```
 
-The dev server runs both the Payload admin and the Next.js frontend at `http://localhost:3000`. The first browser visit will prompt you to create an admin account; ensure your Postgres instance is reachable before you start.
+The dev server starts at `http://localhost:3000` with both the Payload admin (`/admin`) and Next.js frontend. On first run, you'll be prompted to create an admin account—make sure your Postgres database is running and accessible.
 
-### Running Tests & Quality Gates
-
-- `pnpm lint` – Next.js ESLint rules
-- `pnpm test:int` – Vitest integration suite (runs against mocked Payload)
-- `pnpm test:e2e` – Playwright (requires the dev server)
-- `pnpm test` – runs both integration and e2e suites
-
-### Production Build & Serve
+### Development Commands
 
 ```bash
-pnpm build
-pnpm payload migrate   # ensure migrations run before deploying
-pnpm start             # serves the built Next.js app
+pnpm dev              # Start development server
+pnpm build            # Production build
+pnpm start            # Serve production build
+pnpm lint             # Run ESLint
+pnpm lint:fix         # Auto-fix linting issues
+pnpm test             # Run all tests (integration + e2e)
+pnpm test:int         # Vitest integration tests
+pnpm test:e2e         # Playwright end-to-end tests
+pnpm payload migrate  # Run database migrations
 ```
 
-### Docker / Containers
+### Production Deployment
 
-A legacy `docker-compose.yml` still exists but targets Mongo. If you need containerized development, create an updated compose file with Postgres or point Docker to an external Postgres service before using it.
+```bash
+# Run migrations first
+pnpm payload migrate
 
-## Mobile Reference Workflow
+# Build the application
+pnpm build
 
-1. Clinician opens the portal on a tablet/mobile device (or the Capacitor shell).
-2. Use calculators at `/calculators` or any embedded tool, then tap **Save to Reference Card**.
-3. Add time-stamped notes via the green “+” FAB in the drawer.
-4. Export (copy, print, email, SMS) or clear cards directly from the drawer; everything expires automatically after 24 hours.
+# Start production server
+pnpm start
+```
 
-For deeper UX details, animations, and troubleshooting guides, see `docs/REFERENCE_CARD_SYSTEM.md`.
+The platform is deployed at `https://acmc.app` and served via PM2 process manager. See `ecosystem.config.js` for production configuration.
 
-## Content Team Workflow
+## Workflows
 
-1. Log into `/admin` with a content-team or admin-team account.
-2. Draft or reorder protocols, hospital data, calculators, or assets. Collections are orderable and draft-enabled out of the box.
-3. Use live preview to verify updates, then publish. Hooks trigger on-demand revalidation so the frontend reflects the change immediately.
-4. Optional: queue scheduled go-lives through Payload jobs (requires `CRON_SECRET` when triggered externally).
+### For Clinicians: Reference Cards in Action
 
-## Native Shell (Android)
+A field medic opens the app on their tablet, navigates to `/calculators`, and runs a pediatric drug calculation. They tap **Save to Reference Card**, and the calculation appears in the drawer accessible via the green floating action button.
 
-- Sync the web assets with `npx cap sync android` (or `pnpm cap sync android` if you add a script).
-- Open the project in Android Studio from `android/` and build as usual.
-- The Capacitor server points to `https://acmc.app`; update `capacitor.config.ts` if you need a staging URL.
+During patient care, they add timestamped notes by tapping the "+" button in the drawer. When handing off to the receiving facility, they export the entire reference card via SMS to the ER doc or print it for the paper chart. After 24 hours, the card auto-expires and all data is cleared from local storage.
 
-## Additional Documentation
+**Key Features:**
+- Fully offline—works without connectivity
+- PHI stays on device, never hits server
+- Multiple export options: copy, print, email, SMS
+- Automatic 24-hour expiration
 
-- `docs/REFERENCE_CARD_SYSTEM.md` – functional spec, architecture notes, testing checklist.
-- `REFERENCE_CARD_IMPLEMENTATION.md` – summary of what was shipped.
-- `src/components/ReferenceCard/__tests__/useReferenceCard.test.ts` – browser-console helpers.
+See `docs/REFERENCE_CARD_SYSTEM.md` for complete UX specifications.
 
-## Support & Questions
+### For Content Teams: Publishing Clinical Protocols
 
-File GitHub issues in this repo or reach out to the engineering/content team on our internal Slack channel. For Payload-specific questions, consult their docs or the Payload Discord.
+Medical directors and content specialists log into `/admin` with their content-team credentials. They can draft new protocols or update existing ones using the rich Lexical editor with custom callouts and certification-level indicators.
+
+Protocols support tabbed content (Universal, BLS, ALS, CCT), reordering via drag-and-drop, and live preview before publishing. When a protocol is published, revalidation hooks trigger automatically to clear Next.js caches and push updates to the field instantly.
+
+Collections like Hospitals, Bases, and Assets follow the same draft/publish workflow. Change requests go through approval processes, and every modification is logged in the audit trail.
+
+**Key Features:**
+- Draft/publish workflow with live preview
+- Rich-text editor with medical-specific features
+- Instant cache revalidation on publish
+- Full audit logging
+
+### For Developers: Native Mobile Builds
+
+The native Android app is a Capacitor wrapper around the web application:
+
+```bash
+# Sync web assets to native project
+npx cap sync android
+
+# Open in Android Studio
+npx cap open android
+```
+
+The Capacitor config (`capacitor.config.ts`) points to `https://acmc.app` in production. For development or staging builds, update the `server.url` property to point at your test environment.
+
+iOS support is ready—just add the iOS platform and sync:
+
+```bash
+npx cap add ios
+npx cap sync ios
+npx cap open ios
+```
+
+## Documentation & Resources
+
+**Technical Specifications**
+- `docs/REFERENCE_CARD_SYSTEM.md` – Complete functional and technical specification for the reference card system
+- `REFERENCE_CARD_IMPLEMENTATION.md` – Implementation summary and deployment notes
+- `FIREBASE_SETUP.md` – Firebase push notification configuration guide
+- `SECURITY_AUDIT_REPORT.md` – Security audit findings and recommendations
+
+**Testing & Development**
+- `src/components/ReferenceCard/__tests__/` – Reference card test suite
+- `playwright.config.ts` – E2E test configuration
+- `vitest.config.mts` – Integration test setup
+
+## Key Features at a Glance
+
+✅ **Quick reference cards** with offline storage and multi-channel export
+✅ **Medical calculators** (ventilator, pediatric drugs) with instant save-to-card
+✅ **Clinical protocol library** organized by certification level (BLS/ALS/CCT)
+✅ **Hospital & base management** with capability matrices and change workflows
+✅ **Push notifications** via Firebase Cloud Messaging
+✅ **Role-based access control** with status-aware permissions
+✅ **Native mobile apps** (Android deployed, iOS-ready)
+✅ **Real-time ETA calculations** with Google Maps / HERE fallback
+✅ **Draft/publish workflows** with instant cache revalidation
+✅ **Full audit logging** for compliance and accountability
+
+## Contributing & Support
+
+This is a production platform for Air Care & Mobile Care emergency medical services. For questions, bug reports, or feature requests, file an issue in this repository or reach out to the engineering team.
+
+For Payload CMS questions, consult the [Payload documentation](https://payloadcms.com/docs) or join the [Payload Discord](https://discord.com/invite/payload).
+
+---
+
+**Built with ❤️ for the clinicians who save lives every day.**

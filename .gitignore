@@ -6,3 +6,24 @@ pnpm-lock.yaml
 tsconfig.tsbuildinfo
 *.log
 dev.log
+
+# Additional security patterns
+# Secrets and credentials
+*.env
+*.env.*
+!*.env.example
+secrets.json
+credentials.json
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase-*.json
+!firebase.example.json
+
+# Keys and certificates
+*.pem
+*.key
+*.p12
+*.keystore
+*.jks
