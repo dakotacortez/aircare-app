@@ -34,6 +34,7 @@ import PushNotifications from './collections/PushNotifications'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { resendAdapter } from './utilities/emailAdapter'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -91,6 +92,7 @@ export default buildConfig({
     },
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
+  email: resendAdapter(),
 
   collections: [
     Pages,
