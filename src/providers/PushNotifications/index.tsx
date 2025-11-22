@@ -31,8 +31,11 @@ export const PushNotificationProvider: React.FC<{ children: React.ReactNode }> =
   const [currentToken, setCurrentToken] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('[Push Notification Provider] Initializing... Platform supported:', isSupported)
+
     // Only run on native platforms
     if (!isSupported) {
+      console.log('[Push Notification Provider] Not on native platform, skipping setup')
       return
     }
 
