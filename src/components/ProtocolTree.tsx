@@ -128,7 +128,7 @@ function TreeCategory({
 }: TreeCategoryProps) {
   // Check if this category contains the active protocol in any subcategory
   const containsActiveProtocol = Object.values(subcategories).some((protocols) =>
-    protocols.some((protocol) => protocol.protocolNumber === currentProtocolNumber)
+    protocols.some((protocol) => protocol.code === currentProtocolNumber)
   )
   const [open, setOpen] = useState(containsActiveProtocol || !currentProtocolNumber)
 
@@ -188,7 +188,7 @@ function TreeSubcategory({
 }: TreeSubcategoryProps) {
   // Check if this subcategory contains the active protocol
   const containsActiveProtocol = protocols.some(
-    (protocol) => protocol.protocolNumber === currentProtocolNumber
+    (protocol) => protocol.code === currentProtocolNumber
   )
   const [open, setOpen] = useState(containsActiveProtocol)
 
@@ -219,12 +219,12 @@ function TreeSubcategory({
       {open && (
         <div className="pl-5 space-y-0.5">
           {protocols.map((protocol) => {
-            const isActive = protocol.protocolNumber === currentProtocolNumber
+            const isActive = protocol.code === currentProtocolNumber
             return (
               <Link
                 key={protocol.id}
-                href={`/protocols/${protocol.protocolNumber}`}
-                onClick={() => handleProtocolClick(protocol.protocolNumber)}
+                href={`/protocols/${protocol.code}`}
+                onClick={() => handleProtocolClick(protocol.code)}
                 className={`flex items-center gap-2 px-8 py-1.5 rounded-lg cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 ${
                   isActive ? 'bg-neutral-100 dark:bg-neutral-700 border-l-4 border-neutral-900 dark:border-neutral-100' : ''
                 }`}

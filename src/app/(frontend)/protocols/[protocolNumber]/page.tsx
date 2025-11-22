@@ -35,14 +35,15 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
   // User has access, fetch protocols
   const payload = await getPayload({ config })
 
-  // Get the current protocol by protocol number
+  // Get the current protocol by code
   const result = await payload.find({
     collection: 'protocols',
     where: {
-      protocolNumber: { equals: protocolNumber },
+      code: { equals: protocolNumber },
       _status: { equals: 'published' },
     },
     limit: 1,
+    depth: 2, // Fetch related medications and protocols
   })
 
   const protocol = result.docs[0]
@@ -72,7 +73,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const result = await payload.find({
       collection: 'protocols',
       where: {
-        protocolNumber: { equals: protocolNumber },
+        code: { equals: protocolNumber },
       },
       limit: 1,
     })

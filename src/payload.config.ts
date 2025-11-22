@@ -17,6 +17,7 @@ import { Header } from './Header/config'
 import { SiteSettings } from './globals/SiteSettings/config'
 
 import { Protocols } from './collections/Protocols'
+import { Medications } from './collections/Medications'
 import { HospitalNetworks } from './collections/HospitalNetworks'
 import { HospitalCapabilities } from './collections/HospitalCapabilities'
 import { Hospitals } from './collections/Hospitals'
@@ -98,6 +99,7 @@ export default buildConfig({
     Categories,
     Users,
     Protocols,
+    Medications,
     HospitalNetworks,
     HospitalCapabilities,
     Hospitals,
