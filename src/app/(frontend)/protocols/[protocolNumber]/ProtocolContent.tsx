@@ -260,7 +260,18 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
     }
   }
 
-  const sections = protocol.sections as unknown as ProtocolSection[] | undefined
+    const sections = protocol.sections as unknown as ProtocolSection[] | undefined
+    const medicationEntries = (Array.isArray(protocol.medications) ? protocol.medications : []) as Array<
+      number | Medication
+    >
+    const filteredMedications = medicationEntries.filter((med) => {
+      if (typeof med === 'number') return false
+      if (viewMode === 'study') return true
+      const medication = med as Medication
+      const medicationScopes = getMedicationScopes(medication)
+      if (medicationScopes.length === 0) return true
+      return isInScope(medicationScopes, serviceLine as CertLevel)
+    })
 
   return (
     <>
@@ -554,21 +565,13 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
               </div>
             )}
 
-            {/* Medications Section */}
-            {protocol.medications && Array.isArray(protocol.medications) && protocol.medications.length > 0 && (
+              {/* Medications Section */}
+              {medicationEntries.length > 0 && (
                 <div className="mt-6 bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl p-4 shadow-sm">
                   <h3 className="text-lg font-bold mb-3">Medications</h3>
                   <div className="space-y-2">
-                    {protocol.medications
-                      .filter((med) => {
-                        if (typeof med === 'number') return false
-                        if (viewMode === 'study') return true
-                        const medication = med as Medication
-                        const medicationScopes = getMedicationScopes(medication)
-                        if (medicationScopes.length === 0) return true
-                        return isInScope(medicationScopes, serviceLine as CertLevel)
-                      })
-                      .map((med) => {
+                    {filteredMedications.length > 0 ? (
+                      filteredMedications.map((med) => {
                         if (typeof med === 'number') return null
                         const medication = med as Medication
                         const medicationScopes = getMedicationScopes(medication)
@@ -588,7 +591,10 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                   </span>
                                   {scopeLabel && (
                                     <span
-                                      className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(medicationScopes, serviceLine as CertLevel)}`}
+                                      className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(
+                                        medicationScopes,
+                                        serviceLine as CertLevel,
+                                      )}`}
                                     >
                                       {scopeLabel}
                                     </span>
@@ -599,10 +605,15 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                             </div>
                           </button>
                         )
-                      })}
+                      })
+                    ) : (
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 italic">
+                        No medications available at the {serviceLine ?? 'selected'} level for this protocol.
+                      </p>
+                    )}
                   </div>
                 </div>
-            )}
+              )}
 
             {/* Related Protocols */}
             {protocol.relatedProtocols && Array.isArray(protocol.relatedProtocols) && protocol.relatedProtocols.length > 0 && (
