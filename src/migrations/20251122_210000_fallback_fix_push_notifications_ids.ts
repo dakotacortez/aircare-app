@@ -107,6 +107,26 @@ export async function up({ payload, db }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
     DO $$
     BEGIN
+      -- If legacy _parent_id column exists, convert it to text to avoid integer casting errors
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = '_parent_id'
+      ) THEN
+        ALTER TABLE push_notifications_target_roles
+        ALTER COLUMN _parent_id TYPE varchar USING _parent_id::varchar;
+
+        -- If the proper parent_id column is missing, rename the legacy column
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'push_notifications_target_roles'
+            AND column_name = 'parent_id'
+        ) THEN
+          ALTER TABLE push_notifications_target_roles
+          RENAME COLUMN _parent_id TO parent_id;
+        END IF;
+      END IF;
+
       IF EXISTS (
         SELECT 1 FROM information_schema.columns
         WHERE table_name = 'push_notifications_target_roles'
@@ -200,6 +220,16 @@ export async function down({ payload }: MigrateDownArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
     DO $$
     BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'push_notifications_target_roles'
+          AND column_name = '_parent_id'
+          AND data_type = 'character varying'
+      ) THEN
+        ALTER TABLE push_notifications_target_roles
+        ALTER COLUMN _parent_id TYPE integer USING _parent_id::integer;
+      END IF;
+
       IF EXISTS (
         SELECT 1 FROM information_schema.columns
         WHERE table_name = 'push_notifications_target_roles'
