@@ -197,11 +197,6 @@ export const Protocols: CollectionConfig = {
               required: true,
               label: 'Protocol Sections',
               admin: {
-                components: {
-                  RowLabel: ({ data, index }) => {
-                    return data?.heading || `Section ${(index ?? 0) + 1}`
-                  },
-                },
                 description:
                   'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
               },
@@ -291,15 +286,6 @@ export const Protocols: CollectionConfig = {
                   label: 'Action Steps',
                   admin: {
                     condition: (data, siblingData) => siblingData.contentType === 'actionSteps',
-                    components: {
-                      RowLabel: ({ data, index }) => {
-                        const stepNum = data?.stepNumber ?? (index ?? 0) + 1
-                        const action = data?.action
-                          ? data.action.substring(0, 50) + (data.action.length > 50 ? '...' : '')
-                          : ''
-                        return `Step ${stepNum}${action ? ': ' + action : ''}`
-                      },
-                    },
                   },
                   fields: [
                     {
