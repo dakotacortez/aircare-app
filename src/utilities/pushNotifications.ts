@@ -63,76 +63,82 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
       let resolved = false
 
       // Set up one-time listener for registration
-      const registrationListener = await PushNotifications.addListener('registration', async (token) => {
+      const registrationListener = await PushNotifications.addListener('registration', (token) => {
         if (resolved) return
         resolved = true
 
         console.log('[Push Notifications] Got FCM token:', token.value.substring(0, 20) + '...')
 
-        // Clean up listeners
-        await registrationListener.remove()
-        await errorListener.remove()
+        // Handle async operations without making the callback async
+        ;(async () => {
+          // Clean up listeners
+          await registrationListener.remove()
+          await errorListener.remove()
 
-        // Determine platform
-        const platform = Capacitor.getPlatform() === 'ios' ? 'ios' : 'android'
+          // Determine platform
+          const platform = Capacitor.getPlatform() === 'ios' ? 'ios' : 'android'
 
-        // Register token with backend
-        try {
-          const response = await fetch('/api/users/me/fcmTokens', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
+          // Register token with backend
+          try {
+            const response = await fetch('/api/users/me/fcmTokens', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                token: token.value,
+                platform,
+              }),
+            })
+
+            if (!response.ok) {
+              const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+              console.error('[Push Notifications] Failed to register token with backend:', error)
+              resolve({
+                success: false,
+                error: error.error || 'Failed to register token with server',
+              })
+              return
+            }
+
+            console.log('[Push Notifications] Token successfully registered with backend')
+
+            // Re-setup the persistent listeners for receiving notifications
+            await setupPushNotificationListeners()
+
+            resolve({
+              success: true,
               token: token.value,
-              platform,
-            }),
-          })
-
-          if (!response.ok) {
-            const error = await response.json().catch(() => ({ error: 'Unknown error' }))
-            console.error('[Push Notifications] Failed to register token with backend:', error)
+            })
+          } catch (error) {
+            console.error('[Push Notifications] Error registering token with backend:', error)
             resolve({
               success: false,
-              error: error.error || 'Failed to register token with server',
+              error: error instanceof Error ? error.message : 'Failed to register token',
             })
-            return
           }
-
-          console.log('[Push Notifications] Token successfully registered with backend')
-
-          // Re-setup the persistent listeners for receiving notifications
-          await setupPushNotificationListeners()
-
-          resolve({
-            success: true,
-            token: token.value,
-          })
-        } catch (error) {
-          console.error('[Push Notifications] Error registering token with backend:', error)
-          resolve({
-            success: false,
-            error: error instanceof Error ? error.message : 'Failed to register token',
-          })
-        }
+        })()
       })
 
       // Set up error listener
-      const errorListener = await PushNotifications.addListener('registrationError', async (error) => {
+      const errorListener = await PushNotifications.addListener('registrationError', (error) => {
         if (resolved) return
         resolved = true
 
         console.error('[Push Notifications] Registration error:', error)
 
-        // Clean up listeners
-        await registrationListener.remove()
-        await errorListener.remove()
+        // Handle async operations without making the callback async
+        ;(async () => {
+          // Clean up listeners
+          await registrationListener.remove()
+          await errorListener.remove()
 
-        resolve({
-          success: false,
-          error: error.error || 'Failed to register for push notifications',
-        })
+          resolve({
+            success: false,
+            error: error.error || 'Failed to register for push notifications',
+          })
+        })()
       })
 
       // Timeout after 10 seconds
@@ -199,16 +205,12 @@ export async function setupPushNotificationListeners() {
   await PushNotifications.addListener('pushNotificationReceived', (notification) => {
     console.log('[Push Notifications] Notification received:', notification)
     // You can add custom handling here, such as showing a toast or updating UI
-    // Return immediately to prevent async channel timeout
-    return Promise.resolve()
   })
 
   // Listen for notification actions (when user taps on notification)
   await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
     console.log('[Push Notifications] Notification action performed:', notification)
     // You can add custom handling here, such as navigating to a specific page
-    // Return immediately to prevent async channel timeout
-    return Promise.resolve()
   })
 }
 
