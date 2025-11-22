@@ -1,7 +1,35 @@
-import { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
-import { sql } from 'drizzle-orm'
+import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+  // Create all enums first
+  await db.execute(sql`
+    -- Create enum for content_type
+    DO $$ BEGIN
+      CREATE TYPE "enum_protocol_defaults_def_sections_content_type" AS ENUM('actionSteps', 'bulletList', 'richText');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `)
+
+  await db.execute(sql`
+    -- Create enum for scope
+    DO $$ BEGIN
+      CREATE TYPE "enum_protocol_defaults_def_sections_scope" AS ENUM('BLS', 'ALS', 'CCT');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `)
+
+  await db.execute(sql`
+    -- Create enum for action step scope
+    DO $$ BEGIN
+      CREATE TYPE "enum_protocol_defaults_def_sections_steps_scope" AS ENUM('BLS', 'ALS', 'CCT');
+    EXCEPTION
+      WHEN duplicate_object THEN null;
+    END $$;
+  `)
+
+  // Now create tables
   await db.execute(sql`
     -- Create protocol_defaults global table
     CREATE TABLE IF NOT EXISTS "protocol_defaults" (
@@ -28,15 +56,6 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    -- Create enum for content_type
-    DO $$ BEGIN
-      CREATE TYPE "enum_protocol_defaults_def_sections_content_type" AS ENUM('actionSteps', 'bulletList', 'richText');
-    EXCEPTION
-      WHEN duplicate_object THEN null;
-    END $$;
-  `)
-
-  await db.execute(sql`
     -- Create protocol_defaults_def_sections_scope
     CREATE TABLE IF NOT EXISTS "protocol_defaults_def_sections_scope" (
       "order" integer NOT NULL,
@@ -46,15 +65,6 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
       CONSTRAINT "protocol_defaults_def_sections_scope_parent_fk"
         FOREIGN KEY ("parent_id") REFERENCES "protocol_defaults_def_sections"("id") ON DELETE CASCADE
     );
-  `)
-
-  await db.execute(sql`
-    -- Create enum for scope
-    DO $$ BEGIN
-      CREATE TYPE "enum_protocol_defaults_def_sections_scope" AS ENUM('BLS', 'ALS', 'CCT');
-    EXCEPTION
-      WHEN duplicate_object THEN null;
-    END $$;
   `)
 
   await db.execute(sql`
@@ -82,15 +92,6 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
       CONSTRAINT "protocol_defaults_def_sections_steps_scope_parent_fk"
         FOREIGN KEY ("parent_id") REFERENCES "protocol_defaults_def_sections_steps"("id") ON DELETE CASCADE
     );
-  `)
-
-  await db.execute(sql`
-    -- Create enum for action step scope
-    DO $$ BEGIN
-      CREATE TYPE "enum_protocol_defaults_def_sections_steps_scope" AS ENUM('BLS', 'ALS', 'CCT');
-    EXCEPTION
-      WHEN duplicate_object THEN null;
-    END $$;
   `)
 
   await db.execute(sql`
