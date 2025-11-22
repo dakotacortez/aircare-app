@@ -140,11 +140,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'site-settings': SiteSetting;
+    'protocol-defaults': ProtocolDefault;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'protocol-defaults': ProtocolDefaultsSelect<false> | ProtocolDefaultsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -3722,6 +3724,127 @@ export interface SiteSetting {
   createdAt?: string | null;
 }
 /**
+ * Configure default sections for new protocols
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "protocol-defaults".
+ */
+export interface ProtocolDefault {
+  id: number;
+  /**
+   * These sections will automatically populate when creating a new protocol. Drag to reorder using the ⋮⋮ handle.
+   */
+  defaultSections?:
+    | {
+        /**
+         * e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis"
+         */
+        heading: string;
+        /**
+         * Who can view/perform this section. Leave empty for all certification levels.
+         */
+        scope?: ('BLS' | 'ALS' | 'CCT')[] | null;
+        /**
+         * Optional alert/note to show at top of section
+         */
+        note?: string | null;
+        /**
+         * How should this section be displayed?
+         */
+        contentType: 'actionSteps' | 'bulletList' | 'richText';
+        /**
+         * Pre-fill content for this section (optional)
+         */
+        bulletList?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        /**
+         * Pre-fill content for this section (optional)
+         */
+        richText?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        /**
+         * Pre-fill action steps for this section (optional)
+         */
+        actionSteps?:
+          | {
+              /**
+               * Step number (can use decimals like 3.5 for inserted steps)
+               */
+              stepNumber: number;
+              /**
+               * Main action text
+               */
+              action: string;
+              /**
+               * Who can perform this step. Leave empty for all levels.
+               */
+              scope?: ('BLS' | 'ALS' | 'CCT')[] | null;
+              /**
+               * Timing indicator (e.g., "q3-5min", "continuous", "q2min")
+               */
+              timing?: string | null;
+              /**
+               * Check if this step requires medical control authorization
+               */
+              requiresMedControl?: boolean | null;
+              /**
+               * Other protocols referenced in this step (for navigation)
+               */
+              protocolReferences?:
+                | {
+                    protocol: number | Protocol;
+                    /**
+                     * Text to display (e.g., "T508", "VF/VT Protocol")
+                     */
+                    label?: string | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              /**
+               * Sub-bullets or additional details
+               */
+              details?:
+                | {
+                    detail: string;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3816,6 +3939,49 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   metaDescription?: T;
   metaImage?: T;
   metaTwitterHandle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "protocol-defaults_select".
+ */
+export interface ProtocolDefaultsSelect<T extends boolean = true> {
+  defaultSections?:
+    | T
+    | {
+        heading?: T;
+        scope?: T;
+        note?: T;
+        contentType?: T;
+        bulletList?: T;
+        richText?: T;
+        actionSteps?:
+          | T
+          | {
+              stepNumber?: T;
+              action?: T;
+              scope?: T;
+              timing?: T;
+              requiresMedControl?: T;
+              protocolReferences?:
+                | T
+                | {
+                    protocol?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              details?:
+                | T
+                | {
+                    detail?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

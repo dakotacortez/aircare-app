@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { populateDefaultSections } from './Protocols/hooks/populateDefaultSections'
 import {
   BoldFeature,
   ItalicFeature,
@@ -199,6 +200,9 @@ export const Protocols: CollectionConfig = {
               admin: {
                 description:
                   'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
+              },
+              hooks: {
+                beforeValidate: [populateDefaultSections],
               },
               fields: [
                 {

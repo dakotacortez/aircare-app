@@ -15,6 +15,7 @@ import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { SiteSettings } from './globals/SiteSettings/config'
+import { ProtocolDefaults } from './globals/ProtocolDefaults'
 
 import { Protocols } from './collections/Protocols'
 import { Medications } from './collections/Medications'
@@ -121,7 +122,7 @@ export default buildConfig({
   ],
 
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, SiteSettings],
+  globals: [Header, Footer, SiteSettings, ProtocolDefaults],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
