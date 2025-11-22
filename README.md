@@ -182,6 +182,20 @@ pnpm start
 
 The platform is deployed at `https://acmc.app` and served via PM2 process manager. See `ecosystem.config.js` for production configuration.
 
+### Protocol Migration Recovery (Nov 2025)
+
+The November 22nd protocol overhaul temporarily dropped the `_uuid` columns that Payload’s Postgres adapter still selects. If you pulled code between `220000_remove_uuid_from_protocol_sections` and this fix, the admin UI will crash with `column _protocols_v_version_sections_actionSteps_protocolReferences._uuid does not exist`.
+
+1. Pull the latest code and run the new migration:
+   ```bash
+   pnpm payload migrate
+   ```
+   This re-creates the `_uuid` columns and adds `gen_random_uuid()` defaults to every varchar `id`, preventing future `null value in column "id"` errors when Payload omits the field.
+2. If your database is already in a bad state, simply rerun the migration above—no manual SQL is required. The `ADD COLUMN IF NOT EXISTS` statements are idempotent.
+3. After the migrate step, restart Payload/Next (`pnpm dev` or `pnpm start`) and reload `/admin`. Run a quick sanity check by editing a protocol and ensuring sections/action steps save without constraint violations.
+
+For environments using managed Postgres instances, make sure the `pgcrypto` extension is available; the migration will `CREATE EXTENSION IF NOT EXISTS pgcrypto` automatically, but some providers require enabling it in the control panel first.
+
 ## Workflows
 
 ### For Clinicians: Reference Cards in Action
