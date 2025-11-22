@@ -21,7 +21,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -47,15 +47,14 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE TABLE IF NOT EXISTS "medications_doses" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "route" varchar,
       "adult_dose" varchar,
       "pediatric_dose" varchar,
       "concentration" varchar,
       "interval" varchar,
       "max_dose" varchar,
-      "rate" varchar,
-      "_uuid" varchar
+      "rate" varchar
     );
   `)
 
@@ -87,13 +86,12 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE TABLE IF NOT EXISTS "protocols_sections" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "heading" varchar,
       "note" varchar,
       "content_type" varchar DEFAULT 'actionSteps',
       "bullet_list" jsonb,
-      "rich_text" jsonb,
-      "_uuid" varchar
+      "rich_text" jsonb
     );
   `)
 
@@ -118,9 +116,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "protocols_sections_scope" (
       "order" integer NOT NULL,
-      "parent_id" integer NOT NULL,
+      "parent_id" varchar NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -145,13 +143,12 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps" (
       "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "_parent_id" varchar NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "step_number" numeric,
       "action" varchar,
       "timing" varchar,
-      "requires_med_control" boolean DEFAULT false,
-      "_uuid" varchar
+      "requires_med_control" boolean DEFAULT false
     );
   `)
 
@@ -176,9 +173,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps_scope" (
       "order" integer NOT NULL,
-      "parent_id" integer NOT NULL,
+      "parent_id" varchar NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -203,11 +200,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps_protocol_references" (
       "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "_parent_id" varchar NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "protocol_id" integer,
-      "label" varchar,
-      "_uuid" varchar
+      "label" varchar
     );
   `)
 
@@ -245,10 +241,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "protocols_sections_action_steps_details" (
       "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
-      "detail" varchar,
-      "_uuid" varchar
+      "_parent_id" varchar NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
+      "detail" varchar
     );
   `)
 
@@ -275,7 +270,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -301,11 +296,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE TABLE IF NOT EXISTS "protocols_calculator_overrides" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "calculator_id" integer,
       "order" integer,
-      "hidden" boolean DEFAULT false,
-      "_uuid" varchar
+      "hidden" boolean DEFAULT false
     );
   `)
 
@@ -353,13 +347,12 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_sections" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "heading" varchar,
       "note" varchar,
       "content_type" varchar DEFAULT 'actionSteps',
       "bullet_list" jsonb,
-      "rich_text" jsonb,
-      "_uuid" varchar
+      "rich_text" jsonb
     );
   `)
 
@@ -384,9 +377,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_sections_scope" (
       "order" integer NOT NULL,
-      "parent_id" integer NOT NULL,
+      "parent_id" varchar NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -411,13 +404,12 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_sections_action_steps" (
       "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "_parent_id" varchar NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "step_number" numeric,
       "action" varchar,
       "timing" varchar,
-      "requires_med_control" boolean DEFAULT false,
-      "_uuid" varchar
+      "requires_med_control" boolean DEFAULT false
     );
   `)
 
@@ -442,9 +434,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_sections_action_steps_scope" (
       "order" integer NOT NULL,
-      "parent_id" integer NOT NULL,
+      "parent_id" varchar NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -469,11 +461,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_sections_action_steps_protocol_references" (
       "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "_parent_id" varchar NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "protocol_id" integer,
-      "label" varchar,
-      "_uuid" varchar
+      "label" varchar
     );
   `)
 
@@ -511,10 +502,9 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_sections_action_steps_details" (
       "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
-      "detail" varchar,
-      "_uuid" varchar
+      "_parent_id" varchar NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
+      "detail" varchar
     );
   `)
 
@@ -541,7 +531,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
       "value" varchar,
-      "id" serial PRIMARY KEY NOT NULL
+      "id" varchar PRIMARY KEY NOT NULL
     );
   `)
 
@@ -567,11 +557,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE TABLE IF NOT EXISTS "_protocols_v_version_calculator_overrides" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
-      "id" serial PRIMARY KEY NOT NULL,
+      "id" varchar PRIMARY KEY NOT NULL,
       "calculator_id" integer,
       "order" integer,
-      "hidden" boolean DEFAULT false,
-      "_uuid" varchar
+      "hidden" boolean DEFAULT false
     );
   `)
 
