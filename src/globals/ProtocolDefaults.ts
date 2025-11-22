@@ -91,6 +91,7 @@ export const ProtocolDefaults: GlobalConfig = {
       name: 'defaultSections',
       type: 'array',
       label: 'Default Protocol Sections',
+      dbName: 'def_sections',
       admin: {
         description:
           'These sections will automatically populate when creating a new protocol. Drag to reorder using the ⋮⋮ handle.',
@@ -212,6 +213,7 @@ export const ProtocolDefaults: GlobalConfig = {
           name: 'actionSteps',
           type: 'array',
           label: 'Action Steps',
+          dbName: 'steps',
           admin: {
             condition: (data, siblingData) => siblingData.contentType === 'actionSteps',
             description: 'Pre-fill action steps for this section (optional)',
@@ -273,6 +275,7 @@ export const ProtocolDefaults: GlobalConfig = {
               name: 'protocolReferences',
               type: 'array',
               label: 'Protocol References',
+              dbName: 'proto_refs',
               admin: {
                 description: 'Other protocols referenced in this step (for navigation)',
               },
