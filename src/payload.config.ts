@@ -92,6 +92,7 @@ export default buildConfig({
     },
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   email: (() => resendAdapter()) as any,
 
   collections: [

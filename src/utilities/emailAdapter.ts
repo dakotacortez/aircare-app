@@ -11,7 +11,6 @@ export const resendAdapter = (): EmailAdapter => {
   const defaultFromName = process.env.FROM_NAME || 'Air Care & Mobile Care'
 
   return {
-    name: 'resend',
     defaultFromAddress,
     defaultFromName,
     sendEmail: async (message: SendEmailOptions) => {
