@@ -5,7 +5,8 @@ import { Resend } from 'resend'
  * Resend Email Adapter for Payload CMS
  * Uses Resend API to send transactional emails
  */
-export const resendAdapter = (): EmailAdapter => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const resendAdapter = (): any => {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const defaultFromAddress = process.env.FROM_EMAIL || 'noreply@ping.acmc.app'
   const defaultFromName = process.env.FROM_NAME || 'Air Care & Mobile Care'
