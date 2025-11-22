@@ -42,6 +42,7 @@ import * as migration_20251122_150000_overhaul_protocols_add_medications_v3 from
 import * as migration_20251122_160000_create_array_field_tables from './20251122_160000_create_array_field_tables';
 import * as migration_20251122_184700_create_array_field_tables_v2 from './20251122_184700_create_array_field_tables_v2';
 import * as migration_20251122_190000_add_protocol_defaults_global from './20251122_190000_add_protocol_defaults_global';
+import * as migration_20251122_200000_fix_protocol_defaults_tables from './20251122_200000_fix_protocol_defaults_tables';
 
 export const migrations = [
   {
@@ -263,5 +264,10 @@ export const migrations = [
     up: migration_20251122_190000_add_protocol_defaults_global.up,
     down: migration_20251122_190000_add_protocol_defaults_global.down,
     name: '20251122_190000_add_protocol_defaults_global',
+  },
+  {
+    up: migration_20251122_200000_fix_protocol_defaults_tables.up,
+    down: migration_20251122_200000_fix_protocol_defaults_tables.down,
+    name: '20251122_200000_fix_protocol_defaults_tables',
   },
 ];
