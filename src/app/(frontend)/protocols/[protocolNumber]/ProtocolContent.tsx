@@ -159,7 +159,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
   // New state for protocol features
   const [viewMode, setViewMode] = useState<ViewMode>('study')
-  const [certLevel, setCertLevel] = useState<CertLevel>(serviceLine as CertLevel || 'ALS')
   const [showOutOfScope, setShowOutOfScope] = useState(false)
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({})
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
@@ -176,13 +175,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
       setExpandedSections(expanded)
     }
   }, [protocol])
-
-  // Sync certLevel with serviceLine
-  useEffect(() => {
-    if (serviceLine && ['BLS', 'ALS', 'CCT'].includes(serviceLine)) {
-      setCertLevel(serviceLine as CertLevel)
-    }
-  }, [serviceLine])
 
   // Check dark mode preference
   useEffect(() => {
@@ -318,7 +310,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 </p>
               )}
 
-              {/* View Mode & Certification Level Controls */}
+              {/* View Mode Controls */}
               <div className="bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl p-4 space-y-3">
                 {/* View Mode Toggle */}
                 <div className="flex gap-2">
@@ -346,45 +338,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                   </button>
                 </div>
 
-                {/* Certification Level Selector */}
-                <div>
-                  <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400 block mb-1">
-                    Your Certification Level
-                  </label>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setCertLevel('BLS')}
-                      className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                        certLevel === 'BLS'
-                          ? 'bg-green-600 text-white'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                      }`}
-                    >
-                      BLS/EMT
-                    </button>
-                    <button
-                      onClick={() => setCertLevel('ALS')}
-                      className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                        certLevel === 'ALS'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                      }`}
-                    >
-                      ALS/Paramedic
-                    </button>
-                    <button
-                      onClick={() => setCertLevel('CCT')}
-                      className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                        certLevel === 'CCT'
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300'
-                      }`}
-                    >
-                      CCT
-                    </button>
-                  </div>
-                </div>
-
                 {/* Show Out of Scope checkbox (only in active mode) */}
                 {viewMode === 'active' && (
                   <label className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
@@ -408,7 +361,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                   const isExpanded = expandedSections[sectionId] ?? true
 
                   // Check if section is in scope
-                  const sectionInScope = isInScope(section.scope, certLevel)
+                  const sectionInScope = isInScope(section.scope, serviceLine as CertLevel)
                   if (viewMode === 'active' && !showOutOfScope && !sectionInScope) {
                     return null // Hide out-of-scope sections in active mode
                   }
@@ -450,7 +403,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                               <RichTextContent
                                 content={section.bulletList}
                                 showBadges={false}
-                                serviceLine={certLevel}
+                                serviceLine={serviceLine as CertLevel}
                               />
                             </div>
                           )}
@@ -460,7 +413,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                               <RichTextContent
                                 content={section.richText}
                                 showBadges={false}
-                                serviceLine={certLevel}
+                                serviceLine={serviceLine as CertLevel}
                               />
                             </div>
                           )}
@@ -471,14 +424,14 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                 .filter((step) => {
                                   if (viewMode === 'study') return true
                                   if (showOutOfScope) return true
-                                  return isInScope(step.scope, certLevel)
+                                  return isInScope(step.scope, serviceLine as CertLevel)
                                 })
                                 .map((step, stepIndex) => {
                                   const stepId = `step-${sectionIndex}-${stepIndex}`
-                                  const stepInScope = isInScope(step.scope, certLevel)
+                                  const stepInScope = isInScope(step.scope, serviceLine as CertLevel)
                                   const scopeLabel = getScopeLabel(step.scope)
                                   const borderColor = getStepBorderColor(step.scope, darkMode)
-                                  const badgeColor = getScopeBadgeColor(step.scope, certLevel)
+                                  const badgeColor = getScopeBadgeColor(step.scope, serviceLine as CertLevel)
 
                                   return (
                                     <div
@@ -522,7 +475,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                             {!stepInScope && viewMode === 'active' && (
                                               <span className="text-xs px-2 py-0.5 bg-yellow-600 text-white rounded font-bold">
                                                 REQUIRES{' '}
-                                                {step.scope?.filter((s) => s !== certLevel).join('/') || 'HIGHER'}
+                                                {step.scope?.filter((s) => s !== serviceLine as CertLevel).join('/') || 'HIGHER'}
                                               </span>
                                             )}
 
@@ -581,7 +534,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                       if (typeof med === 'number') return false
                       if (viewMode === 'study') return true
                       const medication = med as Medication
-                      return isInScope(medication.scope as CertLevel[] | undefined, certLevel)
+                      return isInScope(medication.scope as CertLevel[] | undefined, serviceLine as CertLevel)
                     })
                     .map((med) => {
                       if (typeof med === 'number') return null
@@ -602,7 +555,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                 </span>
                                 {scopeLabel && (
                                   <span
-                                    className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(medication.scope as CertLevel[] | undefined, certLevel)}`}
+                                    className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(medication.scope as CertLevel[] | undefined, serviceLine as CertLevel)}`}
                                   >
                                     {scopeLabel}
                                   </span>
