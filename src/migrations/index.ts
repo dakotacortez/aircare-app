@@ -1,6 +1,3 @@
-import type { Migration } from 'payload';
-import type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres';
-
 import * as migration_20250214_000000_protocols from './20250214_000000_protocols';
 import * as migration_20251111_035941 from './20251111_035941';
 import * as migration_20251111_043054 from './20251111_043054';
@@ -38,89 +35,197 @@ import * as migration_20251121_200000_force_fix_parent_id_columns from './202511
 import * as migration_20251121_210000_ensure_push_notifications_target_roles_table from './20251121_210000_ensure_push_notifications_target_roles_table';
 import * as migration_20251121_220000_add_notification_cols_to_locked_docs_rels from './20251121_220000_add_notification_cols_to_locked_docs_rels';
 import * as migration_20251121_230000_add_default_id_to_target_roles from './20251121_230000_add_default_id_to_target_roles';
+import * as migration_20251122_003000_add_created_by_to_notifications from './20251122_003000_add_created_by_to_notifications';
 
-interface MigrationModule {
-  up: (args: MigrateUpArgs) => Promise<void>;
-  down: (args: MigrateDownArgs) => Promise<void>;
-}
-
-const toMigration = (
-  name: string,
-  migration: MigrationModule,
-): Migration => ({
-  name,
-  up: migration.up as Migration['up'],
-  down: migration.down as Migration['down'],
-});
-
-export const migrations: Migration[] = [
-  toMigration('20250214_000000_protocols', migration_20250214_000000_protocols),
-  toMigration('20251111_035941', migration_20251111_035941),
-  toMigration('20251111_043054', migration_20251111_043054),
-  toMigration('20251111_043434', migration_20251111_043434),
-  toMigration(
-    '20251111_142444_add_user_roles_and_approval',
-    migration_20251111_142444_add_user_roles_and_approval,
-  ),
-  toMigration('20251111_210353_add_logo_and_site_settings', migration_20251111_210353_add_logo_and_site_settings),
-  toMigration('20251112_000000_add_gradient_settings', migration_20251112_000000_add_gradient_settings),
-  toMigration(
-    '20251116_143000_add_push_notifications_enabled',
-    migration_20251116_143000_add_push_notifications_enabled,
-  ),
-  toMigration('20251116_144000_add_profile_image', migration_20251116_144000_add_profile_image),
-  toMigration(
-    '20251116_200500_fix_missing_user_and_assets_columns',
-    migration_20251116_200500_fix_missing_user_and_assets_columns,
-  ),
-  toMigration('20251116_231200_create_bases_rels', migration_20251116_231200_create_bases_rels),
-  toMigration('20251116_232000_fix_door_codes_label', migration_20251116_232000_fix_door_codes_label),
-  toMigration('20251116_235500_update_door_codes_schema', migration_20251116_235500_update_door_codes_schema),
-  toMigration(
-    '20251117_000100_add_hospital_capability_level_description',
-    migration_20251117_000100_add_hospital_capability_level_description,
-  ),
-  toMigration('20251117_010500_expand_hospital_info_card', migration_20251117_010500_expand_hospital_info_card),
-  toMigration('20251117_020000_add_coordinates_field', migration_20251117_020000_add_coordinates_field),
-  toMigration('20251117_020100_add_slug_fields', migration_20251117_020100_add_slug_fields),
-  toMigration('20251117_020200_expand_bases_and_assets', migration_20251117_020200_expand_bases_and_assets),
-  toMigration('20251117_030300_add_door_code_notes', migration_20251117_030300_add_door_code_notes),
-  toMigration('20251117_040000_ensure_base_schema', migration_20251117_040000_ensure_base_schema),
-  toMigration('20251117_040100_ensure_hospital_schema', migration_20251117_040100_ensure_hospital_schema),
-  toMigration('20251117_040200_ensure_change_request_schema', migration_20251117_040200_ensure_change_request_schema),
-  toMigration('20251117_040300_ensure_reference_schema', migration_20251117_040300_ensure_reference_schema),
-  toMigration(
-    '20251117_050000_add_missing_locked_documents_rels_columns',
-    migration_20251117_050000_add_missing_locked_documents_rels_columns,
-  ),
-  toMigration(
-    '20251117_050100_add_missing_change_request_columns',
-    migration_20251117_050100_add_missing_change_request_columns,
-  ),
-  toMigration('20251119_000000_add_meta_site_name_and_twitter', migration_20251119_000000_add_meta_site_name_and_twitter),
-  toMigration(
-    '20251120_000000_add_hospital_cr_source_attribution',
-    migration_20251120_000000_add_hospital_cr_source_attribution,
-  ),
-  toMigration(
-    '20251120_030000_add_notifications_and_audit_trail',
-    migration_20251120_030000_add_notifications_and_audit_trail,
-  ),
-  toMigration(
-    '20251120_120000_readd_hospital_cr_source_attribution',
-    migration_20251120_120000_readd_hospital_cr_source_attribution,
-  ),
-  toMigration('20251121_000000_fix_missing_columns', migration_20251121_000000_fix_missing_columns),
-  toMigration(
-    '20251121_000001_add_audit_log_id_to_locked_docs_rels',
-    migration_20251121_000001_add_audit_log_id_to_locked_docs_rels,
-  ),
-  toMigration('20251121_120000_add_notification_settings', migration_20251121_120000_add_notification_settings),
-  toMigration('20251121_143000_fix_push_notifications_target_roles', migration_20251121_143000_fix_push_notifications_target_roles),
-  toMigration('20251121_200000_force_fix_parent_id_columns', migration_20251121_200000_force_fix_parent_id_columns),
-  toMigration('20251121_210000_ensure_push_notifications_target_roles_table', migration_20251121_210000_ensure_push_notifications_target_roles_table),
-  toMigration('20251121_220000_add_notification_cols_to_locked_docs_rels', migration_20251121_220000_add_notification_cols_to_locked_docs_rels),
-  toMigration('20251121_230000_add_default_id_to_target_roles', migration_20251121_230000_add_default_id_to_target_roles),
+export const migrations = [
+  {
+    up: migration_20250214_000000_protocols.up,
+    down: migration_20250214_000000_protocols.down,
+    name: '20250214_000000_protocols',
+  },
+  {
+    up: migration_20251111_035941.up,
+    down: migration_20251111_035941.down,
+    name: '20251111_035941',
+  },
+  {
+    up: migration_20251111_043054.up,
+    down: migration_20251111_043054.down,
+    name: '20251111_043054',
+  },
+  {
+    up: migration_20251111_043434.up,
+    down: migration_20251111_043434.down,
+    name: '20251111_043434',
+  },
+  {
+    up: migration_20251111_142444_add_user_roles_and_approval.up,
+    down: migration_20251111_142444_add_user_roles_and_approval.down,
+    name: '20251111_142444_add_user_roles_and_approval',
+  },
+  {
+    up: migration_20251111_210353_add_logo_and_site_settings.up,
+    down: migration_20251111_210353_add_logo_and_site_settings.down,
+    name: '20251111_210353_add_logo_and_site_settings',
+  },
+  {
+    up: migration_20251112_000000_add_gradient_settings.up,
+    down: migration_20251112_000000_add_gradient_settings.down,
+    name: '20251112_000000_add_gradient_settings',
+  },
+  {
+    up: migration_20251116_143000_add_push_notifications_enabled.up,
+    down: migration_20251116_143000_add_push_notifications_enabled.down,
+    name: '20251116_143000_add_push_notifications_enabled',
+  },
+  {
+    up: migration_20251116_144000_add_profile_image.up,
+    down: migration_20251116_144000_add_profile_image.down,
+    name: '20251116_144000_add_profile_image',
+  },
+  {
+    up: migration_20251116_200500_fix_missing_user_and_assets_columns.up,
+    down: migration_20251116_200500_fix_missing_user_and_assets_columns.down,
+    name: '20251116_200500_fix_missing_user_and_assets_columns',
+  },
+  {
+    up: migration_20251116_231200_create_bases_rels.up,
+    down: migration_20251116_231200_create_bases_rels.down,
+    name: '20251116_231200_create_bases_rels',
+  },
+  {
+    up: migration_20251116_232000_fix_door_codes_label.up,
+    down: migration_20251116_232000_fix_door_codes_label.down,
+    name: '20251116_232000_fix_door_codes_label',
+  },
+  {
+    up: migration_20251116_235500_update_door_codes_schema.up,
+    down: migration_20251116_235500_update_door_codes_schema.down,
+    name: '20251116_235500_update_door_codes_schema',
+  },
+  {
+    up: migration_20251117_000100_add_hospital_capability_level_description.up,
+    down: migration_20251117_000100_add_hospital_capability_level_description.down,
+    name: '20251117_000100_add_hospital_capability_level_description',
+  },
+  {
+    up: migration_20251117_010500_expand_hospital_info_card.up,
+    down: migration_20251117_010500_expand_hospital_info_card.down,
+    name: '20251117_010500_expand_hospital_info_card',
+  },
+  {
+    up: migration_20251117_020000_add_coordinates_field.up,
+    down: migration_20251117_020000_add_coordinates_field.down,
+    name: '20251117_020000_add_coordinates_field',
+  },
+  {
+    up: migration_20251117_020100_add_slug_fields.up,
+    down: migration_20251117_020100_add_slug_fields.down,
+    name: '20251117_020100_add_slug_fields',
+  },
+  {
+    up: migration_20251117_020200_expand_bases_and_assets.up,
+    down: migration_20251117_020200_expand_bases_and_assets.down,
+    name: '20251117_020200_expand_bases_and_assets',
+  },
+  {
+    up: migration_20251117_030300_add_door_code_notes.up,
+    down: migration_20251117_030300_add_door_code_notes.down,
+    name: '20251117_030300_add_door_code_notes',
+  },
+  {
+    up: migration_20251117_040000_ensure_base_schema.up,
+    down: migration_20251117_040000_ensure_base_schema.down,
+    name: '20251117_040000_ensure_base_schema',
+  },
+  {
+    up: migration_20251117_040100_ensure_hospital_schema.up,
+    down: migration_20251117_040100_ensure_hospital_schema.down,
+    name: '20251117_040100_ensure_hospital_schema',
+  },
+  {
+    up: migration_20251117_040200_ensure_change_request_schema.up,
+    down: migration_20251117_040200_ensure_change_request_schema.down,
+    name: '20251117_040200_ensure_change_request_schema',
+  },
+  {
+    up: migration_20251117_040300_ensure_reference_schema.up,
+    down: migration_20251117_040300_ensure_reference_schema.down,
+    name: '20251117_040300_ensure_reference_schema',
+  },
+  {
+    up: migration_20251117_050000_add_missing_locked_documents_rels_columns.up,
+    down: migration_20251117_050000_add_missing_locked_documents_rels_columns.down,
+    name: '20251117_050000_add_missing_locked_documents_rels_columns',
+  },
+  {
+    up: migration_20251117_050100_add_missing_change_request_columns.up,
+    down: migration_20251117_050100_add_missing_change_request_columns.down,
+    name: '20251117_050100_add_missing_change_request_columns',
+  },
+  {
+    up: migration_20251119_000000_add_meta_site_name_and_twitter.up,
+    down: migration_20251119_000000_add_meta_site_name_and_twitter.down,
+    name: '20251119_000000_add_meta_site_name_and_twitter',
+  },
+  {
+    up: migration_20251120_000000_add_hospital_cr_source_attribution.up,
+    down: migration_20251120_000000_add_hospital_cr_source_attribution.down,
+    name: '20251120_000000_add_hospital_cr_source_attribution',
+  },
+  {
+    up: migration_20251120_030000_add_notifications_and_audit_trail.up,
+    down: migration_20251120_030000_add_notifications_and_audit_trail.down,
+    name: '20251120_030000_add_notifications_and_audit_trail',
+  },
+  {
+    up: migration_20251120_120000_readd_hospital_cr_source_attribution.up,
+    down: migration_20251120_120000_readd_hospital_cr_source_attribution.down,
+    name: '20251120_120000_readd_hospital_cr_source_attribution',
+  },
+  {
+    up: migration_20251121_000000_fix_missing_columns.up,
+    down: migration_20251121_000000_fix_missing_columns.down,
+    name: '20251121_000000_fix_missing_columns',
+  },
+  {
+    up: migration_20251121_000001_add_audit_log_id_to_locked_docs_rels.up,
+    down: migration_20251121_000001_add_audit_log_id_to_locked_docs_rels.down,
+    name: '20251121_000001_add_audit_log_id_to_locked_docs_rels',
+  },
+  {
+    up: migration_20251121_120000_add_notification_settings.up,
+    down: migration_20251121_120000_add_notification_settings.down,
+    name: '20251121_120000_add_notification_settings',
+  },
+  {
+    up: migration_20251121_143000_fix_push_notifications_target_roles.up,
+    down: migration_20251121_143000_fix_push_notifications_target_roles.down,
+    name: '20251121_143000_fix_push_notifications_target_roles',
+  },
+  {
+    up: migration_20251121_200000_force_fix_parent_id_columns.up,
+    down: migration_20251121_200000_force_fix_parent_id_columns.down,
+    name: '20251121_200000_force_fix_parent_id_columns',
+  },
+  {
+    up: migration_20251121_210000_ensure_push_notifications_target_roles_table.up,
+    down: migration_20251121_210000_ensure_push_notifications_target_roles_table.down,
+    name: '20251121_210000_ensure_push_notifications_target_roles_table',
+  },
+  {
+    up: migration_20251121_220000_add_notification_cols_to_locked_docs_rels.up,
+    down: migration_20251121_220000_add_notification_cols_to_locked_docs_rels.down,
+    name: '20251121_220000_add_notification_cols_to_locked_docs_rels',
+  },
+  {
+    up: migration_20251121_230000_add_default_id_to_target_roles.up,
+    down: migration_20251121_230000_add_default_id_to_target_roles.down,
+    name: '20251121_230000_add_default_id_to_target_roles',
+  },
+  {
+    up: migration_20251122_003000_add_created_by_to_notifications.up,
+    down: migration_20251122_003000_add_created_by_to_notifications.down,
+    name: '20251122_003000_add_created_by_to_notifications',
+  },
 ];
-
-export default migrations;
