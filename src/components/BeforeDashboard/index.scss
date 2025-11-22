@@ -2,23 +2,191 @@
 
 .dashboard .before-dashboard {
   margin-bottom: base(1.5);
+  max-width: 1400px;
 
-  &__banner {
-    & h4 {
-      margin: 0;
+  // Header Section
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: base(1);
+    margin-bottom: base(2);
+    padding: base(1.5);
+    background: var(--theme-elevation-50);
+    border: 1px solid var(--theme-elevation-100);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    @include mid-break {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 
-  &__instructions {
-    list-style: decimal;
+  &__header-content {
+    flex: 1;
+  }
+
+  &__title {
+    margin: 0 0 base(0.25) 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--theme-elevation-1000);
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--theme-elevation-500);
+  }
+
+  &__view-site-btn {
+    display: inline-block;
+    padding: base(0.5) base(1.25);
+    background: var(--theme-success-500);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--theme-success-600);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  // Stats Grid
+  &__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: base(1);
+    margin-bottom: base(2);
+  }
+
+  &__stat-card {
+    padding: base(1.5);
+    background: var(--theme-elevation-50);
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: var(--theme-elevation-200);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+  }
+
+  &__stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--theme-elevation-500);
     margin-bottom: base(0.5);
+  }
 
-    & li {
-      width: 100%;
+  &__stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--theme-elevation-1000);
+    margin-bottom: base(0.25);
+  }
+
+  &__stat-desc {
+    font-size: 0.85rem;
+    color: var(--theme-elevation-600);
+  }
+
+  // Section Styling
+  &__section {
+    margin-bottom: base(2);
+  }
+
+  &__section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--theme-elevation-900);
+    margin: 0 0 base(1) 0;
+    padding-bottom: base(0.5);
+    border-bottom: 2px solid var(--theme-elevation-150);
+  }
+
+  // Quick Links Grid
+  &__quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: base(1);
+  }
+
+  &__link-card {
+    display: flex;
+    align-items: center;
+    gap: base(1);
+    padding: base(1.25);
+    background: var(--theme-elevation-50);
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    &:hover {
+      background: var(--theme-elevation-100);
+      border-color: var(--theme-elevation-300);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+
+      .before-dashboard__link-icon {
+        transform: scale(1.1);
+      }
     }
   }
 
-  & a:hover {
-    opacity: 0.85;
+  &__link-icon {
+    font-size: 1.75rem;
+    line-height: 1;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  &__link-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__link-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--theme-elevation-1000);
+    margin-bottom: base(0.25);
+  }
+
+  &__link-desc {
+    font-size: 0.8rem;
+    color: var(--theme-elevation-600);
+    line-height: 1.4;
+  }
+
+  // Info Card
+  &__info-card {
+    padding: base(1.5);
+    background: var(--theme-elevation-50);
+    border: 1px solid var(--theme-elevation-150);
+    border-left: 4px solid var(--theme-success-500);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  &__info-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--theme-elevation-700);
+    line-height: 1.6;
   }
 }
