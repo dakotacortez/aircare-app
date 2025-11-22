@@ -36,6 +36,7 @@ import * as migration_20251121_210000_ensure_push_notifications_target_roles_tab
 import * as migration_20251121_220000_add_notification_cols_to_locked_docs_rels from './20251121_220000_add_notification_cols_to_locked_docs_rels';
 import * as migration_20251121_230000_add_default_id_to_target_roles from './20251121_230000_add_default_id_to_target_roles';
 import * as migration_20251122_003000_add_created_by_to_notifications from './20251122_003000_add_created_by_to_notifications';
+import * as migration_20251122_120000_overhaul_protocols_add_medications from './20251122_120000_overhaul_protocols_add_medications';
 
 export const migrations = [
   {
@@ -227,5 +228,10 @@ export const migrations = [
     up: migration_20251122_003000_add_created_by_to_notifications.up,
     down: migration_20251122_003000_add_created_by_to_notifications.down,
     name: '20251122_003000_add_created_by_to_notifications',
+  },
+  {
+    up: migration_20251122_120000_overhaul_protocols_add_medications.up,
+    down: migration_20251122_120000_overhaul_protocols_add_medications.down,
+    name: '20251122_120000_overhaul_protocols_add_medications',
   },
 ];

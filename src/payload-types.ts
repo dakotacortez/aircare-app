@@ -73,6 +73,7 @@ export interface Config {
     categories: Category;
     users: User;
     protocols: Protocol;
+    medications: Medication;
     'hospital-networks': HospitalNetwork;
     'hospital-capabilities': HospitalCapability;
     hospitals: Hospital;
@@ -877,16 +878,19 @@ export interface Form {
   createdAt: string;
 }
 /**
- * Clinical protocols with inline certification level tagging
+ * Clinical protocols with structured sections and action steps
  *
- * This interface was referenced by `Config`'s JSON-Schema
+ * This interface was referenced by `Config's JSON-Schema
  * via the `definition` "protocols".
  */
 export interface Protocol {
   id: number;
   _order?: string | null;
+  /**
+   * Protocol code (e.g., SB204, T705, M301)
+   */
+  code: string;
   title: string;
-  protocolNumber: string;
   category:
     | 'medical'
     | 'trauma'
@@ -897,136 +901,128 @@ export interface Protocol {
     | 'behavioral'
     | 'environmental'
     | 'special-ops';
-  subcategory: string;
+  subcategory?: string | null;
   /**
-   * Intro and universal guidelines for all service lines
+   * Year last modified (e.g., 2024)
    */
-  contentUniversal?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  lastModified?: string | null;
   /**
-   * BLS-specific procedures and protocols
+   * Protocol sections are drag-and-drop sortable
    */
-  contentBLS?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
+  sections: {
+    /**
+     * Section heading (e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis")
+     */
+    heading: string;
+    /**
+     * Who can view/perform this section. Leave empty for all certification levels.
+     */
+    scope?: ('BLS' | 'ALS' | 'CCT')[] | null;
+    /**
+     * Optional alert/note to show at top of section
+     */
+    note?: string | null;
+    /**
+     * How should this section be displayed?
+     */
+    contentType: 'actionSteps' | 'bulletList' | 'richText';
+    /**
+     * Use the editor to create formatted bullet lists
+     */
+    bulletList?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
         version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+      };
+      [k: string]: unknown;
+    } | null;
+    richText?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    actionSteps?:
+      | {
+          /**
+           * Step number (can use decimals like 3.5 for inserted steps)
+           */
+          stepNumber: number;
+          /**
+           * Main action text
+           */
+          action: string;
+          /**
+           * Who can perform this step. Leave empty for all levels.
+           */
+          scope?: ('BLS' | 'ALS' | 'CCT')[] | null;
+          /**
+           * Timing indicator (e.g., "q3-5min", "continuous", "q2min")
+           */
+          timing?: string | null;
+          /**
+           * Check if this step requires medical control authorization
+           */
+          requiresMedControl?: boolean | null;
+          /**
+           * Other protocols referenced in this step (for navigation)
+           */
+          protocolReferences?:
+            | {
+                protocol: number | Protocol;
+                /**
+                 * Text to display (e.g., "T508", "VF/VT Protocol")
+                 */
+                label?: string | null;
+                id?: string | null;
+              }[]
+            | null;
+          /**
+           * Sub-bullets or additional details
+           */
+          details?:
+            | {
+                detail: string;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    id?: string | null;
+  }[];
   /**
-   * ALS-specific procedures and protocols
+   * Link medications used in this protocol
    */
-  contentALS?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  medications?: (number | Medication)[] | null;
   /**
-   * CCT-specific procedures and protocols
+   * Other protocols referenced in this one
    */
-  contentCCT?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  relatedProtocols?: (number | Protocol)[] | null;
   /**
-   * Level-specific callouts and uncommon adjustments
+   * Comma-separated keywords for search
    */
-  specialConsiderations?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Quick-reference items by level
-   */
-  keyPoints?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  /**
-   * Tables, diagrams, assessment reminders
-   */
-  references?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  effectiveDate: string;
+  keywords: string;
+  tags?: ('cardiac' | 'respiratory' | 'trauma' | 'neurological' | 'pediatric' | 'critical')[] | null;
+  effectiveDate?: string | null;
   lastReviewed?: string | null;
-  versionNumber?: string | null;
   /**
    * Override which calculators are shown and their order for this protocol
    */
@@ -1048,13 +1044,242 @@ export interface Protocol {
    * Diagrams, flowcharts, reference images, or PDFs
    */
   attachments?: (number | Media)[] | null;
-  /**
-   * Comma-separated keywords for search (e.g., chest pain, STEMI, aspirin, nitroglycerin)
-   */
-  keywords: string;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * Comprehensive medication reference with dosing and clinical information
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medications".
+ */
+export interface Medication {
+  id: number;
+  name: string;
+  /**
+   * Generic name if different from brand name
+   */
+  genericName?: string | null;
+  class:
+    | 'vasopressor'
+    | 'antiarrhythmic'
+    | 'analgesic'
+    | 'sedative'
+    | 'antiemetic'
+    | 'bronchodilator'
+    | 'anticonvulsant'
+    | 'antihypertensive'
+    | 'antiplatelet'
+    | 'anticoagulant'
+    | 'paralytic'
+    | 'reversal'
+    | 'other';
+  /**
+   * Who can administer this medication
+   */
+  scope: ('BLS' | 'ALS' | 'CCT')[];
+  /**
+   * Add a row for each route (IV, IM, PO, etc.)
+   */
+  doses?:
+    | {
+        route: 'IV' | 'IO' | 'IV/IO' | 'IM' | 'SQ' | 'PO' | 'SL' | 'IN' | 'INH' | 'ET' | 'PR';
+        adultDose: string;
+        pediatricDose?: string | null;
+        concentration?: string | null;
+        interval?: string | null;
+        maxDose?: string | null;
+        rate?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * When to use this medication
+   */
+  indications?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * When NOT to use this medication
+   */
+  contraindications?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Special considerations or warnings
+   */
+  precautions?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * How the medication works (optional, for education)
+   */
+  mechanismOfAction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  onset?: string | null;
+  duration?: string | null;
+  /**
+   * Common and serious adverse effects
+   */
+  sideEffects?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * How to mix/prepare the medication
+   */
+  mixing?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * What it can/cannot be mixed with
+   */
+  compatibility?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Titration guidelines (for infusions)
+   */
+  titration?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Any special administration instructions
+   */
+  specialInstructions?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  pregnancyCategory?: ('A' | 'B' | 'C' | 'D' | 'X') | null;
+  /**
+   * Any additional notes or pearls
+   */
+  notes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
 }
 /**
  * Clinical calculators and quick tools metadata

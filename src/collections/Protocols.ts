@@ -18,18 +18,13 @@ import {
   HorizontalRuleFeature,
   AlignFeature,
   IndentFeature,
-  UploadFeature,
   FixedToolbarFeature,
   InlineToolbarFeature,
   TextStateFeature,
   defaultColors,
 } from '@payloadcms/richtext-lexical'
-import { CertificationLevelFeature } from '../lexical/features/certificationLevel'
-import { CalloutBlockFeature } from '../lexical/features/calloutBlock'
-import { ListBaseFeature } from '../lexical/features/listBase'
 import { isContentTeamOrAdmin } from '../access/isContentTeamOrAdmin'
 import { isAdmin } from '../access/isAdmin'
-import { createLexicalSanitizeHook } from '../utilities/sanitizeLexical'
 
 /**
  * Shared Lexical Editor Features
@@ -51,13 +46,10 @@ const getBaseFeatures = () => [
   }),
   AlignFeature(),
   IndentFeature(),
-  ListBaseFeature(),
   OrderedListFeature(),
   UnorderedListFeature(),
   ChecklistFeature(),
   BlockquoteFeature(),
-  CalloutBlockFeature(),
-  CertificationLevelFeature(),
   FixedToolbarFeature(),
   InlineToolbarFeature(),
 ]
@@ -65,62 +57,31 @@ const getBaseFeatures = () => [
 /**
  * Full protocol editor (with headings, links, and horizontal rules)
  */
-const getFullProtocolEditor = () => lexicalEditor({
-  features: [
-    ...getBaseFeatures(),
-    HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
-    HorizontalRuleFeature(),
-    LinkFeature({ enabledCollections: ['protocols'] }),
-  ],
-})
+const getFullProtocolEditor = () =>
+  lexicalEditor({
+    features: [
+      ...getBaseFeatures(),
+      HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
+      HorizontalRuleFeature(),
+      LinkFeature({ enabledCollections: ['protocols'] }),
+    ],
+  })
 
 /**
- * Simple protocol editor (limited headings, includes links and horizontal rules)
+ * Simple editor for bullet lists and rich text sections
  */
-const getSimpleProtocolEditor = () => lexicalEditor({
-  features: [
-    ...getBaseFeatures(),
-    HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
-    HorizontalRuleFeature(),
-    LinkFeature({ enabledCollections: ['protocols'] }),
-  ],
-})
-
-/**
- * References editor (includes upload for images/diagrams)
- */
-const getReferencesEditor = () => lexicalEditor({
-  features: [
-    ...getBaseFeatures(),
-    HorizontalRuleFeature(),
-    LinkFeature({ enabledCollections: ['protocols'] }),
-    UploadFeature({
-      collections: {
-        media: {
-          fields: [
-            {
-              name: 'caption',
-              type: 'text',
-            },
-          ],
-        },
-      },
-    }),
-  ],
-})
-
-const sanitizeContentUniversal = createLexicalSanitizeHook('protocols.contentUniversal')
-const sanitizeContentBLS = createLexicalSanitizeHook('protocols.contentBLS')
-const sanitizeContentALS = createLexicalSanitizeHook('protocols.contentALS')
-const sanitizeContentCCT = createLexicalSanitizeHook('protocols.contentCCT')
-const sanitizeSpecialConsiderations = createLexicalSanitizeHook('protocols.specialConsiderations')
-const sanitizeKeyPoints = createLexicalSanitizeHook('protocols.keyPoints')
-const sanitizeReferences = createLexicalSanitizeHook('protocols.references')
+const getSimpleEditor = () =>
+  lexicalEditor({
+    features: [
+      ...getBaseFeatures(),
+      HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
+      LinkFeature({ enabledCollections: ['protocols'] }),
+    ],
+  })
 
 /**
  * Protocols Collection
- * Fresh collection with orderable enabled from the start
- * Uses built-in _status (draft/published) instead of custom status enum
+ * Overhauled with sections-based structure for actionable protocols
  */
 export const Protocols: CollectionConfig = {
   slug: 'protocols',
@@ -130,32 +91,19 @@ export const Protocols: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'protocolNumber', 'category', 'subcategory', 'effectiveDate'],
+    defaultColumns: ['code', 'title', 'category', 'lastModified'],
     group: 'Clinical Content',
-    listSearchableFields: ['title', 'protocolNumber', 'keywords'],
-    description: 'Clinical protocols with inline certification level tagging',
+    listSearchableFields: ['title', 'code', 'keywords'],
+    description: 'Clinical protocols with structured sections and action steps',
   },
-  // Enable orderable from DAY ONE (before any data exists)
   orderable: true,
   access: {
-    // Read access:
-    // - Unauthenticated (guest): No access - must login
-    // - Pending users (not approved): No access - awaiting approval
-    // - Approved users: Can only see published protocols
-    // - Content Team/Admin: Can see all protocols (for editing in admin panel)
     read: ({ req: { user } }) => {
-      // No user = no access
       if (!user) return false
-
-      // User must be active
       if (user.status !== 'active') return false
-
-      // Content Team and Admin can see everything (for editing in admin panel)
       if (user.role === 'content-team' || user.role === 'admin-team') {
         return true
       }
-
-      // Regular users must be approved AND can only see published protocols
       if (user.role === 'user' && user.approved) {
         return {
           _status: {
@@ -163,22 +111,16 @@ export const Protocols: CollectionConfig = {
           },
         }
       }
-
-      // Not approved or inactive = no access
       return false
     },
-    // Create: Content Team and Admin only
     create: isContentTeamOrAdmin,
-    // Update: Content Team and Admin only
     update: isContentTeamOrAdmin,
-    // Delete: Admin only
     delete: isAdmin,
   },
-  // Use built-in drafts system with autosave
   versions: {
     drafts: {
       autosave: {
-        interval: 120000, // Autosave every 2 minutes
+        interval: 120000, // 2 minutes
       },
     },
     maxPerDoc: 25,
@@ -186,31 +128,22 @@ export const Protocols: CollectionConfig = {
   fields: [
     // Basic Protocol Info
     {
+      name: 'code',
+      type: 'text',
+      required: true,
+      unique: true,
+      label: 'Protocol Code',
+      admin: {
+        description: 'Protocol code (e.g., SB204, T705, M301)',
+      },
+    },
+    {
       name: 'title',
       type: 'text',
       required: true,
       label: 'Protocol Name',
       admin: {
-        placeholder: 'e.g., Acute Coronary Syndrome (ACS)',
-      },
-    },
-    {
-      name: 'protocolNumber',
-      type: 'text',
-      required: true,
-      unique: true,
-      label: 'Protocol Number',
-      admin: {
-        placeholder: 'e.g., MED-CARD-001',
-      },
-      // Validate that it's URL-safe
-      validate: (value: string | null | undefined) => {
-        if (!value) return 'Protocol number is required'
-        // Allow letters, numbers, hyphens, underscores
-        if (!/^[A-Za-z0-9_-]+$/.test(value)) {
-          return 'Protocol number can only contain letters, numbers, hyphens, and underscores'
-        }
-        return true
+        placeholder: 'e.g., Cardiac Arrest',
       },
     },
     {
@@ -235,149 +168,301 @@ export const Protocols: CollectionConfig = {
         {
           name: 'subcategory',
           type: 'text',
-          required: true,
           label: 'Subcategory',
           admin: {
-            placeholder: 'e.g., Cardiovascular, Airway Management',
+            placeholder: 'e.g., Cardiovascular, Respiratory',
           },
         },
       ],
     },
-
-      // Protocol Content Editors (grouped into tabs)
-      {
-        type: 'tabs',
-        tabs: [
-          {
-            label: 'Universal',
-            fields: [
-              {
-                name: 'contentUniversal',
-                type: 'richText',
-                label: 'Protocol (Universal)',
-                hooks: {
-                  afterRead: [sanitizeContentUniversal],
-                  beforeChange: [sanitizeContentUniversal],
-                },
-                admin: {
-                  description: 'Intro and universal guidelines for all service lines',
-                },
-                editor: getFullProtocolEditor(),
-              },
-            ],
-          },
-          {
-            label: 'BLS',
-            fields: [
-              {
-                name: 'contentBLS',
-                type: 'richText',
-                label: 'Protocol (BLS)',
-                hooks: {
-                  afterRead: [sanitizeContentBLS],
-                  beforeChange: [sanitizeContentBLS],
-                },
-                admin: {
-                  description: 'BLS-specific procedures and protocols',
-                },
-                editor: getFullProtocolEditor(),
-              },
-            ],
-          },
-          {
-            label: 'ALS',
-            fields: [
-              {
-                name: 'contentALS',
-                type: 'richText',
-                label: 'Protocol (ALS)',
-                hooks: {
-                  afterRead: [sanitizeContentALS],
-                  beforeChange: [sanitizeContentALS],
-                },
-                admin: {
-                  description: 'ALS-specific procedures and protocols',
-                },
-                editor: getFullProtocolEditor(),
-              },
-            ],
-          },
-          {
-            label: 'CCT',
-            fields: [
-              {
-                name: 'contentCCT',
-                type: 'richText',
-                label: 'Protocol (CCT)',
-                hooks: {
-                  afterRead: [sanitizeContentCCT],
-                  beforeChange: [sanitizeContentCCT],
-                },
-                admin: {
-                  description: 'CCT-specific procedures and protocols',
-                },
-                editor: getFullProtocolEditor(),
-              },
-            ],
-          },
-          {
-            label: 'Special Considerations',
-            fields: [
-              {
-                name: 'specialConsiderations',
-                type: 'richText',
-                label: 'Special Considerations',
-                hooks: {
-                  afterRead: [sanitizeSpecialConsiderations],
-                  beforeChange: [sanitizeSpecialConsiderations],
-                },
-                admin: {
-                  description: 'Level-specific callouts and uncommon adjustments',
-                },
-                editor: getSimpleProtocolEditor(),
-              },
-            ],
-          },
-          {
-            label: 'Key Points / Pearls',
-            fields: [
-              {
-                name: 'keyPoints',
-                type: 'richText',
-                label: 'Key Points / Pearls',
-                hooks: {
-                  afterRead: [sanitizeKeyPoints],
-                  beforeChange: [sanitizeKeyPoints],
-                },
-                admin: {
-                  description: 'Quick-reference items by level',
-                },
-                editor: getSimpleProtocolEditor(),
-              },
-            ],
-          },
-          {
-            label: 'References & Graphics',
-            fields: [
-              {
-                name: 'references',
-                type: 'richText',
-                label: 'References & Graphics',
-                hooks: {
-                  afterRead: [sanitizeReferences],
-                  beforeChange: [sanitizeReferences],
-                },
-                admin: {
-                  description: 'Tables, diagrams, assessment reminders',
-                },
-                editor: getReferencesEditor(),
-              },
-            ],
-          },
-        ],
+    {
+      name: 'lastModified',
+      type: 'text',
+      label: 'Last Modified',
+      admin: {
+        description: 'Year last modified (e.g., 2024)',
       },
+    },
 
-    // Version & Review Information
+    // Protocol Content (Sections)
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Protocol Content',
+          fields: [
+            {
+              name: 'sections',
+              type: 'array',
+              required: true,
+              label: 'Protocol Sections',
+              admin: {
+                components: {
+                  RowLabel: ({ data, index }) => {
+                    return data?.heading || `Section ${(index ?? 0) + 1}`
+                  },
+                },
+                description:
+                  'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
+              },
+              fields: [
+                {
+                  name: 'heading',
+                  type: 'text',
+                  required: true,
+                  label: 'Section Heading',
+                  admin: {
+                    description: 'e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis"',
+                  },
+                },
+                {
+                  name: 'scope',
+                  type: 'select',
+                  hasMany: true,
+                  defaultValue: [],
+                  label: 'Certification Scope',
+                  options: [
+                    { label: 'BLS/EMT', value: 'BLS' },
+                    { label: 'ALS/Paramedic', value: 'ALS' },
+                    { label: 'CCT', value: 'CCT' },
+                  ],
+                  admin: {
+                    description:
+                      'Who can view/perform this section. Leave empty for all certification levels.',
+                  },
+                },
+                {
+                  name: 'note',
+                  type: 'textarea',
+                  label: 'Alert/Note',
+                  admin: {
+                    description: 'Optional alert/note to show at top of section',
+                  },
+                },
+                {
+                  name: 'contentType',
+                  type: 'radio',
+                  required: true,
+                  defaultValue: 'actionSteps',
+                  label: 'Content Type',
+                  options: [
+                    {
+                      label: 'Action Steps (numbered protocol steps with timing/badges)',
+                      value: 'actionSteps',
+                    },
+                    {
+                      label: 'Bullet List (simple items like inclusion criteria)',
+                      value: 'bulletList',
+                    },
+                    {
+                      label: 'Rich Text (paragraphs for complex notes)',
+                      value: 'richText',
+                    },
+                  ],
+                  admin: {
+                    description: 'How should this section be displayed?',
+                  },
+                },
+                // Bullet List (Lexical editor for rich formatting)
+                {
+                  name: 'bulletList',
+                  type: 'richText',
+                  label: 'Bullet List Content',
+                  admin: {
+                    condition: (data, siblingData) => siblingData.contentType === 'bulletList',
+                    description: 'Use the editor to create formatted bullet lists',
+                  },
+                  editor: getSimpleEditor(),
+                },
+                // Rich Text
+                {
+                  name: 'richText',
+                  type: 'richText',
+                  label: 'Rich Text Content',
+                  admin: {
+                    condition: (data, siblingData) => siblingData.contentType === 'richText',
+                  },
+                  editor: getFullProtocolEditor(),
+                },
+                // Action Steps (structured array)
+                {
+                  name: 'actionSteps',
+                  type: 'array',
+                  label: 'Action Steps',
+                  admin: {
+                    condition: (data, siblingData) => siblingData.contentType === 'actionSteps',
+                    components: {
+                      RowLabel: ({ data, index }) => {
+                        const stepNum = data?.stepNumber ?? (index ?? 0) + 1
+                        const action = data?.action
+                          ? data.action.substring(0, 50) + (data.action.length > 50 ? '...' : '')
+                          : ''
+                        return `Step ${stepNum}${action ? ': ' + action : ''}`
+                      },
+                    },
+                  },
+                  fields: [
+                    {
+                      name: 'stepNumber',
+                      type: 'number',
+                      required: true,
+                      label: 'Step Number',
+                      admin: {
+                        description: 'Step number (can use decimals like 3.5 for inserted steps)',
+                        step: 0.1,
+                      },
+                    },
+                    {
+                      name: 'action',
+                      type: 'textarea',
+                      required: true,
+                      label: 'Action',
+                      admin: {
+                        description: 'Main action text',
+                      },
+                    },
+                    {
+                      name: 'scope',
+                      type: 'select',
+                      hasMany: true,
+                      defaultValue: [],
+                      label: 'Certification Scope',
+                      options: [
+                        { label: 'BLS/EMT', value: 'BLS' },
+                        { label: 'ALS/Paramedic', value: 'ALS' },
+                        { label: 'CCT', value: 'CCT' },
+                      ],
+                      admin: {
+                        description: 'Who can perform this step. Leave empty for all levels.',
+                      },
+                    },
+                    {
+                      name: 'timing',
+                      type: 'text',
+                      label: 'Timing',
+                      admin: {
+                        description: 'Timing indicator (e.g., "q3-5min", "continuous", "q2min")',
+                        placeholder: 'Leave blank if not time-sensitive',
+                      },
+                    },
+                    {
+                      name: 'requiresMedControl',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      label: 'Requires Medical Control',
+                      admin: {
+                        description: 'Check if this step requires medical control authorization',
+                      },
+                    },
+                    {
+                      name: 'protocolReferences',
+                      type: 'array',
+                      label: 'Protocol References',
+                      admin: {
+                        description: 'Other protocols referenced in this step (for navigation)',
+                      },
+                      fields: [
+                        {
+                          name: 'protocol',
+                          type: 'relationship',
+                          relationTo: 'protocols',
+                          required: true,
+                          label: 'Protocol',
+                        },
+                        {
+                          name: 'label',
+                          type: 'text',
+                          label: 'Display Label',
+                          admin: {
+                            description: 'Text to display (e.g., "T508", "VF/VT Protocol")',
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      name: 'details',
+                      type: 'array',
+                      label: 'Details',
+                      admin: {
+                        description: 'Sub-bullets or additional details',
+                      },
+                      fields: [
+                        {
+                          name: 'detail',
+                          type: 'textarea',
+                          required: true,
+                          label: 'Detail',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Medications',
+          fields: [
+            {
+              name: 'medications',
+              type: 'relationship',
+              relationTo: 'medications',
+              hasMany: true,
+              label: 'Medications',
+              admin: {
+                description: 'Link medications used in this protocol',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Related Protocols',
+          fields: [
+            {
+              name: 'relatedProtocols',
+              type: 'relationship',
+              relationTo: 'protocols',
+              hasMany: true,
+              label: 'Related Protocols',
+              admin: {
+                description: 'Other protocols referenced in this one',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Search & Tags',
+          fields: [
+            {
+              name: 'keywords',
+              type: 'text',
+              label: 'Search Keywords',
+              required: true,
+              admin: {
+                description: 'Comma-separated keywords for search',
+              },
+            },
+            {
+              name: 'tags',
+              type: 'select',
+              hasMany: true,
+              label: 'Tags',
+              options: [
+                { label: 'Cardiac', value: 'cardiac' },
+                { label: 'Respiratory', value: 'respiratory' },
+                { label: 'Trauma', value: 'trauma' },
+                { label: 'Neurological', value: 'neurological' },
+                { label: 'Pediatric', value: 'pediatric' },
+                { label: 'Critical', value: 'critical' },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+
+    // Version Information
     {
       type: 'row',
       fields: [
@@ -385,7 +470,6 @@ export const Protocols: CollectionConfig = {
           name: 'effectiveDate',
           type: 'date',
           label: 'Effective Date',
-          required: true,
           admin: {
             date: {
               pickerAppearance: 'dayOnly',
@@ -396,7 +480,6 @@ export const Protocols: CollectionConfig = {
           name: 'lastReviewed',
           type: 'date',
           label: 'Last Reviewed',
-          required: false,
           admin: {
             date: {
               pickerAppearance: 'dayOnly',
@@ -405,20 +488,8 @@ export const Protocols: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'versionNumber',
-      type: 'text',
-      label: 'Version',
-      required: false,
-      admin: {
-        hidden: true,
-        placeholder: 'e.g., v2.1',
-      },
-    },
 
     // Calculator Overrides
-    // Calculators are auto-selected by tag and service line, then these overrides
-    // refine visibility and ordering for this specific protocol
     {
       name: 'calculatorOverrides',
       type: 'array',
@@ -439,7 +510,7 @@ export const Protocols: CollectionConfig = {
           type: 'number',
           label: 'Order',
           admin: {
-            description: 'Override the calculator\'s defaultOrder for this protocol',
+            description: "Override the calculator's defaultOrder for this protocol",
           },
         },
         {
@@ -448,7 +519,8 @@ export const Protocols: CollectionConfig = {
           label: 'Hidden',
           defaultValue: false,
           admin: {
-            description: 'If true, hide this calculator for this protocol even if tags would otherwise match',
+            description:
+              'If true, hide this calculator for this protocol even if tags would otherwise match',
           },
         },
       ],
@@ -463,18 +535,6 @@ export const Protocols: CollectionConfig = {
       label: 'Supporting Documents/Images',
       admin: {
         description: 'Diagrams, flowcharts, reference images, or PDFs',
-      },
-    },
-
-    // Search & Discovery
-    {
-      name: 'keywords',
-      type: 'text',
-      label: 'Search Keywords',
-      required: true,
-      admin: {
-        description:
-          'Comma-separated keywords for search (e.g., chest pain, STEMI, aspirin, nitroglycerin)',
       },
     },
   ],
