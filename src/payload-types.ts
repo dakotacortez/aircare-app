@@ -1679,6 +1679,10 @@ export interface Notification {
    */
   recipientUser?: (number | null) | User;
   /**
+   * User who triggered/created this notification
+   */
+  createdBy?: (number | null) | User;
+  /**
    * Email subject line
    */
   subject: string;
@@ -1836,6 +1840,10 @@ export interface PushNotification {
    * Select which user roles should receive this notification
    */
   targetRoles: ('admin-team' | 'content-team' | 'user')[];
+  /**
+   * User who created this push notification
+   */
+  createdBy?: (number | null) | User;
   /**
    * Status of the notification
    */
@@ -2885,6 +2893,7 @@ export interface NotificationsSelect<T extends boolean = true> {
   type?: T;
   recipient?: T;
   recipientUser?: T;
+  createdBy?: T;
   subject?: T;
   htmlContent?: T;
   status?: T;
@@ -2955,6 +2964,7 @@ export interface PushNotificationsSelect<T extends boolean = true> {
   title?: T;
   body?: T;
   targetRoles?: T;
+  createdBy?: T;
   status?: T;
   recipientCount?: T;
   error?: T;
