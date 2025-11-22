@@ -126,6 +126,23 @@ function getScopeBadgeColor(scope: CertLevel[] | undefined | null, certLevel: Ce
 }
 
 /**
+ * Flatten all scopes attached to medication indication routes
+ */
+function getMedicationScopes(medication: Medication): CertLevel[] {
+  const scopes = new Set<CertLevel>()
+  medication.medicationIndications?.forEach((indication) => {
+    indication?.routes?.forEach((route) => {
+      route?.scope?.forEach((routeScope) => {
+        if (routeScope === 'BLS' || routeScope === 'ALS' || routeScope === 'CCT') {
+          scopes.add(routeScope)
+        }
+      })
+    })
+  })
+  return Array.from(scopes)
+}
+
+/**
  * Render clickable protocol codes in action text
  */
 function renderActionWithLinks(text: string, onProtocolClick: (code: string) => void) {
@@ -539,49 +556,52 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
             {/* Medications Section */}
             {protocol.medications && Array.isArray(protocol.medications) && protocol.medications.length > 0 && (
-              <div className="mt-6 bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl p-4 shadow-sm">
-                <h3 className="text-lg font-bold mb-3">Medications</h3>
-                <div className="space-y-2">
-                  {protocol.medications
-                    .filter((med) => {
-                      if (typeof med === 'number') return false
-                      if (viewMode === 'study') return true
-                      const medication = med as Medication
-                      return isInScope(medication.scope as CertLevel[] | undefined, serviceLine as CertLevel)
-                    })
-                    .map((med) => {
-                      if (typeof med === 'number') return null
-                      const medication = med as Medication
-                      const scopeLabel = getScopeLabel(medication.scope as CertLevel[] | undefined)
+                <div className="mt-6 bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl p-4 shadow-sm">
+                  <h3 className="text-lg font-bold mb-3">Medications</h3>
+                  <div className="space-y-2">
+                    {protocol.medications
+                      .filter((med) => {
+                        if (typeof med === 'number') return false
+                        if (viewMode === 'study') return true
+                        const medication = med as Medication
+                        const medicationScopes = getMedicationScopes(medication)
+                        if (medicationScopes.length === 0) return true
+                        return isInScope(medicationScopes, serviceLine as CertLevel)
+                      })
+                      .map((med) => {
+                        if (typeof med === 'number') return null
+                        const medication = med as Medication
+                        const medicationScopes = getMedicationScopes(medication)
+                        const scopeLabel = getScopeLabel(medicationScopes)
 
-                      return (
-                        <button
-                          key={medication.id}
-                          onClick={() => setSelectedMedication(medication)}
-                          className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                                  {medication.name}
-                                </span>
-                                {scopeLabel && (
-                                  <span
-                                    className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(medication.scope as CertLevel[] | undefined, serviceLine as CertLevel)}`}
-                                  >
-                                    {scopeLabel}
+                        return (
+                          <button
+                            key={medication.id}
+                            onClick={() => setSelectedMedication(medication)}
+                            className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                                    {medication.name}
                                   </span>
-                                )}
+                                  {scopeLabel && (
+                                    <span
+                                      className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(medicationScopes, serviceLine as CertLevel)}`}
+                                    >
+                                      {scopeLabel}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-neutral-600 dark:text-neutral-400">{medication.class}</p>
                               </div>
-                              <p className="text-sm text-neutral-600 dark:text-neutral-400">{medication.class}</p>
                             </div>
-                          </div>
-                        </button>
-                      )
-                    })}
+                          </button>
+                        )
+                      })}
+                  </div>
                 </div>
-              </div>
             )}
 
             {/* Related Protocols */}
@@ -654,10 +674,110 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 ✕
               </button>
             </div>
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-60px)]">
-              <p className="text-neutral-600 dark:text-neutral-400">
-                Medication details coming soon...
-              </p>
+              <div className="p-4 overflow-y-auto max-h-[calc(90vh-60px)] space-y-4">
+                <div className="flex flex-col gap-2 border dark:border-neutral-700 rounded-lg p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm uppercase text-neutral-500">{selectedMedication.class}</p>
+                      {selectedMedication.genericName && (
+                        <p className="text-neutral-900 dark:text-neutral-100 font-medium">
+                          Generic: {selectedMedication.genericName}
+                        </p>
+                      )}
+                    </div>
+                    {(() => {
+                      const scopes = getMedicationScopes(selectedMedication)
+                      const scopeLabel = getScopeLabel(scopes)
+                      return scopeLabel ? (
+                        <span
+                          className={`text-xs font-bold px-2 py-0.5 rounded ${getScopeBadgeColor(scopes, serviceLine as CertLevel)}`}
+                        >
+                          {scopeLabel}
+                        </span>
+                      ) : null
+                    })()}
+                  </div>
+                  <p className="text-xs text-neutral-500">
+                    Dosing varies by indication. Select the row below that matches the patient presentation and service scope.
+                  </p>
+                </div>
+
+                {selectedMedication.medicationIndications && selectedMedication.medicationIndications.length > 0 ? (
+                  <div className="space-y-5">
+                    {selectedMedication.medicationIndications.map((indication) => (
+                      <div
+                        key={indication?.id || indication?.indication}
+                        className="border dark:border-neutral-700 rounded-lg p-3 bg-neutral-50 dark:bg-neutral-900/40"
+                      >
+                        <div className="flex flex-col gap-1 mb-3">
+                          <h3 className="text-lg font-semibold">{indication.indication}</h3>
+                          {indication.clinicalContext && (
+                            <p className="text-sm text-neutral-600 dark:text-neutral-400">{indication.clinicalContext}</p>
+                          )}
+                        </div>
+                        <div className="space-y-3">
+                          {indication.routes?.map((route) => {
+                            const routeScope = route.scope as CertLevel[] | undefined
+                            const routeInScope = isInScope(routeScope, serviceLine as CertLevel)
+                            const routeScopeLabel = getScopeLabel(routeScope)
+                            const routeDetails = [
+                              { label: 'Adult Dose', value: route.adultDose },
+                              { label: 'Pediatric Dose', value: route.pediatricDose },
+                              { label: 'Concentration', value: route.concentration },
+                              { label: 'Interval', value: route.interval },
+                              { label: 'Max Dose', value: route.maxDose },
+                              { label: 'Rate', value: route.rate },
+                              { label: 'Titration Goal', value: route.titrationGoal },
+                            ].filter((detail) => detail.value)
+
+                            return (
+                              <div
+                                key={route?.id || `${route.route}-${route.adultDose}`}
+                                className={`rounded-lg border dark:border-neutral-700 p-3 ${!routeInScope ? 'opacity-70' : ''}`}
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                  <div>
+                                    <p className="font-semibold">{route.route || 'Route'}</p>
+                                    {route.notes && (
+                                      <p className="text-sm text-neutral-600 dark:text-neutral-400">{route.notes}</p>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-2 flex-wrap">
+                                    {routeScopeLabel && (
+                                      <span
+                                        className={`text-xs font-bold px-2 py-0.5 rounded ${getScopeBadgeColor(routeScope, serviceLine as CertLevel)}`}
+                                      >
+                                        {routeScopeLabel}
+                                      </span>
+                                    )}
+                                    {!routeInScope && (
+                                      <span className="text-xs px-2 py-0.5 rounded bg-yellow-600 text-white font-bold">
+                                        Higher certification needed
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {routeDetails.length > 0 && (
+                                  <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                    {routeDetails.map((detail) => (
+                                      <div key={`${route.route}-${detail.label}`}>
+                                        <dt className="text-neutral-500">{detail.label}</dt>
+                                        <dd className="font-medium text-neutral-900 dark:text-neutral-100">{detail.value}</dd>
+                                      </div>
+                                    ))}
+                                  </dl>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-neutral-600 dark:text-neutral-400">No indication-based dosing has been configured yet.</p>
+                )}
             </div>
           </div>
         </div>

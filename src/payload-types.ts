@@ -1079,20 +1079,49 @@ export interface Medication {
     | 'reversal'
     | 'other';
   /**
-   * Who can administer this medication
+   * Group routes/doses by clinical indication or condition
    */
-  scope: ('BLS' | 'ALS' | 'CCT')[];
-  /**
-   * Add a row for each route (IV, IM, PO, etc.)
-   */
-  doses: {
-    route: 'IV' | 'IO' | 'IV/IO' | 'IM' | 'SQ' | 'PO' | 'SL' | 'IN' | 'INH' | 'ET' | 'PR';
-    adultDose: string;
-    pediatricDose?: string | null;
-    concentration?: string | null;
-    interval?: string | null;
-    maxDose?: string | null;
-    rate?: string | null;
+  medicationIndications: {
+    indication: string;
+    /**
+     * Optional summary, triggers, or special considerations
+     */
+    clinicalContext?: string | null;
+    /**
+     * Add each unique route/dose/scope combination (IV push, infusion, IM, etc.)
+     */
+    routes: {
+      route:
+        | 'IV Push'
+        | 'IV Infusion'
+        | 'IV'
+        | 'IO'
+        | 'IV/IO'
+        | 'Push Dose'
+        | 'IM'
+        | 'SQ'
+        | 'PO'
+        | 'SL'
+        | 'IN'
+        | 'INH'
+        | 'ET'
+        | 'PR'
+        | 'Topical'
+        | 'Other';
+      /**
+       * Who may perform this specific route/dose
+       */
+      scope: ('BLS' | 'ALS' | 'CCT')[];
+      adultDose?: string | null;
+      pediatricDose?: string | null;
+      concentration?: string | null;
+      interval?: string | null;
+      maxDose?: string | null;
+      rate?: string | null;
+      titrationGoal?: string | null;
+      notes?: string | null;
+      id?: string | null;
+    }[];
     id?: string | null;
   }[];
   /**
@@ -2814,17 +2843,26 @@ export interface MedicationsSelect<T extends boolean = true> {
   name?: T;
   genericName?: T;
   class?: T;
-  scope?: T;
-  doses?:
+  medicationIndications?:
     | T
     | {
-        route?: T;
-        adultDose?: T;
-        pediatricDose?: T;
-        concentration?: T;
-        interval?: T;
-        maxDose?: T;
-        rate?: T;
+        indication?: T;
+        clinicalContext?: T;
+        routes?:
+          | T
+          | {
+              route?: T;
+              scope?: T;
+              adultDose?: T;
+              pediatricDose?: T;
+              concentration?: T;
+              interval?: T;
+              maxDose?: T;
+              rate?: T;
+              titrationGoal?: T;
+              notes?: T;
+              id?: T;
+            };
         id?: T;
       };
   indications?: T;
