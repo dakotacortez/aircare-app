@@ -477,11 +477,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                         <div className="flex-1">
                                           {/* Badges Row */}
                                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            {/* Step number badge */}
-                                            <span className="text-xs font-bold px-2 py-0.5 rounded bg-neutral-700 text-white">
-                                              #{step.stepNumber}
-                                            </span>
-
                                             {/* Scope badge */}
                                             {scopeLabel && (
                                               <span className={`text-xs font-bold px-2 py-0.5 rounded ${badgeColor}`}>
