@@ -20,15 +20,38 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     -- CREATE MEDICATIONS COLLECTION
     -- =====================================================================
 
-    CREATE TYPE IF NOT EXISTS "public"."enum_medications_class" AS ENUM(
-      'vasopressor', 'antiarrhythmic', 'analgesic', 'sedative',
-      'antiemetic', 'bronchodilator', 'anticonvulsant', 'antihypertensive',
-      'antiplatelet', 'anticoagulant', 'paralytic', 'reversal', 'other'
-    );
+    -- Create enum types (using DO blocks for conditional creation)
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_medications_class') THEN
+        CREATE TYPE "public"."enum_medications_class" AS ENUM(
+          'vasopressor', 'antiarrhythmic', 'analgesic', 'sedative',
+          'antiemetic', 'bronchodilator', 'anticonvulsant', 'antihypertensive',
+          'antiplatelet', 'anticoagulant', 'paralytic', 'reversal', 'other'
+        );
+      END IF;
+    END $$;
 
-    CREATE TYPE IF NOT EXISTS "public"."enum_medications_scope" AS ENUM('BLS', 'ALS', 'CCT');
-    CREATE TYPE IF NOT EXISTS "public"."enum_medications_doses_route" AS ENUM('IV', 'IO', 'IV/IO', 'IM', 'SQ', 'PO', 'SL', 'IN', 'INH', 'ET', 'PR');
-    CREATE TYPE IF NOT EXISTS "public"."enum_medications_pregnancy_category" AS ENUM('A', 'B', 'C', 'D', 'X');
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_medications_scope') THEN
+        CREATE TYPE "public"."enum_medications_scope" AS ENUM('BLS', 'ALS', 'CCT');
+      END IF;
+    END $$;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_medications_doses_route') THEN
+        CREATE TYPE "public"."enum_medications_doses_route" AS ENUM('IV', 'IO', 'IV/IO', 'IM', 'SQ', 'PO', 'SL', 'IN', 'INH', 'ET', 'PR');
+      END IF;
+    END $$;
+
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enum_medications_pregnancy_category') THEN
+        CREATE TYPE "public"."enum_medications_pregnancy_category" AS ENUM('A', 'B', 'C', 'D', 'X');
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS "medications" (
       "id" serial PRIMARY KEY NOT NULL,
