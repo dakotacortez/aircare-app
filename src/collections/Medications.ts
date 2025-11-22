@@ -40,12 +40,12 @@ export const Medications: CollectionConfig = {
     singular: 'Medication',
     plural: 'Medications',
   },
-  admin: {
-    useAsTitle: 'name',
-    defaultColumns: ['name', 'class', 'scope'],
-    group: 'Clinical Content',
-    description: 'Medication reference database with dosing and clinical information',
-  },
+    admin: {
+      useAsTitle: 'name',
+      defaultColumns: ['name', 'class', 'updatedAt'],
+      group: 'Clinical Content',
+      description: 'Medication reference database with dosing and clinical information',
+    },
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
@@ -104,23 +104,6 @@ export const Medications: CollectionConfig = {
         { label: 'Other', value: 'other' },
       ],
     },
-    {
-      name: 'scope',
-      type: 'select',
-      hasMany: true,
-      required: true,
-      defaultValue: ['ALS', 'CCT'],
-      label: 'Certification Scope',
-      options: [
-        { label: 'BLS/EMT', value: 'BLS' },
-        { label: 'ALS/Paramedic', value: 'ALS' },
-        { label: 'CCT', value: 'CCT' },
-      ],
-      admin: {
-        description: 'Who can administer this medication',
-      },
-    },
-
     // Tabs for organized content
     {
       type: 'tabs',
@@ -128,85 +111,149 @@ export const Medications: CollectionConfig = {
         {
           label: 'Dosing',
           fields: [
-            {
-              name: 'doses',
-              type: 'array',
-              required: true,
-              label: 'Dosing Information',
-              admin: {
-                description: 'Add a row for each route (IV, IM, PO, etc.)',
+              {
+                name: 'medicationIndications',
+                type: 'array',
+                required: true,
+                label: 'Indication-Based Dosing',
+                admin: {
+                  description: 'Group routes/doses by clinical indication or condition',
+                },
+                fields: [
+                  {
+                    name: 'indication',
+                    type: 'text',
+                    required: true,
+                    label: 'Indication / Condition',
+                    admin: {
+                      placeholder: 'e.g., Cardiac Arrest, Anaphylaxis, Bradycardia',
+                    },
+                  },
+                  {
+                    name: 'clinicalContext',
+                    type: 'textarea',
+                    label: 'Clinical Context',
+                    admin: {
+                      description: 'Optional summary, triggers, or special considerations',
+                      placeholder: 'Use for pearls like “After 3rd shock” or “Suspected distributive shock”',
+                    },
+                  },
+                  {
+                    name: 'routes',
+                    type: 'array',
+                    required: true,
+                    label: 'Routes for this indication',
+                    admin: {
+                      description: 'Add each unique route/dose/scope combination (IV push, infusion, IM, etc.)',
+                    },
+                    fields: [
+                      {
+                        name: 'route',
+                        type: 'select',
+                        required: true,
+                        label: 'Route of Administration',
+                        options: [
+                          { label: 'IV Push', value: 'IV Push' },
+                          { label: 'IV Infusion', value: 'IV Infusion' },
+                          { label: 'IV', value: 'IV' },
+                          { label: 'IO', value: 'IO' },
+                          { label: 'IV/IO', value: 'IV/IO' },
+                          { label: 'Push Dose', value: 'Push Dose' },
+                          { label: 'IM', value: 'IM' },
+                          { label: 'SQ', value: 'SQ' },
+                          { label: 'PO', value: 'PO' },
+                          { label: 'SL', value: 'SL' },
+                          { label: 'Intranasal', value: 'IN' },
+                          { label: 'Inhalation (Neb)', value: 'INH' },
+                          { label: 'Endotracheal (ET)', value: 'ET' },
+                          { label: 'Rectal (PR)', value: 'PR' },
+                          { label: 'Topical / Transdermal', value: 'Topical' },
+                          { label: 'Other', value: 'Other' },
+                        ],
+                      },
+                      {
+                        name: 'scope',
+                        type: 'select',
+                        hasMany: true,
+                        label: 'Certification Scope',
+                        required: true,
+                        options: [
+                          { label: 'BLS/EMT', value: 'BLS' },
+                          { label: 'ALS/Paramedic', value: 'ALS' },
+                          { label: 'CCT', value: 'CCT' },
+                        ],
+                        admin: {
+                          description: 'Who may perform this specific route/dose',
+                        },
+                      },
+                      {
+                        name: 'adultDose',
+                        type: 'text',
+                        label: 'Adult Dose',
+                        admin: {
+                          placeholder: 'e.g., 1mg, 0.3mg, 2-10mcg/min, 0.1-0.5mcg/kg/min',
+                        },
+                      },
+                      {
+                        name: 'pediatricDose',
+                        type: 'text',
+                        label: 'Pediatric Dose',
+                        admin: {
+                          placeholder: 'e.g., 0.01mg/kg (max 1mg)',
+                        },
+                      },
+                      {
+                        name: 'concentration',
+                        type: 'text',
+                        label: 'Concentration',
+                        admin: {
+                          placeholder: 'e.g., 1:10,000, 4mg in 250mL',
+                        },
+                      },
+                      {
+                        name: 'interval',
+                        type: 'text',
+                        label: 'Interval',
+                        admin: {
+                          placeholder: 'e.g., Every 3-5 minutes, Continuous infusion',
+                        },
+                      },
+                      {
+                        name: 'maxDose',
+                        type: 'text',
+                        label: 'Maximum Dose',
+                        admin: {
+                          placeholder: 'e.g., No max, 3 doses, 2mg total',
+                        },
+                      },
+                      {
+                        name: 'rate',
+                        type: 'text',
+                        label: 'Administration Rate',
+                        admin: {
+                          placeholder: 'e.g., Slow IVP over 1 min, Titrate to effect',
+                        },
+                      },
+                      {
+                        name: 'titrationGoal',
+                        type: 'text',
+                        label: 'Titration Goal',
+                        admin: {
+                          placeholder: 'e.g., Maintain MAP > 65, HR > 60',
+                        },
+                      },
+                      {
+                        name: 'notes',
+                        type: 'textarea',
+                        label: 'Route Notes',
+                        admin: {
+                          placeholder: 'Use for prep, med control, mixing, pearls, etc.',
+                        },
+                      },
+                    ],
+                  },
+                ],
               },
-              fields: [
-                {
-                  name: 'route',
-                  type: 'select',
-                  required: true,
-                  label: 'Route of Administration',
-                  options: [
-                    { label: 'IV', value: 'IV' },
-                    { label: 'IO', value: 'IO' },
-                    { label: 'IV/IO', value: 'IV/IO' },
-                    { label: 'IM', value: 'IM' },
-                    { label: 'SQ', value: 'SQ' },
-                    { label: 'PO', value: 'PO' },
-                    { label: 'SL', value: 'SL' },
-                    { label: 'Intranasal', value: 'IN' },
-                    { label: 'Inhalation', value: 'INH' },
-                    { label: 'ET', value: 'ET' },
-                    { label: 'Rectal', value: 'PR' },
-                  ],
-                },
-                {
-                  name: 'adultDose',
-                  type: 'text',
-                  required: true,
-                  label: 'Adult Dose',
-                  admin: {
-                    placeholder: 'e.g., 1mg, 300mg, 0.3mg, 2-10mcg/min',
-                  },
-                },
-                {
-                  name: 'pediatricDose',
-                  type: 'text',
-                  label: 'Pediatric Dose',
-                  admin: {
-                    placeholder: 'e.g., 0.01mg/kg, 5mg/kg (max 300mg)',
-                  },
-                },
-                {
-                  name: 'concentration',
-                  type: 'text',
-                  label: 'Concentration',
-                  admin: {
-                    placeholder: 'e.g., 1mg/mL, 10mg/mL',
-                  },
-                },
-                {
-                  name: 'interval',
-                  type: 'text',
-                  label: 'Interval',
-                  admin: {
-                    placeholder: 'e.g., q3-5min, one time dose, PRN',
-                  },
-                },
-                {
-                  name: 'maxDose',
-                  type: 'text',
-                  label: 'Maximum Dose',
-                  admin: {
-                    placeholder: 'e.g., 300mg max, 3 doses max',
-                  },
-                },
-                {
-                  name: 'rate',
-                  type: 'text',
-                  label: 'Administration Rate',
-                  admin: {
-                    placeholder: 'e.g., over 2 minutes, slow IVP',
-                  },
-                },
-              ],
-            },
           ],
         },
         {
