@@ -200,6 +200,39 @@ export const Protocols: CollectionConfig = {
                 description:
                   'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
               },
+              defaultValue: [
+                {
+                  heading: 'Inclusion Criteria',
+                  scope: [],
+                  contentType: 'bulletList',
+                },
+                {
+                  heading: 'Exclusion Criteria',
+                  scope: [],
+                  contentType: 'bulletList',
+                },
+                {
+                  heading: 'Protocol',
+                  scope: [],
+                  contentType: 'actionSteps',
+                  actionSteps: [],
+                },
+                {
+                  heading: 'Key Considerations',
+                  scope: [],
+                  contentType: 'bulletList',
+                },
+                {
+                  heading: 'Differential Diagnosis',
+                  scope: [],
+                  contentType: 'bulletList',
+                },
+                {
+                  heading: "H's & T's",
+                  scope: [],
+                  contentType: 'bulletList',
+                },
+              ],
               fields: [
                 {
                   name: 'heading',
