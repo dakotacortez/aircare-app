@@ -52,14 +52,26 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
 
     console.log('[Push Notifications] Permission granted, registering...')
 
+    // Remove any existing registration listeners to prevent duplicates
+    await PushNotifications.removeAllListeners()
+
     // Register with FCM
     await PushNotifications.register()
 
     // Wait for registration to complete and get the token
     return new Promise((resolve) => {
+      let resolved = false
+
       // Set up one-time listener for registration
-      PushNotifications.addListener('registration', async (token) => {
+      const registrationListener = PushNotifications.addListener('registration', async (token) => {
+        if (resolved) return
+        resolved = true
+
         console.log('[Push Notifications] Got FCM token:', token.value.substring(0, 20) + '...')
+
+        // Clean up listeners
+        await registrationListener.remove()
+        await errorListener.remove()
 
         // Determine platform
         const platform = Capacitor.getPlatform() === 'ios' ? 'ios' : 'android'
@@ -89,6 +101,10 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
           }
 
           console.log('[Push Notifications] Token successfully registered with backend')
+
+          // Re-setup the persistent listeners for receiving notifications
+          setupPushNotificationListeners()
+
           resolve({
             success: true,
             token: token.value,
@@ -103,8 +119,16 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
       })
 
       // Set up error listener
-      PushNotifications.addListener('registrationError', (error) => {
+      const errorListener = PushNotifications.addListener('registrationError', async (error) => {
+        if (resolved) return
+        resolved = true
+
         console.error('[Push Notifications] Registration error:', error)
+
+        // Clean up listeners
+        await registrationListener.remove()
+        await errorListener.remove()
+
         resolve({
           success: false,
           error: error.error || 'Failed to register for push notifications',
@@ -112,7 +136,14 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
       })
 
       // Timeout after 10 seconds
-      setTimeout(() => {
+      setTimeout(async () => {
+        if (resolved) return
+        resolved = true
+
+        // Clean up listeners
+        await registrationListener.remove()
+        await errorListener.remove()
+
         resolve({
           success: false,
           error: 'Registration timeout',
