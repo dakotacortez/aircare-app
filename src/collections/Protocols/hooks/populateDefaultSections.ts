@@ -19,7 +19,7 @@ export const populateDefaultSections: FieldHook = async ({ value, req, operation
       }
     } catch (error) {
       // If there's an error fetching defaults, log it and continue without defaults
-      req.payload.logger.error('Failed to fetch protocol defaults:', error)
+      req.payload.logger.error({ err: error }, 'Failed to fetch protocol defaults')
     }
   }
 
