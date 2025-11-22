@@ -1,6 +1,6 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
-export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
+export async function up({ db }: MigrateUpArgs): Promise<void> {
   // Create all enums first
   await db.execute(sql`
     -- Create enum for content_type
@@ -138,7 +138,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   `)
 }
 
-export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
+export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.execute(sql`
     DROP TABLE IF EXISTS "protocol_defaults_def_sections_steps_details" CASCADE;
     DROP TABLE IF EXISTS "protocol_defaults_def_sections_steps_proto_refs" CASCADE;
