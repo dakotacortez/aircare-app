@@ -1,0 +1,45 @@
+@import '~@payloadcms/ui/scss';
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--theme-success-500);
+    color: white;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    line-height: 1;
+  }
+
+  &__name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--theme-elevation-1000);
+    letter-spacing: -0.02em;
+  }
+
+  &__subtitle {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--theme-elevation-500);
+  }
+}
