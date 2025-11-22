@@ -34,7 +34,7 @@ import PushNotifications from './collections/PushNotifications'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
-import { resendAdapter } from './utilities/emailAdapter'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -92,8 +92,11 @@ export default buildConfig({
     },
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  email: (() => resendAdapter()) as any,
+  email: resendAdapter({
+    defaultFromAddress: process.env.FROM_EMAIL || 'noreply@ping.acmc.app',
+    defaultFromName: process.env.FROM_NAME || 'Air Care & Mobile Care',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
 
   collections: [
     Pages,

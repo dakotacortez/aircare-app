@@ -109,6 +109,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     protocols: ProtocolsSelect<false> | ProtocolsSelect<true>;
+    medications: MedicationsSelect<false> | MedicationsSelect<true>;
     'hospital-networks': HospitalNetworksSelect<false> | HospitalNetworksSelect<true>;
     'hospital-capabilities': HospitalCapabilitiesSelect<false> | HospitalCapabilitiesSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
@@ -880,7 +881,7 @@ export interface Form {
 /**
  * Clinical protocols with structured sections and action steps
  *
- * This interface was referenced by `Config's JSON-Schema
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "protocols".
  */
 export interface Protocol {
@@ -907,11 +908,11 @@ export interface Protocol {
    */
   lastModified?: string | null;
   /**
-   * Protocol sections are drag-and-drop sortable
+   * Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.
    */
   sections: {
     /**
-     * Section heading (e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis")
+     * e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis"
      */
     heading: string;
     /**
@@ -1049,7 +1050,7 @@ export interface Protocol {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Comprehensive medication reference with dosing and clinical information
+ * Medication reference database with dosing and clinical information
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "medications".
@@ -1082,22 +1083,20 @@ export interface Medication {
   /**
    * Add a row for each route (IV, IM, PO, etc.)
    */
-  doses?:
-    | {
-        route: 'IV' | 'IO' | 'IV/IO' | 'IM' | 'SQ' | 'PO' | 'SL' | 'IN' | 'INH' | 'ET' | 'PR';
-        adultDose: string;
-        pediatricDose?: string | null;
-        concentration?: string | null;
-        interval?: string | null;
-        maxDose?: string | null;
-        rate?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  doses: {
+    route: 'IV' | 'IO' | 'IV/IO' | 'IM' | 'SQ' | 'PO' | 'SL' | 'IN' | 'INH' | 'ET' | 'PR';
+    adultDose: string;
+    pediatricDose?: string | null;
+    concentration?: string | null;
+    interval?: string | null;
+    maxDose?: string | null;
+    rate?: string | null;
+    id?: string | null;
+  }[];
   /**
    * When to use this medication
    */
-  indications?: {
+  indications: {
     root: {
       type: string;
       children: {
@@ -1111,7 +1110,7 @@ export interface Medication {
       version: number;
     };
     [k: string]: unknown;
-  } | null;
+  };
   /**
    * When NOT to use this medication
    */
@@ -1279,7 +1278,6 @@ export interface Medication {
   } | null;
   updatedAt: string;
   createdAt: string;
-}
 }
 /**
  * Clinical calculators and quick tools metadata
@@ -2303,6 +2301,10 @@ export interface PayloadLockedDocument {
         value: number | Protocol;
       } | null)
     | ({
+        relationTo: 'medications';
+        value: number | Medication;
+      } | null)
+    | ({
         relationTo: 'hospital-networks';
         value: number | HospitalNetwork;
       } | null)
@@ -2744,20 +2746,51 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface ProtocolsSelect<T extends boolean = true> {
   _order?: T;
+  code?: T;
   title?: T;
-  protocolNumber?: T;
   category?: T;
   subcategory?: T;
-  contentUniversal?: T;
-  contentBLS?: T;
-  contentALS?: T;
-  contentCCT?: T;
-  specialConsiderations?: T;
-  keyPoints?: T;
-  references?: T;
+  lastModified?: T;
+  sections?:
+    | T
+    | {
+        heading?: T;
+        scope?: T;
+        note?: T;
+        contentType?: T;
+        bulletList?: T;
+        richText?: T;
+        actionSteps?:
+          | T
+          | {
+              stepNumber?: T;
+              action?: T;
+              scope?: T;
+              timing?: T;
+              requiresMedControl?: T;
+              protocolReferences?:
+                | T
+                | {
+                    protocol?: T;
+                    label?: T;
+                    id?: T;
+                  };
+              details?:
+                | T
+                | {
+                    detail?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
+  medications?: T;
+  relatedProtocols?: T;
+  keywords?: T;
+  tags?: T;
   effectiveDate?: T;
   lastReviewed?: T;
-  versionNumber?: T;
   calculatorOverrides?:
     | T
     | {
@@ -2767,10 +2800,46 @@ export interface ProtocolsSelect<T extends boolean = true> {
         id?: T;
       };
   attachments?: T;
-  keywords?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medications_select".
+ */
+export interface MedicationsSelect<T extends boolean = true> {
+  name?: T;
+  genericName?: T;
+  class?: T;
+  scope?: T;
+  doses?:
+    | T
+    | {
+        route?: T;
+        adultDose?: T;
+        pediatricDose?: T;
+        concentration?: T;
+        interval?: T;
+        maxDose?: T;
+        rate?: T;
+        id?: T;
+      };
+  indications?: T;
+  contraindications?: T;
+  precautions?: T;
+  mechanismOfAction?: T;
+  onset?: T;
+  duration?: T;
+  sideEffects?: T;
+  mixing?: T;
+  compatibility?: T;
+  titration?: T;
+  specialInstructions?: T;
+  pregnancyCategory?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
