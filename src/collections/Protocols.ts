@@ -26,6 +26,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { isContentTeamOrAdmin } from '../access/isContentTeamOrAdmin'
 import { isAdmin } from '../access/isAdmin'
+import { generatePreviewPath } from '../utilities/generatePreviewPath'
 
 /**
  * Shared Lexical Editor Features
@@ -96,6 +97,20 @@ export const Protocols: CollectionConfig = {
     group: 'Clinical Content',
     listSearchableFields: ['title', 'code', 'keywords'],
     description: 'Clinical protocols with structured sections and action steps',
+    livePreview: {
+      url: ({ data, req }) =>
+        generatePreviewPath({
+          slug: data?.code,
+          collection: 'protocols',
+          req,
+        }),
+    },
+    preview: (data, { req }) =>
+      generatePreviewPath({
+        slug: data?.code as string,
+        collection: 'protocols',
+        req,
+      }),
   },
   orderable: true,
   access: {
