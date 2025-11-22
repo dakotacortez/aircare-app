@@ -426,36 +426,3 @@ body #payload .spinner {
   filter: blur(1px);
   transition: all 0.3s ease;
 }
-
-/* ============================================
-   ADMIN CUSTOMIZATIONS
-   ============================================ */
-
-/* Hide "Browse by Folder" button in sidebar */
-body #payload nav button:first-of-type,
-body #payload aside button:first-of-type,
-body #payload .nav-toggler {
-  display: none !important;
-}
-
-/* Hide all h2 and h3 headings on dashboard (Administration, Clinical Content, etc.) */
-body #payload .dashboard h2,
-body #payload .dashboard h3 {
-  display: none !important;
-}
-
-/* Hide all grid layouts on dashboard (collection cards) */
-body #payload .dashboard [style*="display: grid"],
-body #payload .dashboard [style*="grid-template"] {
-  display: none !important;
-}
-
-/* Hide the entire Administration section and similar sections */
-body #payload .dashboard > div > div:not(.before-dashboard) {
-  display: none !important;
-}
-
-/* Ensure our custom dashboard is visible */
-body #payload .dashboard .before-dashboard {
-  display: block !important;
-}

@@ -54,11 +54,6 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
-      // Custom branding
-      graphics: {
-        Logo: '@/components/AdminLogo',
-        Icon: '@/components/AdminIcon',
-      },
     },
     // Navigation grouping is configured using admin.group on individual collections/globals.
     // Admin plugin collections (redirects, forms, form-submissions, search) are grouped
