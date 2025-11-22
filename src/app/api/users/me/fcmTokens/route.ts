@@ -3,6 +3,15 @@ import config from '@payload-config'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+type Platform = 'android' | 'ios' | 'web'
+
+interface FCMToken {
+  token?: string
+  platform?: Platform | null
+  lastUsed?: string | null
+  id?: string | null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const payload = await getPayload({ config })
@@ -38,22 +47,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    const validPlatform = platform as Platform
+
     // Get existing fcmTokens array
-    const existingTokens = (user.fcmTokens || []) as Array<{
-      token: string
-      platform?: string
-      lastUsed?: string
-    }>
+    const existingTokens = (user.fcmTokens || []) as FCMToken[]
 
     // Check if token already exists
     const tokenExists = existingTokens.some((t) => t.token === fcmToken)
 
-    let updatedTokens
+    let updatedTokens: FCMToken[]
     if (tokenExists) {
       // Update lastUsed for existing token
       updatedTokens = existingTokens.map((t) =>
         t.token === fcmToken
-          ? { ...t, platform, lastUsed: new Date().toISOString() }
+          ? { ...t, platform: validPlatform, lastUsed: new Date().toISOString() }
           : t
       )
     } else {
@@ -62,7 +69,7 @@ export async function POST(req: NextRequest) {
         ...existingTokens,
         {
           token: fcmToken,
-          platform,
+          platform: validPlatform,
           lastUsed: new Date().toISOString(),
         },
       ]
@@ -120,11 +127,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Get existing fcmTokens array
-    const existingTokens = (user.fcmTokens || []) as Array<{
-      token: string
-      platform?: string
-      lastUsed?: string
-    }>
+    const existingTokens = (user.fcmTokens || []) as FCMToken[]
 
     // Remove the token
     const updatedTokens = existingTokens.filter((t) => t.token !== fcmToken)
