@@ -1,0 +1,15 @@
+@import '~@payloadcms/ui/scss';
+
+.admin-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--theme-success-500);
+  color: white;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: -0.02em;
+}

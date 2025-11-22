@@ -426,3 +426,49 @@ body #payload .spinner {
   filter: blur(1px);
   transition: all 0.3s ease;
 }
+
+/* ============================================
+   ADMIN CUSTOMIZATIONS
+   ============================================ */
+
+/* Hide "Browse all folders" link in Media/Assets */
+body #payload a[href*="upload"],
+body #payload a[href*="/admin/collections/media"],
+body #payload a[href*="/admin/collections/assets"] {
+  &:has(> span:only-child) {
+    display: none !important;
+  }
+}
+
+/* More targeted: hide only links with specific text */
+body #payload .dashboard a[href*="/admin/collections"] {
+  /* This will be overridden below to show only specific ones */
+}
+
+/* Hide the collections listing on dashboard that duplicates sidebar */
+body #payload .dashboard .collections-list,
+body #payload .dashboard nav[aria-label="Collections"],
+body #payload .dashboard nav > ul > li,
+body #payload .dashboard > div > nav,
+body #payload .dashboard__collections {
+  display: none !important;
+}
+
+/* More specific: hide all navigation sections in dashboard except our custom beforeDashboard */
+body #payload .dashboard > div:not(.before-dashboard) > nav,
+body #payload .dashboard > div:not(.before-dashboard) > div > nav,
+body #payload .dashboard nav[aria-label="List Collections"] {
+  display: none !important;
+}
+
+/* Hide any auto-generated collection links in dashboard */
+body #payload .dashboard a[href^="/admin/collections/"]:not([class*="link-card"]) {
+  display: none !important;
+}
+
+/* Ensure the dashboard only shows our custom component */
+body #payload .dashboard > *:not(.before-dashboard) {
+  nav, .nav-list, ul:has(a[href^="/admin/collections/"]) {
+    display: none !important;
+  }
+}
