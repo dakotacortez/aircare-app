@@ -43,7 +43,7 @@ import * as migration_20251122_160000_create_array_field_tables from './20251122
 import * as migration_20251122_184700_create_array_field_tables_v2 from './20251122_184700_create_array_field_tables_v2';
 import * as migration_20251122_190000_add_protocol_defaults_global from './20251122_190000_add_protocol_defaults_global';
 import * as migration_20251122_203500_fix_protocol_defaults_tables from './20251122_203500_fix_protocol_defaults_tables';
-import * as migration_20251123_000000_fallback_fix_push_notifications_ids from './20251123_000000_fallback_fix_push_notifications_ids';
+import * as migration_20251122_210000_fallback_fix_push_notifications_ids from './20251122_210000_fallback_fix_push_notifications_ids';
 
 export const migrations = [
   {
@@ -272,8 +272,8 @@ export const migrations = [
     name: '20251122_203500_fix_protocol_defaults_tables',
   },
   {
-    up: migration_20251123_000000_fallback_fix_push_notifications_ids.up,
-    down: migration_20251123_000000_fallback_fix_push_notifications_ids.down,
-    name: '20251123_000000_fallback_fix_push_notifications_ids',
+    up: migration_20251122_210000_fallback_fix_push_notifications_ids.up,
+    down: migration_20251122_210000_fallback_fix_push_notifications_ids.down,
+    name: '20251122_210000_fallback_fix_push_notifications_ids',
   },
 ];
