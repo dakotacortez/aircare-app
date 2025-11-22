@@ -343,20 +343,32 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 </p>
               )}
 
-              {/* Show Out of Scope checkbox - Below toggles */}
-              {viewMode === 'active' && (
-                <div className="flex justify-end">
-                  <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
-                    <input
-                      type="checkbox"
-                      checked={showOutOfScope}
-                      onChange={(e) => setShowOutOfScope(e.target.checked)}
-                      className="rounded"
-                    />
-                    Show greyed out levels
-                  </label>
-                </div>
-              )}
+              {/* Show Out of Scope toggle - Reserve space to prevent layout shift */}
+              <div className="flex justify-end min-h-[32px] mb-2">
+                {viewMode === 'active' && (
+                  <button
+                    onClick={() => setShowOutOfScope(!showOutOfScope)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                      showOutOfScope
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-2 border-blue-400 dark:border-blue-600'
+                        : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400 border-2 border-transparent hover:border-neutral-300 dark:hover:border-neutral-600'
+                    }`}
+                  >
+                    <div
+                      className={`w-9 h-5 rounded-full transition-colors duration-200 relative ${
+                        showOutOfScope ? 'bg-blue-500' : 'bg-neutral-400 dark:bg-neutral-500'
+                      }`}
+                    >
+                      <div
+                        className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${
+                          showOutOfScope ? 'translate-x-4' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </div>
+                    <span>Show greyed out levels</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Protocol Sections */}
@@ -465,11 +477,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                         <div className="flex-1">
                                           {/* Badges Row */}
                                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                            {/* Step number badge */}
-                                            <span className="text-xs font-bold px-2 py-0.5 rounded bg-neutral-700 text-white">
-                                              #{step.stepNumber}
-                                            </span>
-
                                             {/* Scope badge */}
                                             {scopeLabel && (
                                               <span className={`text-xs font-bold px-2 py-0.5 rounded ${badgeColor}`}>
