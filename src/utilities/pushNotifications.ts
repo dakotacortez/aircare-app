@@ -103,7 +103,7 @@ export async function registerPushNotifications(): Promise<PushNotificationRegis
           console.log('[Push Notifications] Token successfully registered with backend')
 
           // Re-setup the persistent listeners for receiving notifications
-          setupPushNotificationListeners()
+          await setupPushNotificationListeners()
 
           resolve({
             success: true,
@@ -190,21 +190,25 @@ export async function unregisterPushNotifications(token: string): Promise<boolea
  * Set up push notification listeners for receiving notifications
  * Call this once during app initialization
  */
-export function setupPushNotificationListeners() {
+export async function setupPushNotificationListeners() {
   if (!isPushNotificationSupported()) {
     return
   }
 
   // Listen for push notifications received
-  PushNotifications.addListener('pushNotificationReceived', (notification) => {
+  await PushNotifications.addListener('pushNotificationReceived', (notification) => {
     console.log('[Push Notifications] Notification received:', notification)
     // You can add custom handling here, such as showing a toast or updating UI
+    // Return immediately to prevent async channel timeout
+    return Promise.resolve()
   })
 
   // Listen for notification actions (when user taps on notification)
-  PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+  await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
     console.log('[Push Notifications] Notification action performed:', notification)
     // You can add custom handling here, such as navigating to a specific page
+    // Return immediately to prevent async channel timeout
+    return Promise.resolve()
   })
 }
 

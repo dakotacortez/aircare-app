@@ -39,14 +39,14 @@ export const PushNotificationProvider: React.FC<{ children: React.ReactNode }> =
       return
     }
 
-    // Set up push notification listeners once on mount
-    setupPushNotificationListeners()
-    console.log('[Push Notification Provider] Listeners set up')
-
     // Check if we should auto-register
     // We'll check localStorage to see if user has enabled push notifications
     const checkAndRegister = async () => {
       try {
+        // Set up push notification listeners once on mount
+        await setupPushNotificationListeners()
+        console.log('[Push Notification Provider] Listeners set up')
+
         // Fetch current user to check if push notifications are enabled
         const response = await fetch('/api/users/me', {
           credentials: 'include',
