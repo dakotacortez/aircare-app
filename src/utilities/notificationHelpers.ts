@@ -611,15 +611,25 @@ export async function sendPushNotificationToUser(
 
     console.log(`Attempting to send push notification to user ${userId} with ${tokens.length} FCM token(s)`)
 
+    // Add clickAction to data for routing in the app
+    const pushData = {
+      ...notification.data,
+      clickAction: 'OPEN_APP',
+    }
+
     const response = await messaging.sendEachForMulticast({
       tokens,
       notification: {
         title: notification.title,
         body: notification.body,
       },
-      data: notification.data || {},
+      data: pushData || {},
       android: {
         priority: 'high' as const,
+        notification: {
+          channelId: 'default',
+          sound: 'default',
+        },
       },
       apns: {
         headers: {
