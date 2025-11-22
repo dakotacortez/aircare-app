@@ -1,7 +1,18 @@
 import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 
+/**
+ * Fix Protocol Defaults tables created by previous migration
+ *
+ * The original migration (20251122_190000) created tables with incorrect names
+ * that don't match the dbName values in ProtocolDefaults.ts config.
+ *
+ * This migration:
+ * - Drops the incorrectly-named tables
+ * - Creates tables with correct names matching dbName config
+ * - Uses proper ID types (serial instead of varchar)
+ */
 export async function up({ db }: MigrateUpArgs): Promise<void> {
-  // First, drop any tables and enums created with incorrect names from previous migration attempts
+  // Drop all tables and enums created with incorrect names
   await db.execute(sql`
     DROP TABLE IF EXISTS "protocol_defaults_def_sections_steps_details" CASCADE;
     DROP TABLE IF EXISTS "protocol_defaults_def_sections_steps_proto_refs" CASCADE;
@@ -14,9 +25,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     DROP TYPE IF EXISTS "enum_protocol_defaults_def_sections_steps_scope";
   `)
 
-  // Create all enums first
+  // Create enums with correct names
   await db.execute(sql`
-    -- Create enum for content_type
     DO $$ BEGIN
       CREATE TYPE "enum_def_sections_content_type" AS ENUM('actionSteps', 'bulletList', 'richText');
     EXCEPTION
@@ -25,7 +35,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    -- Create enum for scope
     DO $$ BEGIN
       CREATE TYPE "enum_def_sections_scope" AS ENUM('BLS', 'ALS', 'CCT');
     EXCEPTION
@@ -34,7 +43,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   `)
 
   await db.execute(sql`
-    -- Create enum for action step scope
     DO $$ BEGIN
       CREATE TYPE "enum_steps_scope" AS ENUM('BLS', 'ALS', 'CCT');
     EXCEPTION
@@ -42,19 +50,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     END $$;
   `)
 
-  // Now create tables
+  // Create def_sections table (matches dbName from ProtocolDefaults.ts line 94)
   await db.execute(sql`
-    -- Create protocol_defaults global table
-    CREATE TABLE IF NOT EXISTS "protocol_defaults" (
-      "id" serial PRIMARY KEY NOT NULL,
-      "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-      "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
-    );
-  `)
-
-  await db.execute(sql`
-    -- Create def_sections (main array table)
-    -- Note: Using exact dbName from ProtocolDefaults.ts (line 94)
     CREATE TABLE IF NOT EXISTS "def_sections" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
@@ -70,8 +67,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     );
   `)
 
+  // Create def_sections_scope table
   await db.execute(sql`
-    -- Create def_sections_scope
     CREATE TABLE IF NOT EXISTS "def_sections_scope" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
@@ -82,9 +79,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     );
   `)
 
+  // Create steps table (matches dbName from ProtocolDefaults.ts line 216)
   await db.execute(sql`
-    -- Create steps (action steps)
-    -- Note: Using exact dbName from ProtocolDefaults.ts (line 216)
     CREATE TABLE IF NOT EXISTS "steps" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
@@ -99,8 +95,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     );
   `)
 
+  // Create steps_scope table
   await db.execute(sql`
-    -- Create steps_scope
     CREATE TABLE IF NOT EXISTS "steps_scope" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
@@ -111,9 +107,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     );
   `)
 
+  // Create proto_refs table (matches dbName from ProtocolDefaults.ts line 278)
   await db.execute(sql`
-    -- Create proto_refs (protocol references)
-    -- Note: Using exact dbName from ProtocolDefaults.ts (line 278)
     CREATE TABLE IF NOT EXISTS "proto_refs" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
@@ -128,8 +123,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     );
   `)
 
+  // Create steps_details table
   await db.execute(sql`
-    -- Create steps_details
     CREATE TABLE IF NOT EXISTS "steps_details" (
       "_order" integer NOT NULL,
       "_parent_id" integer NOT NULL,
@@ -141,8 +136,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     );
   `)
 
+  // Create indexes
   await db.execute(sql`
-    -- Create indexes for better performance
     CREATE INDEX IF NOT EXISTS "def_sections_order_idx" ON "def_sections" ("_order");
     CREATE INDEX IF NOT EXISTS "def_sections_parent_idx" ON "def_sections" ("_parent_id");
     CREATE INDEX IF NOT EXISTS "def_sections_scope_order_idx" ON "def_sections_scope" ("order");
@@ -157,17 +152,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "steps_details_order_idx" ON "steps_details" ("_order");
     CREATE INDEX IF NOT EXISTS "steps_details_parent_idx" ON "steps_details" ("_parent_id");
   `)
-
-  // Insert default data
-  await db.execute(sql`
-    -- Insert a default protocol_defaults record if none exists
-    INSERT INTO "protocol_defaults" ("id", "updated_at", "created_at")
-    SELECT 1, now(), now()
-    WHERE NOT EXISTS (SELECT 1 FROM "protocol_defaults" WHERE id = 1);
-  `)
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
+  // Drop all the correctly-named tables
   await db.execute(sql`
     DROP TABLE IF EXISTS "steps_details" CASCADE;
     DROP TABLE IF EXISTS "proto_refs" CASCADE;
@@ -175,7 +163,6 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
     DROP TABLE IF EXISTS "steps" CASCADE;
     DROP TABLE IF EXISTS "def_sections_scope" CASCADE;
     DROP TABLE IF EXISTS "def_sections" CASCADE;
-    DROP TABLE IF EXISTS "protocol_defaults" CASCADE;
     DROP TYPE IF EXISTS "enum_def_sections_content_type";
     DROP TYPE IF EXISTS "enum_def_sections_scope";
     DROP TYPE IF EXISTS "enum_steps_scope";
