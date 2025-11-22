@@ -20,6 +20,16 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
+      // Allow images from S3 bucket
+      {
+        protocol: 'https',
+        hostname: `${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com`,
+      },
+      // Also support generic S3 hostname pattern
+      {
+        protocol: 'https',
+        hostname: '*.s3.*.amazonaws.com',
+      },
     ],
   },
   webpack: (webpackConfig) => {
