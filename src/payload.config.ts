@@ -119,7 +119,12 @@ export default buildConfig({
     // storage-adapter-placeholder
     s3Storage({
       collections: {
-        media: true,
+        media: {
+          disableLocalStorage: true,
+          generateFileURL: ({ filename, prefix = '' }) => {
+            return `https://${process.env.S3_BUCKET}.s3.${process.env.S3_REGION}.amazonaws.com/${prefix}${filename}`
+          },
+        },
       },
       bucket: process.env.S3_BUCKET || '',
       config: {
