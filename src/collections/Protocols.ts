@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { populateDefaultSections } from './Protocols/hooks/populateDefaultSections'
 import {
   BoldFeature,
   ItalicFeature,
@@ -200,39 +201,9 @@ export const Protocols: CollectionConfig = {
                 description:
                   'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
               },
-              defaultValue: [
-                {
-                  heading: 'Inclusion Criteria',
-                  scope: [],
-                  contentType: 'bulletList',
-                },
-                {
-                  heading: 'Exclusion Criteria',
-                  scope: [],
-                  contentType: 'bulletList',
-                },
-                {
-                  heading: 'Protocol',
-                  scope: [],
-                  contentType: 'actionSteps',
-                  actionSteps: [],
-                },
-                {
-                  heading: 'Key Considerations',
-                  scope: [],
-                  contentType: 'bulletList',
-                },
-                {
-                  heading: 'Differential Diagnosis',
-                  scope: [],
-                  contentType: 'bulletList',
-                },
-                {
-                  heading: "H's & T's",
-                  scope: [],
-                  contentType: 'bulletList',
-                },
-              ],
+              hooks: {
+                beforeValidate: [populateDefaultSections],
+              },
               fields: [
                 {
                   name: 'heading',
