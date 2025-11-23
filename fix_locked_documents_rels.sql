@@ -18,6 +18,7 @@ ALTER TABLE "payload_locked_documents_rels"
   ADD COLUMN IF NOT EXISTS "bases_id" integer,
   ADD COLUMN IF NOT EXISTS "assets_id" integer,
   ADD COLUMN IF NOT EXISTS "calculators_id" integer,
+  ADD COLUMN IF NOT EXISTS "medication_classes_id" integer,
   ADD COLUMN IF NOT EXISTS "notifications_id" integer,
   ADD COLUMN IF NOT EXISTS "audit_log_id" integer,
   ADD COLUMN IF NOT EXISTS "redirects_id" integer,
@@ -43,6 +44,8 @@ CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_assets_id_idx"
   ON "payload_locked_documents_rels" USING btree ("assets_id");
 CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_calculators_id_idx"
   ON "payload_locked_documents_rels" USING btree ("calculators_id");
+CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_medication_classes_id_idx"
+  ON "payload_locked_documents_rels" USING btree ("medication_classes_id");
 CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_notifications_id_idx"
   ON "payload_locked_documents_rels" USING btree ("notifications_id");
 CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_audit_log_id_idx"
@@ -115,23 +118,32 @@ BEGIN
         ON DELETE cascade ON UPDATE no action;
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_assets_fk'
-  ) THEN
-    ALTER TABLE "payload_locked_documents_rels"
-      ADD CONSTRAINT "payload_locked_documents_rels_assets_fk"
-        FOREIGN KEY ("assets_id") REFERENCES "assets"("id")
-        ON DELETE cascade ON UPDATE no action;
-  END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_assets_fk'
+    ) THEN
+      ALTER TABLE "payload_locked_documents_rels"
+        ADD CONSTRAINT "payload_locked_documents_rels_assets_fk"
+          FOREIGN KEY ("assets_id") REFERENCES "assets"("id")
+          ON DELETE cascade ON UPDATE no action;
+    END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_calculators_fk'
-  ) THEN
-    ALTER TABLE "payload_locked_documents_rels"
-      ADD CONSTRAINT "payload_locked_documents_rels_calculators_fk"
-        FOREIGN KEY ("calculators_id") REFERENCES "calculators"("id")
-        ON DELETE cascade ON UPDATE no action;
-  END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_calculators_fk'
+    ) THEN
+      ALTER TABLE "payload_locked_documents_rels"
+        ADD CONSTRAINT "payload_locked_documents_rels_calculators_fk"
+          FOREIGN KEY ("calculators_id") REFERENCES "calculators"("id")
+          ON DELETE cascade ON UPDATE no action;
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_medication_classes_fk'
+    ) THEN
+      ALTER TABLE "payload_locked_documents_rels"
+        ADD CONSTRAINT "payload_locked_documents_rels_medication_classes_fk"
+          FOREIGN KEY ("medication_classes_id") REFERENCES "medication_classes"("id")
+          ON DELETE cascade ON UPDATE no action;
+    END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'payload_locked_documents_rels_notifications_fk'
@@ -336,7 +348,7 @@ SELECT 'Fixed payload_locked_documents_rels columns:' as status;
 SELECT column_name, data_type
 FROM information_schema.columns
 WHERE table_name = 'payload_locked_documents_rels'
-  AND column_name IN (
+    AND column_name IN (
     'hospital_networks_id',
     'hospital_capabilities_id',
     'hospitals_id',
@@ -344,7 +356,8 @@ WHERE table_name = 'payload_locked_documents_rels'
     'base_change_requests_id',
     'bases_id',
     'assets_id',
-    'calculators_id'
+      'calculators_id',
+      'medication_classes_id'
   )
 ORDER BY column_name;
 
