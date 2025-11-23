@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { Protocol, Medication } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
@@ -9,7 +9,6 @@ import {
   type SerializedRichTextState,
 } from '@/components/RichTextContent'
 import { useServiceLine } from '@/providers/ServiceLine'
-import { useTouchHandler } from '@/utilities/useTouchHandler'
 import {
   ChevronRight,
   FolderTree,
@@ -257,19 +256,19 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
     }
   }
 
-  const toggleSection = useCallback((sectionId: string) => {
+  const toggleSection = (sectionId: string) => {
     setExpandedSections((prev) => ({
       ...prev,
       [sectionId]: !prev[sectionId],
     }))
-  }, [])
+  }
 
-  const toggleStep = useCallback((stepId: string) => {
+  const toggleStep = (stepId: string) => {
     setCompletedSteps((prev) => ({
       ...prev,
       [stepId]: !prev[stepId],
     }))
-  }, [])
+  }
 
   const handleProtocolNavigation = (code: string) => {
     // Find protocol by code
@@ -432,9 +431,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     return null // Hide out-of-scope sections in active mode
                   }
 
-                  // Touch handler for section toggle
-                  const sectionToggleHandler = useTouchHandler(() => toggleSection(sectionId))
-
                   return (
                     <div
                       key={sectionId}
@@ -444,7 +440,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                     >
                       {/* Section Header */}
                       <button
-                        {...sectionToggleHandler}
+                        onClick={() => toggleSection(sectionId)}
                         className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                       >
                         <h3 className="text-lg font-bold">{section.heading}</h3>
@@ -502,9 +498,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                   const borderColor = getStepBorderColor(step.scope, darkMode)
                                   const badgeColor = getScopeBadgeColor(step.scope, serviceLine as CertLevel)
 
-                                  // Touch handler for step checkbox
-                                  const stepTouchHandler = useTouchHandler(() => toggleStep(stepId))
-
                                   return (
                                     <div
                                       key={stepId}
@@ -517,7 +510,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                         {/* Checkbox for active mode */}
                                         {viewMode === 'active' && stepInScope && (
                                           <button
-                                            {...stepTouchHandler}
+                                            onClick={() => toggleStep(stepId)}
                                             className="mt-1 flex-shrink-0"
                                           >
                                             {completedSteps[stepId] ? (
@@ -604,13 +597,10 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                         const scopeLabel = getScopeLabel(medicationScopes)
                           const medicationClassLabel = getMedicationClassLabel(medication)
 
-                        // Touch handler for medication selection
-                        const medicationTouchHandler = useTouchHandler(() => setSelectedMedication(medication))
-
                         return (
                           <button
                             key={medication.id}
-                            {...medicationTouchHandler}
+                            onClick={() => setSelectedMedication(medication)}
                             className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                           >
                             <div className="flex items-center justify-between">
@@ -705,17 +695,13 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
       </div>
 
       {/* Medication Modal - TODO: Create separate component */}
-      {selectedMedication && (() => {
-        // Touch handler for modal close
-        const modalCloseHandler = useTouchHandler(() => setSelectedMedication(null))
-
-        return (
+      {selectedMedication && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-neutral-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b dark:border-neutral-700">
               <h2 className="text-xl font-bold">{selectedMedication.name}</h2>
               <button
-                {...modalCloseHandler}
+                onClick={() => setSelectedMedication(null)}
                 className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded"
               >
                 ✕
@@ -832,8 +818,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
             </div>
           </div>
         </div>
-        )
-      })()}
+      )}
     </>
   )
 }
