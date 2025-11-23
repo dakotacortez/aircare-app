@@ -6,13 +6,14 @@ import { SaveCalculationModal } from '@/components/ReferenceCard'
 import type { CalculationData } from '@/types/referenceCard'
 import type { CSSProperties } from 'react'
 
-interface ProtocolToolsProps {
-  isOpen: boolean
-  onToggleDrawer: () => void
-  onRequestClose: () => void
-  isCollapsed?: boolean
-  onToggleCollapse?: () => void
-}
+  interface ProtocolToolsProps {
+    isOpen: boolean
+    onToggleDrawer: () => void
+    onRequestClose: () => void
+    isCollapsed?: boolean
+    onToggleCollapse?: () => void
+    showFloatingButton?: boolean
+  }
 
 const FAB_STORAGE_KEY = 'protocol-tools-fab-position'
 const FAB_SIZE = 64
@@ -65,13 +66,14 @@ const persistFabPosition = (position: FabPosition) => {
   }
 }
 
-export function ProtocolTools({
-  isOpen,
-  onToggleDrawer,
-  onRequestClose,
-  isCollapsed = false,
-  onToggleCollapse,
-}: ProtocolToolsProps) {
+  export function ProtocolTools({
+    isOpen,
+    onToggleDrawer,
+    onRequestClose,
+    isCollapsed = false,
+    onToggleCollapse,
+    showFloatingButton = true,
+  }: ProtocolToolsProps) {
   const [weight, setWeight] = useState('')
   const [dose, setDose] = useState('')
   const [hasSavedResult, setHasSavedResult] = useState(false)
@@ -252,7 +254,7 @@ export function ProtocolTools({
         </div>
       )}
 
-      {/* Mobile Drawer */}
+        {/* Mobile Drawer */}
       <div
         className={`lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none transition duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0'
@@ -293,18 +295,20 @@ export function ProtocolTools({
       </div>
 
         {/* Mobile Toggle Button */}
-        <button
-          onClick={handleFabClick}
-          onPointerDown={handleFabPointerDown}
-          onPointerMove={handleFabPointerMove}
-          onPointerUp={handleFabPointerUp}
-          className="lg:hidden fixed z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 touch-none cursor-grab active:cursor-grabbing"
-          style={mobileFabStyle}
-          aria-label={`${isOpen ? 'Hide' : 'Show'} quick tools. Drag to reposition.`}
-          title="Drag to reposition"
-        >
-          {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
-        </button>
+        {showFloatingButton && (
+          <button
+            onClick={handleFabClick}
+            onPointerDown={handleFabPointerDown}
+            onPointerMove={handleFabPointerMove}
+            onPointerUp={handleFabPointerUp}
+            className="lg:hidden fixed z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 touch-none cursor-grab active:cursor-grabbing"
+            style={mobileFabStyle}
+            aria-label={`${isOpen ? 'Hide' : 'Show'} quick tools. Drag to reposition.`}
+            title="Drag to reposition"
+          >
+            {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
+          </button>
+        )}
     </>
   )
 }
