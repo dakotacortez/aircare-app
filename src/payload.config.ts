@@ -19,6 +19,7 @@ import { ProtocolDefaults } from './globals/ProtocolDefaults'
 
 import { Protocols } from './collections/Protocols'
 import { Medications } from './collections/Medications'
+import { MedicationClasses } from './collections/MedicationClasses'
 import { HospitalNetworks } from './collections/HospitalNetworks'
 import { HospitalCapabilities } from './collections/HospitalCapabilities'
 import { Hospitals } from './collections/Hospitals'
@@ -99,7 +100,7 @@ export default buildConfig({
     apiKey: process.env.RESEND_API_KEY || '',
   }),
 
-  collections: [
+    collections: [
     Pages,
     Posts,
     Media,
@@ -107,6 +108,7 @@ export default buildConfig({
     Users,
     Protocols,
     Medications,
+      MedicationClasses,
     HospitalNetworks,
     HospitalCapabilities,
     Hospitals,

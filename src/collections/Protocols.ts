@@ -91,9 +91,9 @@ export const Protocols: CollectionConfig = {
     singular: 'Protocol',
     plural: 'Protocols',
   },
-  admin: {
-    useAsTitle: 'title',
-    defaultColumns: ['code', 'title', 'category', 'lastModified'],
+    admin: {
+      useAsTitle: 'title',
+      defaultColumns: ['code', 'title', 'category'],
     group: 'Clinical Content',
     listSearchableFields: ['title', 'code', 'keywords'],
     description: 'Clinical protocols with structured sections and action steps',
@@ -191,281 +191,245 @@ export const Protocols: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'lastModified',
-      type: 'text',
-      label: 'Last Modified',
-      admin: {
-        description: 'Year last modified (e.g., 2024)',
+      // Protocol Content (Sections)
+      {
+        name: 'sections',
+        type: 'array',
+        required: true,
+        label: 'Protocol Sections',
+        admin: {
+          description: 'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
+        },
+        hooks: {
+          beforeValidate: [populateDefaultSections],
+        },
+        fields: [
+          {
+            name: 'heading',
+            type: 'text',
+            required: true,
+            label: 'Section Heading',
+            admin: {
+              description: 'e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis"',
+            },
+          },
+          {
+            name: 'scope',
+            type: 'select',
+            hasMany: true,
+            defaultValue: [],
+            label: 'Certification Scope',
+            options: [
+              { label: 'BLS/EMT', value: 'BLS' },
+              { label: 'ALS/Paramedic', value: 'ALS' },
+              { label: 'CCT', value: 'CCT' },
+            ],
+            admin: {
+              description: 'Who can view/perform this section. Leave empty for all certification levels.',
+            },
+          },
+          {
+            name: 'note',
+            type: 'textarea',
+            label: 'Alert/Note',
+            admin: {
+              description: 'Optional alert/note to show at top of section',
+            },
+          },
+          {
+            name: 'contentType',
+            type: 'radio',
+            required: true,
+            defaultValue: 'actionSteps',
+            label: 'Content Type',
+            options: [
+              {
+                label: 'Action Steps (numbered protocol steps with timing/badges)',
+                value: 'actionSteps',
+              },
+              {
+                label: 'Bullet List (simple items like inclusion criteria)',
+                value: 'bulletList',
+              },
+              {
+                label: 'Rich Text (paragraphs for complex notes)',
+                value: 'richText',
+              },
+            ],
+            admin: {
+              description: 'How should this section be displayed?',
+            },
+          },
+          // Bullet List (Lexical editor for rich formatting)
+          {
+            name: 'bulletList',
+            type: 'richText',
+            label: 'Bullet List Content',
+            admin: {
+              condition: (data, siblingData) => siblingData.contentType === 'bulletList',
+              description: 'Use the editor to create formatted bullet lists',
+            },
+            editor: getSimpleEditor(),
+          },
+          // Rich Text
+          {
+            name: 'richText',
+            type: 'richText',
+            label: 'Rich Text Content',
+            admin: {
+              condition: (data, siblingData) => siblingData.contentType === 'richText',
+            },
+            editor: getFullProtocolEditor(),
+          },
+          // Action Steps (structured array)
+          {
+            name: 'actionSteps',
+            type: 'array',
+            label: 'Action Steps',
+            admin: {
+              condition: (data, siblingData) => siblingData.contentType === 'actionSteps',
+            },
+            fields: [
+              {
+                name: 'stepNumber',
+                type: 'number',
+                required: true,
+                label: 'Step Number',
+                admin: {
+                  description: 'Step number (can use decimals like 3.5 for inserted steps)',
+                  step: 0.1,
+                },
+              },
+              {
+                name: 'action',
+                type: 'textarea',
+                required: true,
+                label: 'Action',
+                admin: {
+                  description: 'Main action text',
+                },
+              },
+              {
+                name: 'scope',
+                type: 'select',
+                hasMany: true,
+                defaultValue: [],
+                label: 'Certification Scope',
+                options: [
+                  { label: 'BLS/EMT', value: 'BLS' },
+                  { label: 'ALS/Paramedic', value: 'ALS' },
+                  { label: 'CCT', value: 'CCT' },
+                ],
+                admin: {
+                  description: 'Who can perform this step. Leave empty for all levels.',
+                },
+              },
+              {
+                name: 'timing',
+                type: 'text',
+                label: 'Timing',
+                admin: {
+                  description: 'Timing indicator (e.g., "q3-5min", "continuous", "q2min")',
+                  placeholder: 'Leave blank if not time-sensitive',
+                },
+              },
+              {
+                name: 'requiresMedControl',
+                type: 'checkbox',
+                defaultValue: false,
+                label: 'Requires Medical Control',
+                admin: {
+                  description: 'Check if this step requires medical control authorization',
+                },
+              },
+              {
+                name: 'protocolReferences',
+                type: 'array',
+                label: 'Protocol References',
+                admin: {
+                  description: 'Other protocols referenced in this step (for navigation)',
+                },
+                fields: [
+                  {
+                    name: 'protocol',
+                    type: 'relationship',
+                    relationTo: 'protocols',
+                    required: true,
+                    label: 'Protocol',
+                  },
+                  {
+                    name: 'label',
+                    type: 'text',
+                    label: 'Display Label',
+                    admin: {
+                      description: 'Text to display (e.g., "T508", "VF/VT Protocol")',
+                    },
+                  },
+                ],
+              },
+              {
+                name: 'details',
+                type: 'array',
+                label: 'Details',
+                admin: {
+                  description: 'Sub-bullets or additional details',
+                },
+                fields: [
+                  {
+                    name: 'detail',
+                    type: 'textarea',
+                    required: true,
+                    label: 'Detail',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       },
-    },
-
-    // Protocol Content (Sections)
-    {
-      type: 'tabs',
-      tabs: [
-        {
-          label: 'Protocol Content',
-          fields: [
-            {
-              name: 'sections',
-              type: 'array',
-              required: true,
-              label: 'Protocol Sections',
-              admin: {
-                description:
-                  'Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.',
-              },
-              hooks: {
-                beforeValidate: [populateDefaultSections],
-              },
-              fields: [
-                {
-                  name: 'heading',
-                  type: 'text',
-                  required: true,
-                  label: 'Section Heading',
-                  admin: {
-                    description: 'e.g., "Inclusion Criteria", "Protocol", "Differential Diagnosis"',
-                  },
-                },
-                {
-                  name: 'scope',
-                  type: 'select',
-                  hasMany: true,
-                  defaultValue: [],
-                  label: 'Certification Scope',
-                  options: [
-                    { label: 'BLS/EMT', value: 'BLS' },
-                    { label: 'ALS/Paramedic', value: 'ALS' },
-                    { label: 'CCT', value: 'CCT' },
-                  ],
-                  admin: {
-                    description:
-                      'Who can view/perform this section. Leave empty for all certification levels.',
-                  },
-                },
-                {
-                  name: 'note',
-                  type: 'textarea',
-                  label: 'Alert/Note',
-                  admin: {
-                    description: 'Optional alert/note to show at top of section',
-                  },
-                },
-                {
-                  name: 'contentType',
-                  type: 'radio',
-                  required: true,
-                  defaultValue: 'actionSteps',
-                  label: 'Content Type',
-                  options: [
-                    {
-                      label: 'Action Steps (numbered protocol steps with timing/badges)',
-                      value: 'actionSteps',
-                    },
-                    {
-                      label: 'Bullet List (simple items like inclusion criteria)',
-                      value: 'bulletList',
-                    },
-                    {
-                      label: 'Rich Text (paragraphs for complex notes)',
-                      value: 'richText',
-                    },
-                  ],
-                  admin: {
-                    description: 'How should this section be displayed?',
-                  },
-                },
-                // Bullet List (Lexical editor for rich formatting)
-                {
-                  name: 'bulletList',
-                  type: 'richText',
-                  label: 'Bullet List Content',
-                  admin: {
-                    condition: (data, siblingData) => siblingData.contentType === 'bulletList',
-                    description: 'Use the editor to create formatted bullet lists',
-                  },
-                  editor: getSimpleEditor(),
-                },
-                // Rich Text
-                {
-                  name: 'richText',
-                  type: 'richText',
-                  label: 'Rich Text Content',
-                  admin: {
-                    condition: (data, siblingData) => siblingData.contentType === 'richText',
-                  },
-                  editor: getFullProtocolEditor(),
-                },
-                // Action Steps (structured array)
-                {
-                  name: 'actionSteps',
-                  type: 'array',
-                  label: 'Action Steps',
-                  admin: {
-                    condition: (data, siblingData) => siblingData.contentType === 'actionSteps',
-                  },
-                  fields: [
-                    {
-                      name: 'stepNumber',
-                      type: 'number',
-                      required: true,
-                      label: 'Step Number',
-                      admin: {
-                        description: 'Step number (can use decimals like 3.5 for inserted steps)',
-                        step: 0.1,
-                      },
-                    },
-                    {
-                      name: 'action',
-                      type: 'textarea',
-                      required: true,
-                      label: 'Action',
-                      admin: {
-                        description: 'Main action text',
-                      },
-                    },
-                    {
-                      name: 'scope',
-                      type: 'select',
-                      hasMany: true,
-                      defaultValue: [],
-                      label: 'Certification Scope',
-                      options: [
-                        { label: 'BLS/EMT', value: 'BLS' },
-                        { label: 'ALS/Paramedic', value: 'ALS' },
-                        { label: 'CCT', value: 'CCT' },
-                      ],
-                      admin: {
-                        description: 'Who can perform this step. Leave empty for all levels.',
-                      },
-                    },
-                    {
-                      name: 'timing',
-                      type: 'text',
-                      label: 'Timing',
-                      admin: {
-                        description: 'Timing indicator (e.g., "q3-5min", "continuous", "q2min")',
-                        placeholder: 'Leave blank if not time-sensitive',
-                      },
-                    },
-                    {
-                      name: 'requiresMedControl',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      label: 'Requires Medical Control',
-                      admin: {
-                        description: 'Check if this step requires medical control authorization',
-                      },
-                    },
-                    {
-                      name: 'protocolReferences',
-                      type: 'array',
-                      label: 'Protocol References',
-                      admin: {
-                        description: 'Other protocols referenced in this step (for navigation)',
-                      },
-                      fields: [
-                        {
-                          name: 'protocol',
-                          type: 'relationship',
-                          relationTo: 'protocols',
-                          required: true,
-                          label: 'Protocol',
-                        },
-                        {
-                          name: 'label',
-                          type: 'text',
-                          label: 'Display Label',
-                          admin: {
-                            description: 'Text to display (e.g., "T508", "VF/VT Protocol")',
-                          },
-                        },
-                      ],
-                    },
-                    {
-                      name: 'details',
-                      type: 'array',
-                      label: 'Details',
-                      admin: {
-                        description: 'Sub-bullets or additional details',
-                      },
-                      fields: [
-                        {
-                          name: 'detail',
-                          type: 'textarea',
-                          required: true,
-                          label: 'Detail',
-                        },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+      {
+        name: 'medications',
+        type: 'relationship',
+        relationTo: 'medications',
+        hasMany: true,
+        label: 'Medications',
+        admin: {
+          description: 'Link medications used in this protocol',
         },
-        {
-          label: 'Medications',
-          fields: [
-            {
-              name: 'medications',
-              type: 'relationship',
-              relationTo: 'medications',
-              hasMany: true,
-              label: 'Medications',
-              admin: {
-                description: 'Link medications used in this protocol',
-              },
-            },
-          ],
+      },
+      {
+        name: 'relatedProtocols',
+        type: 'relationship',
+        relationTo: 'protocols',
+        hasMany: true,
+        label: 'Related Protocols',
+        admin: {
+          description: 'Other protocols referenced in this one',
         },
-        {
-          label: 'Related Protocols',
-          fields: [
-            {
-              name: 'relatedProtocols',
-              type: 'relationship',
-              relationTo: 'protocols',
-              hasMany: true,
-              label: 'Related Protocols',
-              admin: {
-                description: 'Other protocols referenced in this one',
-              },
-            },
-          ],
+      },
+      {
+        name: 'keywords',
+        type: 'text',
+        label: 'Search Keywords',
+        required: true,
+        admin: {
+          description: 'Comma-separated keywords for search',
         },
-        {
-          label: 'Search & Tags',
-          fields: [
-            {
-              name: 'keywords',
-              type: 'text',
-              label: 'Search Keywords',
-              required: true,
-              admin: {
-                description: 'Comma-separated keywords for search',
-              },
-            },
-            {
-              name: 'tags',
-              type: 'select',
-              hasMany: true,
-              label: 'Tags',
-              options: [
-                { label: 'Cardiac', value: 'cardiac' },
-                { label: 'Respiratory', value: 'respiratory' },
-                { label: 'Trauma', value: 'trauma' },
-                { label: 'Neurological', value: 'neurological' },
-                { label: 'Pediatric', value: 'pediatric' },
-                { label: 'Critical', value: 'critical' },
-              ],
-            },
-          ],
-        },
-      ],
-    },
+      },
+      {
+        name: 'tags',
+        type: 'select',
+        hasMany: true,
+        label: 'Tags',
+        options: [
+          { label: 'Cardiac', value: 'cardiac' },
+          { label: 'Respiratory', value: 'respiratory' },
+          { label: 'Trauma', value: 'trauma' },
+          { label: 'Neurological', value: 'neurological' },
+          { label: 'Pediatric', value: 'pediatric' },
+          { label: 'Critical', value: 'critical' },
+        ],
+      },
 
     // Version Information
     {

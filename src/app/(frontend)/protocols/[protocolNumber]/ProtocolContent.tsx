@@ -142,6 +142,26 @@ function getMedicationScopes(medication: Medication): CertLevel[] {
   return Array.from(scopes)
 }
 
+function getMedicationClassLabel(medication: Medication): string | null {
+  const classRelation = medication.class
+  if (!classRelation) return null
+  if (typeof classRelation === 'string') {
+    return classRelation
+  }
+  if (typeof classRelation === 'number') {
+    return null
+  }
+  if (typeof classRelation === 'object') {
+    if ('name' in classRelation && typeof classRelation.name === 'string' && classRelation.name.trim().length > 0) {
+      return classRelation.name
+    }
+    if ('slug' in classRelation && typeof classRelation.slug === 'string' && classRelation.slug.trim().length > 0) {
+      return classRelation.slug
+    }
+  }
+  return null
+}
+
 /**
  * Render clickable protocol codes in action text
  */
@@ -326,11 +346,10 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
         <main className="flex-1 overflow-auto bg-neutral-50 dark:bg-neutral-900">
           <div className="px-4 md:px-6 py-6 max-w-4xl mx-auto">
             {/* Protocol Header */}
-            <div className="mb-6">
-              <div className="flex items-center gap-4 text-sm text-neutral-500 mb-2">
-                {protocol.code && <span className="font-mono font-bold text-blue-600">{protocol.code}</span>}
-                {protocol.lastModified && <span>Modified: {protocol.lastModified}</span>}
-              </div>
+              <div className="mb-6">
+                <div className="flex items-center gap-4 text-sm text-neutral-500 mb-2">
+                  {protocol.code && <span className="font-mono font-bold text-blue-600">{protocol.code}</span>}
+                </div>
 
               {/* Title and View Mode Toggle Row */}
               <div className="flex items-start justify-between gap-4 mb-2">
@@ -571,11 +590,12 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                   <h3 className="text-lg font-bold mb-3">Medications</h3>
                   <div className="space-y-2">
                     {filteredMedications.length > 0 ? (
-                      filteredMedications.map((med) => {
+                        filteredMedications.map((med) => {
                         if (typeof med === 'number') return null
                         const medication = med as Medication
                         const medicationScopes = getMedicationScopes(medication)
                         const scopeLabel = getScopeLabel(medicationScopes)
+                          const medicationClassLabel = getMedicationClassLabel(medication)
 
                         return (
                           <button
@@ -600,7 +620,9 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400">{medication.class}</p>
+                                  {medicationClassLabel && (
+                                    <p className="text-sm text-neutral-600 dark:text-neutral-400">{medicationClassLabel}</p>
+                                  )}
                               </div>
                             </div>
                           </button>
@@ -688,8 +710,12 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
               <div className="p-4 overflow-y-auto max-h-[calc(90vh-60px)] space-y-4">
                 <div className="flex flex-col gap-2 border dark:border-neutral-700 rounded-lg p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm uppercase text-neutral-500">{selectedMedication.class}</p>
+                      <div>
+                        {getMedicationClassLabel(selectedMedication) && (
+                          <p className="text-sm uppercase text-neutral-500">
+                            {getMedicationClassLabel(selectedMedication)}
+                          </p>
+                        )}
                       {selectedMedication.genericName && (
                         <p className="text-neutral-900 dark:text-neutral-100 font-medium">
                           Generic: {selectedMedication.genericName}
