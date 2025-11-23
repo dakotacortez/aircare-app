@@ -136,7 +136,7 @@ export const Protocols: CollectionConfig = {
     versions: {
       drafts: {
         autosave: {
-          interval: 15000, // 15 seconds for quicker live preview sync
+          interval: 5000, // 5 seconds to keep live preview nearly real-time
         },
       },
       maxPerDoc: 25,
