@@ -201,6 +201,13 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null)
   const [darkMode, setDarkMode] = useState(false)
+  const activateMedicationCard = (medication: Medication) => setSelectedMedication(medication)
+  const handleMedicationKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, medication: Medication) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      activateMedicationCard(medication)
+    }
+  }
 
   // Initialize all sections as expanded
   useEffect(() => {
@@ -589,46 +596,50 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                 <div className="mt-6 bg-white dark:bg-neutral-800 border dark:border-neutral-700 rounded-xl p-4 shadow-sm">
                   <h3 className="text-lg font-bold mb-3">Medications</h3>
                   <div className="space-y-2">
-                    {filteredMedications.length > 0 ? (
+                      {filteredMedications.length > 0 ? (
                         filteredMedications.map((med) => {
-                        if (typeof med === 'number') return null
-                        const medication = med as Medication
-                        const medicationScopes = getMedicationScopes(medication)
-                        const scopeLabel = getScopeLabel(medicationScopes)
+                          if (typeof med === 'number') return null
+                          const medication = med as Medication
+                          const medicationScopes = getMedicationScopes(medication)
+                          const scopeLabel = getScopeLabel(medicationScopes)
                           const medicationClassLabel = getMedicationClassLabel(medication)
 
-                        return (
-                          <button
-                            key={medication.id}
-                            onClick={() => setSelectedMedication(medication)}
-                            className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                                    {medication.name}
-                                  </span>
-                                  {scopeLabel && (
-                                    <span
-                                      className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(
-                                        medicationScopes,
-                                        serviceLine as CertLevel,
-                                      )}`}
-                                    >
-                                      {scopeLabel}
+                          return (
+                            <div
+                              key={medication.id}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Open ${medication.name} medication details`}
+                              onClick={() => activateMedicationCard(medication)}
+                              onKeyDown={(event) => handleMedicationKeyDown(event, medication)}
+                              className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-[0.99]"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-blue-600 dark:text-blue-400 hover:underline">
+                                      {medication.name}
                                     </span>
-                                  )}
-                                </div>
+                                    {scopeLabel && (
+                                      <span
+                                        className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(
+                                          medicationScopes,
+                                          serviceLine as CertLevel,
+                                        )}`}
+                                      >
+                                        {scopeLabel}
+                                      </span>
+                                    )}
+                                  </div>
                                   {medicationClassLabel && (
                                     <p className="text-sm text-neutral-600 dark:text-neutral-400">{medicationClassLabel}</p>
                                   )}
+                                </div>
                               </div>
                             </div>
-                          </button>
-                        )
-                      })
-                    ) : (
+                          )
+                        })
+                      ) : (
                       <p className="text-sm text-neutral-600 dark:text-neutral-400 italic">
                         No medications available at the {serviceLine ?? 'selected'} level for this protocol.
                       </p>

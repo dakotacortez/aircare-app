@@ -1,9 +1,10 @@
 'use client'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Syringe, X, ChevronUp, Calculator, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useReferenceCard } from '@/hooks/useReferenceCard'
 import { SaveCalculationModal } from '@/components/ReferenceCard'
 import type { CalculationData } from '@/types/referenceCard'
+import type { CSSProperties } from 'react'
 
 interface ProtocolToolsProps {
   isOpen: boolean
@@ -11,6 +12,57 @@ interface ProtocolToolsProps {
   onRequestClose: () => void
   isCollapsed?: boolean
   onToggleCollapse?: () => void
+}
+
+const FAB_STORAGE_KEY = 'protocol-tools-fab-position'
+const FAB_SIZE = 64
+const FAB_PADDING = 12
+
+type FabPosition = {
+  x: number
+  y: number
+}
+
+type DragState = {
+  pointerId: number
+  startX: number
+  startY: number
+  origin: FabPosition
+  moved: boolean
+}
+
+const clampFabPosition = (position: FabPosition): FabPosition => {
+  if (typeof window === 'undefined') {
+    return position
+  }
+
+  const maxX = window.innerWidth - FAB_SIZE - FAB_PADDING
+  const maxY = window.innerHeight - FAB_SIZE - FAB_PADDING
+
+  return {
+    x: Math.min(Math.max(position.x, FAB_PADDING), Math.max(FAB_PADDING, maxX)),
+    y: Math.min(Math.max(position.y, FAB_PADDING), Math.max(FAB_PADDING, maxY)),
+  }
+}
+
+const getDefaultFabPosition = (): FabPosition => {
+  if (typeof window === 'undefined') {
+    return { x: 0, y: 0 }
+  }
+
+  return clampFabPosition({
+    x: window.innerWidth - FAB_PADDING - FAB_SIZE,
+    y: window.innerHeight - FAB_PADDING - FAB_SIZE,
+  })
+}
+
+const persistFabPosition = (position: FabPosition) => {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(FAB_STORAGE_KEY, JSON.stringify(position))
+  } catch {
+    // Swallow write errors (storage may be unavailable in private browsing)
+  }
 }
 
 export function ProtocolTools({
@@ -23,6 +75,9 @@ export function ProtocolTools({
   const [weight, setWeight] = useState('')
   const [dose, setDose] = useState('')
   const [hasSavedResult, setHasSavedResult] = useState(false)
+  const [fabPosition, setFabPosition] = useState<FabPosition | null>(null)
+  const dragStateRef = useRef<DragState | null>(null)
+  const suppressNextClickRef = useRef(false)
 
   const handleWeightChange = (value: string) => {
     setWeight(value)
@@ -41,6 +96,119 @@ export function ProtocolTools({
     setDose(formatMeasurement(numericDose))
     setHasSavedResult(false)
   }
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const stored = window.localStorage.getItem(FAB_STORAGE_KEY)
+      if (stored) {
+        const parsed = JSON.parse(stored) as FabPosition
+        setFabPosition(clampFabPosition(parsed))
+        return
+      }
+    } catch {
+      // Ignore malformed storage
+    }
+
+    setFabPosition(getDefaultFabPosition())
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleResize = () => {
+      setFabPosition((prev) => {
+        if (!prev) return prev
+        const clamped = clampFabPosition(prev)
+        if (clamped.x === prev.x && clamped.y === prev.y) {
+          return prev
+        }
+        persistFabPosition(clamped)
+        return clamped
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
+    }
+  }, [])
+
+  const handleFabPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    const currentPosition = fabPosition ?? getDefaultFabPosition()
+    if (!fabPosition) {
+      setFabPosition(currentPosition)
+    }
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      origin: currentPosition,
+      moved: false,
+    }
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
+
+  const handleFabPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const dragState = dragStateRef.current
+    if (!dragState || dragState.pointerId !== event.pointerId) return
+    const deltaX = event.clientX - dragState.startX
+    const deltaY = event.clientY - dragState.startY
+
+    if (!dragState.moved) {
+      const distance = Math.hypot(deltaX, deltaY)
+      if (distance < 4) {
+        return
+      }
+      dragState.moved = true
+    }
+
+    event.preventDefault()
+    const nextPosition = clampFabPosition({
+      x: dragState.origin.x + deltaX,
+      y: dragState.origin.y + deltaY,
+    })
+    setFabPosition(nextPosition)
+  }
+
+  const handleFabPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
+    const dragState = dragStateRef.current
+    if (!dragState || dragState.pointerId !== event.pointerId) return
+    event.preventDefault()
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
+    dragStateRef.current = null
+
+    if (dragState.moved && fabPosition) {
+      suppressNextClickRef.current = true
+      persistFabPosition(fabPosition)
+      window.setTimeout(() => {
+        suppressNextClickRef.current = false
+      }, 50)
+    }
+  }
+
+  const handleFabClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (suppressNextClickRef.current) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+    onToggleDrawer()
+  }
+
+  const mobileFabStyle: CSSProperties = fabPosition
+    ? {
+        top: `${fabPosition.y}px`,
+        left: `${fabPosition.x}px`,
+      }
+    : {
+        right: '1rem',
+        bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))',
+      }
 
   return (
     <>
@@ -124,15 +292,19 @@ export function ProtocolTools({
         </div>
       </div>
 
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={onToggleDrawer}
-        className="lg:hidden fixed right-4 z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors"
-        style={{ bottom: 'calc(1.25rem + env(safe-area-inset-bottom, 0px))' }}
-        aria-label={isOpen ? 'Hide quick tools' : 'Show quick tools'}
-      >
-        {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
-      </button>
+        {/* Mobile Toggle Button */}
+        <button
+          onClick={handleFabClick}
+          onPointerDown={handleFabPointerDown}
+          onPointerMove={handleFabPointerMove}
+          onPointerUp={handleFabPointerUp}
+          className="lg:hidden fixed z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 touch-none cursor-grab active:cursor-grabbing"
+          style={mobileFabStyle}
+          aria-label={`${isOpen ? 'Hide' : 'Show'} quick tools. Drag to reposition.`}
+          title="Drag to reposition"
+        >
+          {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
+        </button>
     </>
   )
 }
