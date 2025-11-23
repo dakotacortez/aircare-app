@@ -52,6 +52,14 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     description: siteDefaults.description,
     metadataBase: new URL(getServerSideURL()),
+    // Optimize viewport for Capacitor/Android WebView touch handling
+    viewport: {
+      width: 'device-width',
+      initialScale: 1,
+      maximumScale: 1,
+      userScalable: false,
+      viewportFit: 'cover',
+    },
     openGraph: mergeOpenGraph(
       {
         description: siteDefaults.description,
