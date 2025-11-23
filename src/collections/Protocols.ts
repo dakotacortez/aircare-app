@@ -91,9 +91,9 @@ export const Protocols: CollectionConfig = {
     singular: 'Protocol',
     plural: 'Protocols',
   },
-  admin: {
-    useAsTitle: 'title',
-    defaultColumns: ['code', 'title', 'category', 'lastModified'],
+    admin: {
+      useAsTitle: 'title',
+      defaultColumns: ['code', 'title', 'category'],
     group: 'Clinical Content',
     listSearchableFields: ['title', 'code', 'keywords'],
     description: 'Clinical protocols with structured sections and action steps',
@@ -191,15 +191,6 @@ export const Protocols: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'lastModified',
-      type: 'text',
-      label: 'Last Modified',
-      admin: {
-        description: 'Year last modified (e.g., 2024)',
-      },
-    },
-
     // Protocol Content (Sections)
     {
       type: 'tabs',

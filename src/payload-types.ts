@@ -74,6 +74,7 @@ export interface Config {
     users: User;
     protocols: Protocol;
     medications: Medication;
+    'medication-classes': MedicationClass;
     'hospital-networks': HospitalNetwork;
     'hospital-capabilities': HospitalCapability;
     hospitals: Hospital;
@@ -110,6 +111,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     protocols: ProtocolsSelect<false> | ProtocolsSelect<true>;
     medications: MedicationsSelect<false> | MedicationsSelect<true>;
+    'medication-classes': MedicationClassesSelect<false> | MedicationClassesSelect<true>;
     'hospital-networks': HospitalNetworksSelect<false> | HospitalNetworksSelect<true>;
     'hospital-capabilities': HospitalCapabilitiesSelect<false> | HospitalCapabilitiesSelect<true>;
     hospitals: HospitalsSelect<false> | HospitalsSelect<true>;
@@ -906,10 +908,6 @@ export interface Protocol {
     | 'special-ops';
   subcategory?: string | null;
   /**
-   * Year last modified (e.g., 2024)
-   */
-  lastModified?: string | null;
-  /**
    * Sections are drag-and-drop sortable! Use the ⋮⋮ handle to reorder.
    */
   sections: {
@@ -1061,23 +1059,13 @@ export interface Medication {
   id: number;
   name: string;
   /**
-   * Generic name if different from brand name
+   * List any alternate brand or generic names users may search for
    */
   genericName?: string | null;
-  class:
-    | 'vasopressor'
-    | 'antiarrhythmic'
-    | 'analgesic'
-    | 'sedative'
-    | 'antiemetic'
-    | 'bronchodilator'
-    | 'anticonvulsant'
-    | 'antihypertensive'
-    | 'antiplatelet'
-    | 'anticoagulant'
-    | 'paralytic'
-    | 'reversal'
-    | 'other';
+  /**
+   * Select from the managed list of drug classes (add more under Medication Classes).
+   */
+  class: number | MedicationClass;
   /**
    * Group routes/doses by clinical indication or condition
    */
@@ -1307,6 +1295,26 @@ export interface Medication {
     };
     [k: string]: unknown;
   } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage the drug class categories that can be attached to medications.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medication-classes".
+ */
+export interface MedicationClass {
+  id: number;
+  name: string;
+  /**
+   * Used as the stable identifier for filtering or integrations (e.g., vasopressor).
+   */
+  slug: string;
+  /**
+   * Optional context for when to use this class.
+   */
+  description?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2336,6 +2344,10 @@ export interface PayloadLockedDocument {
         value: number | Medication;
       } | null)
     | ({
+        relationTo: 'medication-classes';
+        value: number | MedicationClass;
+      } | null)
+    | ({
         relationTo: 'hospital-networks';
         value: number | HospitalNetwork;
       } | null)
@@ -2781,7 +2793,6 @@ export interface ProtocolsSelect<T extends boolean = true> {
   title?: T;
   category?: T;
   subcategory?: T;
-  lastModified?: T;
   sections?:
     | T
     | {
@@ -2878,6 +2889,17 @@ export interface MedicationsSelect<T extends boolean = true> {
   specialInstructions?: T;
   pregnancyCategory?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medication-classes_select".
+ */
+export interface MedicationClassesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }

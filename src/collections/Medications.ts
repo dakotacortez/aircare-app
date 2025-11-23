@@ -83,27 +83,16 @@ export const Medications: CollectionConfig = {
           placeholder: 'e.g., Acetaminophen, Tylenol, Paracetamol',
         },
       },
-    {
-      name: 'class',
-      type: 'select',
-      required: true,
-      label: 'Drug Class',
-      options: [
-        { label: 'Vasopressor', value: 'vasopressor' },
-        { label: 'Antiarrhythmic', value: 'antiarrhythmic' },
-        { label: 'Analgesic', value: 'analgesic' },
-        { label: 'Sedative', value: 'sedative' },
-        { label: 'Antiemetic', value: 'antiemetic' },
-        { label: 'Bronchodilator', value: 'bronchodilator' },
-        { label: 'Anticonvulsant', value: 'anticonvulsant' },
-        { label: 'Antihypertensive', value: 'antihypertensive' },
-        { label: 'Antiplatelet', value: 'antiplatelet' },
-        { label: 'Anticoagulant', value: 'anticoagulant' },
-        { label: 'Paralytic', value: 'paralytic' },
-        { label: 'Reversal Agent', value: 'reversal' },
-        { label: 'Other', value: 'other' },
-      ],
-    },
+      {
+        name: 'class',
+        type: 'relationship',
+        relationTo: 'medication-classes',
+        required: true,
+        label: 'Drug Class',
+        admin: {
+          description: 'Select from the managed list of drug classes (add more under Medication Classes).',
+        },
+      },
     // Tabs for organized content
     {
       type: 'tabs',
