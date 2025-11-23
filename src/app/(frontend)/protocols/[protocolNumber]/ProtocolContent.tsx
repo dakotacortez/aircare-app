@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { Protocol, Medication } from '@/payload-types'
 import { ProtocolTree } from '@/components/ProtocolTree'
@@ -202,12 +202,6 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null)
   const [darkMode, setDarkMode] = useState(false)
   const activateMedicationCard = (medication: Medication) => setSelectedMedication(medication)
-  const handleMedicationKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, medication: Medication) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      activateMedicationCard(medication)
-    }
-  }
 
   // Initialize all sections as expanded
   useEffect(() => {
@@ -428,8 +422,9 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
             {/* Protocol Sections */}
             {sections && sections.length > 0 && (
               <div className="space-y-4">
-                {sections.map((section, sectionIndex) => {
-                  const sectionId = section.id || `section-${sectionIndex}`
+                  {sections.map((section, sectionIndex) => {
+                    const sectionId = section.id || `section-${sectionIndex}`
+                    const contentId = `${sectionId}-content`
                   const isExpanded = expandedSections[sectionId] ?? true
 
                   // Check if section is in scope
@@ -446,11 +441,16 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                       }`}
                     >
                       {/* Section Header */}
-                      <button
+                        <button
+                          type="button"
                         onClick={() => toggleSection(sectionId)}
-                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                          aria-expanded={isExpanded}
+                          aria-controls={contentId}
+                          className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                       >
-                        <h3 className="text-lg font-bold">{section.heading}</h3>
+                          <span role="heading" aria-level={3} className="text-lg font-bold">
+                            {section.heading}
+                          </span>
                         <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
                           ▼
                         </span>
@@ -458,7 +458,7 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
 
                       {/* Section Content */}
                       {isExpanded && (
-                        <div className="px-4 pb-4">
+                          <div id={contentId} className="px-4 pb-4">
                           {/* Section Note/Alert */}
                           {section.note && (
                             <div className="mb-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
@@ -604,19 +604,16 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                           const scopeLabel = getScopeLabel(medicationScopes)
                           const medicationClassLabel = getMedicationClassLabel(medication)
 
-                          return (
-                            <div
-                              key={medication.id}
-                              role="button"
-                              tabIndex={0}
-                              aria-label={`Open ${medication.name} medication details`}
-                              onClick={() => activateMedicationCard(medication)}
-                              onKeyDown={(event) => handleMedicationKeyDown(event, medication)}
-                              className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-[0.99]"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="flex items-center gap-2">
+                            return (
+                              <button
+                                key={medication.id}
+                                type="button"
+                                aria-label={`Open ${medication.name} medication details`}
+                                onClick={() => activateMedicationCard(medication)}
+                                className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-[0.99]"
+                              >
+                                <span className="flex flex-col text-left gap-1">
+                                  <span className="flex items-center gap-2">
                                     <span className="font-medium text-blue-600 dark:text-blue-400 hover:underline">
                                       {medication.name}
                                     </span>
@@ -630,14 +627,13 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                                         {scopeLabel}
                                       </span>
                                     )}
-                                  </div>
+                                  </span>
                                   {medicationClassLabel && (
-                                    <p className="text-sm text-neutral-600 dark:text-neutral-400">{medicationClassLabel}</p>
+                                    <span className="text-sm text-neutral-600 dark:text-neutral-400">{medicationClassLabel}</span>
                                   )}
-                                </div>
-                              </div>
-                            </div>
-                          )
+                                </span>
+                              </button>
+                            )
                         })
                       ) : (
                       <p className="text-sm text-neutral-600 dark:text-neutral-400 italic">
