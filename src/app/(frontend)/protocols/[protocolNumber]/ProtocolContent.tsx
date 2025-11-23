@@ -604,36 +604,36 @@ export function ProtocolContent({ protocol, allProtocols }: ProtocolContentProps
                           const scopeLabel = getScopeLabel(medicationScopes)
                           const medicationClassLabel = getMedicationClassLabel(medication)
 
-                            return (
-                              <button
-                                key={medication.id}
-                                type="button"
-                                aria-label={`Open ${medication.name} medication details`}
-                                onClick={() => activateMedicationCard(medication)}
-                                className="w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-[0.99]"
-                              >
-                                <span className="flex flex-col text-left gap-1">
-                                  <span className="flex items-center gap-2">
-                                    <span className="font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                                      {medication.name}
-                                    </span>
-                                    {scopeLabel && (
-                                      <span
-                                        className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(
-                                          medicationScopes,
-                                          serviceLine as CertLevel,
-                                        )}`}
-                                      >
-                                        {scopeLabel}
+                              return (
+                                <button
+                                  key={medication.id}
+                                  type="button"
+                                  aria-label={`Open ${medication.name} medication details`}
+                                  onClick={() => activateMedicationCard(medication)}
+                                  className="group w-full text-left p-3 rounded-lg border dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-[0.99]"
+                                >
+                                  <span className="pointer-events-none flex flex-col text-left gap-1">
+                                    <span className="flex items-center gap-2">
+                                      <span className="font-medium text-blue-600 dark:text-blue-400 group-hover:underline group-focus-visible:underline">
+                                        {medication.name}
                                       </span>
+                                      {scopeLabel && (
+                                        <span
+                                          className={`text-xs px-2 py-0.5 rounded ${getScopeBadgeColor(
+                                            medicationScopes,
+                                            serviceLine as CertLevel,
+                                          )}`}
+                                        >
+                                          {scopeLabel}
+                                        </span>
+                                      )}
+                                    </span>
+                                    {medicationClassLabel && (
+                                      <span className="text-sm text-neutral-600 dark:text-neutral-400">{medicationClassLabel}</span>
                                     )}
                                   </span>
-                                  {medicationClassLabel && (
-                                    <span className="text-sm text-neutral-600 dark:text-neutral-400">{medicationClassLabel}</span>
-                                  )}
-                                </span>
-                              </button>
-                            )
+                                </button>
+                              )
                         })
                       ) : (
                       <p className="text-sm text-neutral-600 dark:text-neutral-400 italic">
