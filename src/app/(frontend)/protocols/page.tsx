@@ -1,11 +1,10 @@
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { redirect } from 'next/navigation'
 import { getMeUser } from '@/utilities/getMeUser'
 import { checkProtocolAccess } from '@/utilities/checkProtocolAccess'
+import { findProtocolsForUser } from '@/utilities/protocolQueries'
 import { ProtocolAccessDenied } from '@/components/ProtocolAccessDenied'
 
 export default async function ProtocolsPage() {
@@ -23,15 +22,8 @@ export default async function ProtocolsPage() {
     )
   }
 
-  // User has access, fetch protocols
-  const payload = await getPayload({ config })
-
-  const protocols = await payload.find({
-    collection: 'protocols',
-    where: {
-      _status: { equals: 'published' },
-    },
-    sort: '_order',
+  // User has access, fetch protocols using centralized helper
+  const protocols = await findProtocolsForUser(user, {
     limit: 1,
   })
 
