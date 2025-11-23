@@ -112,9 +112,6 @@
     touch-action: manipulation;
     /* Ensure buttons can always receive pointer events */
     pointer-events: auto;
-    /* Prevent text selection on buttons */
-    -webkit-user-select: none;
-    user-select: none;
   }
 
   input,
