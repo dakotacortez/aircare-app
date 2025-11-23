@@ -101,6 +101,71 @@
   .safe-area-bottom {
     padding-bottom: var(--safe-area-bottom);
   }
+
+  /* Android WebView touch optimizations - Fix tap cooldown issue */
+  button,
+  a,
+  [role="button"] {
+    /* Remove tap highlight that can cause sticky states */
+    -webkit-tap-highlight-color: transparent;
+    /* Disable double-tap zoom delays (300ms delay fix) */
+    touch-action: manipulation;
+    /* Ensure buttons can always receive pointer events */
+    pointer-events: auto;
+    /* Prevent text selection on buttons */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Critical fix: Prevent sticky active/focus states on Android WebView */
+  button:active,
+  button:focus,
+  a:active,
+  a:focus {
+    /* Ensure active state doesn't block subsequent taps */
+    -webkit-tap-highlight-color: transparent;
+    /* Force pointer events to remain active */
+    pointer-events: auto;
+  }
+
+  /* On touch devices, only apply hover styles when hovering is actually supported */
+  @media (hover: none) and (pointer: coarse) {
+    /* Disable hover effects on touch-only devices to prevent sticky states */
+    button:hover:not(:active),
+    a:hover:not(:active) {
+      /* Don't apply hover styles unless actively being pressed */
+      opacity: 1;
+    }
+  }
+
+  /* Ensure CSS transitions don't block pointer events on Android */
+  .transition-colors,
+  .transition-transform,
+  .transition-all,
+  [class*="transition-"] {
+    /* Critical: Ensure buttons remain interactive during transitions */
+    pointer-events: auto;
+  }
+
+  /* Optimize rendering performance for transitions on mobile */
+  @media (max-width: 768px) {
+    .transition-colors,
+    .transition-transform,
+    .transition-all {
+      /* Use GPU acceleration for smoother transitions */
+      will-change: transform, opacity;
+      /* Force hardware acceleration */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+  }
 }
 
 html {
