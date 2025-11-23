@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 import { cn } from '@/utilities/ui'
 import { GeistMono } from 'geist/font/mono'
@@ -46,20 +46,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   )
 }
 
+// Optimize viewport for Capacitor/Android WebView touch handling
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const siteDefaults = await getSiteMetadataDefaults()
 
   return {
     description: siteDefaults.description,
     metadataBase: new URL(getServerSideURL()),
-    // Optimize viewport for Capacitor/Android WebView touch handling
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-      maximumScale: 1,
-      userScalable: false,
-      viewportFit: 'cover',
-    },
     openGraph: mergeOpenGraph(
       {
         description: siteDefaults.description,
