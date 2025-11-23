@@ -28,6 +28,7 @@ export default async function ProtocolsPage() {
 
   const protocols = await payload.find({
     collection: 'protocols',
+    overrideAccess: true, // Safe to override since we already checked access above
     where: {
       _status: { equals: 'published' },
     },

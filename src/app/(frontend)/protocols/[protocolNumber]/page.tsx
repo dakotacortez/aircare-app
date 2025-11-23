@@ -45,7 +45,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
   const result = await payload.find({
     collection: 'protocols',
     draft: canPreviewDraft,
-    overrideAccess: canPreviewDraft,
+    overrideAccess: true, // Safe to override since we already checked access above
     where: canPreviewDraft
       ? {
           code: { equals: protocolNumber },
@@ -68,7 +68,7 @@ export default async function ProtocolPage({ params: paramsPromise }: Args) {
   const allProtocols = await payload.find({
     collection: 'protocols',
     draft: canPreviewDraft,
-    overrideAccess: canPreviewDraft,
+    overrideAccess: true, // Safe to override since we already checked access above
     ...(canPreviewDraft
       ? {}
       : {
@@ -97,7 +97,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const result = await payload.find({
       collection: 'protocols',
       draft: isDraftMode,
-      overrideAccess: isDraftMode,
+      overrideAccess: true, // Safe to override for metadata generation
       where: isDraftMode
         ? {
             code: { equals: protocolNumber },
