@@ -49,6 +49,7 @@ import * as migration_20251122_220000_remove_uuid_from_protocol_sections from '.
 import * as migration_20251122_230000_restore_protocol_section_ids_and_uuid from './20251122_230000_restore_protocol_section_ids_and_uuid';
 import * as migration_20251123_000000_add_medication_indication_dosing from './20251123_000000_add_medication_indication_dosing';
 import * as migration_20251123_120500_fix_protocol_version_relationship_paths from './20251123_120500_fix_protocol_version_relationship_paths';
+import * as migration_20251123_160000_add_medication_classes_table from './20251123_160000_add_medication_classes_table';
 
 export const migrations = [
   {
@@ -306,4 +307,9 @@ export const migrations = [
         down: migration_20251123_120500_fix_protocol_version_relationship_paths.down,
         name: '20251123_120500_fix_protocol_version_relationship_paths',
       },
+        {
+          up: migration_20251123_160000_add_medication_classes_table.up,
+          down: migration_20251123_160000_add_medication_classes_table.down,
+          name: '20251123_160000_add_medication_classes_table',
+        },
   ];
