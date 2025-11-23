@@ -111,38 +111,38 @@ export const Protocols: CollectionConfig = {
         collection: 'protocols',
         req,
       }),
-  },
-  orderable: true,
-  access: {
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.status !== 'active') return false
-      if (user.role === 'content-team' || user.role === 'admin-team') {
-        return true
-      }
-      if (user.role === 'user' && user.approved) {
-        return {
-          _status: {
-            equals: 'published',
-          },
+    },
+    orderable: true,
+    access: {
+      read: ({ req: { user } }) => {
+        if (!user) return false
+        if (user.status !== 'active') return false
+        if (user.role === 'content-team' || user.role === 'admin-team') {
+          return true
         }
-      }
-      return false
-    },
-    create: isContentTeamOrAdmin,
-    update: isContentTeamOrAdmin,
-    delete: isAdmin,
-  },
-  versions: {
-    drafts: {
-      autosave: {
-        interval: 120000, // 2 minutes
+        if (user.role === 'user' && user.approved) {
+          return {
+            _status: {
+              equals: 'published',
+            },
+          }
+        }
+        return false
       },
+      create: isContentTeamOrAdmin,
+      update: isContentTeamOrAdmin,
+      delete: isAdmin,
     },
-    maxPerDoc: 25,
-  },
-  fields: [
-    // Basic Protocol Info
+    versions: {
+      drafts: {
+        autosave: {
+          interval: 5000, // 5 seconds to keep live preview nearly real-time
+        },
+      },
+      maxPerDoc: 25,
+    },
+    fields: [
+      // Basic Protocol Info
     {
       name: 'code',
       type: 'text',
