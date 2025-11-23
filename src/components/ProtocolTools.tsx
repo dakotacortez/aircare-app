@@ -12,6 +12,7 @@ interface ProtocolToolsProps {
   onRequestClose: () => void
   isCollapsed?: boolean
   onToggleCollapse?: () => void
+  showFloatingButton?: boolean
 }
 
 const FAB_STORAGE_KEY = 'protocol-tools-fab-position'
@@ -71,6 +72,7 @@ export function ProtocolTools({
   onRequestClose,
   isCollapsed = false,
   onToggleCollapse,
+  showFloatingButton = true,
 }: ProtocolToolsProps) {
   const [weight, setWeight] = useState('')
   const [dose, setDose] = useState('')
@@ -78,6 +80,7 @@ export function ProtocolTools({
   const [fabPosition, setFabPosition] = useState<FabPosition | null>(null)
   const dragStateRef = useRef<DragState | null>(null)
   const suppressNextClickRef = useRef(false)
+  const drawerRef = useRef<HTMLDivElement | null>(null)
 
   const handleWeightChange = (value: string) => {
     setWeight(value)
@@ -113,6 +116,15 @@ export function ProtocolTools({
 
     setFabPosition(getDefaultFabPosition())
   }, [])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    if (isOpen) return
+    const activeElement = document.activeElement
+    if (activeElement && drawerRef.current?.contains(activeElement)) {
+      ;(activeElement as HTMLElement).blur()
+    }
+  }, [isOpen])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -252,18 +264,20 @@ export function ProtocolTools({
         </div>
       )}
 
-      {/* Mobile Drawer */}
-      <div
-        className={`lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none transition duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0'
-        }`}
-        aria-hidden={!isOpen}
-      >
+        {/* Mobile Drawer */}
         <div
-          className={`pointer-events-auto mx-4 sm:ml-auto sm:mr-4 sm:w-[min(420px,calc(100vw-2rem))] rounded-2xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xl transform transition duration-300 ${
-            isOpen ? 'translate-y-0' : 'translate-y-4'
-          } max-h-[70vh] flex flex-col`}
+          className={`lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none transition duration-300 ${
+            isOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          aria-hidden={!isOpen}
+        >
+        <div
+            ref={drawerRef}
+            className={`mx-4 sm:ml-auto sm:mr-4 sm:w-[min(420px,calc(100vw-2rem))] rounded-2xl border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-2xl transform transition duration-300 max-h-[70vh] flex flex-col ${
+              isOpen ? 'pointer-events-auto translate-y-0' : 'pointer-events-none translate-y-4'
+            }`}
           style={{ marginBottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))' }}
+            aria-hidden={!isOpen}
         >
           <div className="sticky top-0 bg-white dark:bg-neutral-800 p-4 border-b dark:border-neutral-700 flex items-center justify-between rounded-t-2xl">
             <div className="flex items-center gap-2">
@@ -293,18 +307,20 @@ export function ProtocolTools({
       </div>
 
         {/* Mobile Toggle Button */}
-        <button
-          onClick={handleFabClick}
-          onPointerDown={handleFabPointerDown}
-          onPointerMove={handleFabPointerMove}
-          onPointerUp={handleFabPointerUp}
-          className="lg:hidden fixed z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 touch-none cursor-grab active:cursor-grabbing"
-          style={mobileFabStyle}
-          aria-label={`${isOpen ? 'Hide' : 'Show'} quick tools. Drag to reposition.`}
-          title="Drag to reposition"
-        >
-          {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
-        </button>
+        {showFloatingButton && (
+          <button
+            onClick={handleFabClick}
+            onPointerDown={handleFabPointerDown}
+            onPointerMove={handleFabPointerMove}
+            onPointerUp={handleFabPointerUp}
+            className="lg:hidden fixed z-50 rounded-full border dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-lg p-4 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 touch-none cursor-grab active:cursor-grabbing"
+            style={mobileFabStyle}
+            aria-label={`${isOpen ? 'Hide' : 'Show'} quick tools. Drag to reposition.`}
+            title="Drag to reposition"
+          >
+            {isOpen ? <ChevronUp className="h-5 w-5" /> : <Syringe className="h-5 w-5" />}
+          </button>
+        )}
     </>
   )
 }
