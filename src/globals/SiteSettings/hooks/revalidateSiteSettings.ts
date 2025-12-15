@@ -5,7 +5,7 @@ export const revalidateSiteSettings: GlobalAfterChangeHook = ({ doc, req: { payl
   payload.logger.info('Revalidating site settings')
 
   // Revalidate the cached global data
-  revalidateTag('global_site-settings')
+  revalidateTag('global_site-settings', 'max')
 
   // Revalidate homepage and all common paths when site settings change
   revalidatePath('/', 'layout')

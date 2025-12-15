@@ -46,14 +46,9 @@ const nextConfig = {
 
 const payloadConfig = withPayload(nextConfig, { devBundleServerPackages: false })
 
-// Remove turbopack config added by Payload if present (not supported in Next.js 15)
+// Remove turbopack config added by Payload if present (not supported in Next.js 15+)
 if ('turbopack' in payloadConfig) {
   delete payloadConfig.turbopack
-}
-
-payloadConfig.experimental = {
-  ...(payloadConfig.experimental ?? {}),
-  allowedDevOrigins: ['https://acmc.app'],
 }
 
 export default payloadConfig
