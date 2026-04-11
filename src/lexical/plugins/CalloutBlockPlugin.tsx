@@ -26,7 +26,6 @@ import { $insertNodeToNearestRoot } from '@lexical/utils'
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSquarePlus, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
-import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
 import {
   CALL_OUT_ICON_OPTIONS,
   CALLOUT_PRESETS,
@@ -64,7 +63,6 @@ type ToolbarItemComponentProps = {
   anchorElem: HTMLElement
   editor: LexicalEditor
   enabled?: boolean
-  item: ToolbarGroupItem
 }
 
 export function CalloutBlockPlugin(): null {

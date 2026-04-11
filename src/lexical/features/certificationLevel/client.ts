@@ -10,7 +10,7 @@ import {
   CertificationLevelToolbarDropdown,
 } from '../../plugins/CertificationLevelPlugin'
 
-const CertificationLevelPluginComponent: FC<{ clientProps: undefined }> = () =>
+const CertificationLevelPluginComponent: FC = () =>
   createElement(CertificationLevelPlugin)
 
 export const CertificationLevelFeatureClient = createClientFeature(() => {
