@@ -1,55 +1,65 @@
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { HeartPulse } from 'lucide-react';
-import type { SiteSetting, Media } from '@/payload-types';
+'use client'
 
-interface LandingPageProps {
-  data: SiteSetting;
-}
+import React, { useEffect } from 'react'
+import Link from 'next/link'
+import { DM_Sans, DM_Serif_Display } from 'next/font/google'
+import styles from './LandingPage.module.css'
 
-export default function LandingPage({ data }: LandingPageProps) {
-  const getMediaUrl = (media?: number | Media | null): string | null => {
-    if (!media) return null;
-    if (typeof media === 'object' && 'url' in media) {
-      return media.url || null;
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['300', '400', '500'],
+  display: 'swap',
+})
+
+const dmSerif = DM_Serif_Display({
+  subsets: ['latin'],
+  weight: ['400'],
+  display: 'swap',
+})
+
+export default function LandingPage() {
+  // prevent scroll-past to footer while splash is visible
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
     }
-    return null;
-  };
-
-  const heroBackgroundUrl = getMediaUrl(data.heroBackgroundImage);
-  const backgroundImageUrl = heroBackgroundUrl || '/media/image-hero1.webp';
+  }, [])
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden">
-      <Image
-        src={backgroundImageUrl}
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-        quality={90}
-      />
-      <div className="absolute inset-0 bg-black/65" />
+    <div className={`${styles.page} ${dmSans.className}`}>
+      <div className={styles.gradient} />
+      <div className={styles.noise} />
 
-      <div className="relative z-10 text-center text-white px-6 max-w-xs mx-auto">
-        <div className="flex items-center justify-center mb-6">
-          <div className="h-16 w-16 rounded-2xl bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/30">
-            <HeartPulse className="h-9 w-9 text-white" />
+      <div className={styles.inner}>
+        {/* Icon */}
+        <div className={styles.iconWrap}>
+          <div className={styles.iconRing}>
+            <svg viewBox="0 0 24 24" className={styles.icon} aria-hidden="true">
+              <path d="M3.34 7a5 5 0 0 1 8.66-2L12 5.08l.06-.1A5 5 0 0 1 20.66 7c.34.97.34 2.03 0 3a5 5 0 0 1-1.66 2.5" />
+              <path d="M12 21C6 15.5 3 12.5 3 10" />
+              <polyline points="1 12 5 12 7 8 9 16 11 12 13 12" />
+              <path d="M22 12c0 2.5-3 5.5-9 9" />
+            </svg>
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold mb-1">Air Care & Mobile Care</h1>
-        <p className="text-sm text-white/60 mb-8">Clinical Reference Platform</p>
+        {/* Wordmark */}
+        <h1 className={`${styles.title} ${dmSerif.className}`}>ACMC</h1>
+        <p className={styles.tagline}>Clinical Reference Platform</p>
+        <div className={styles.divider} />
 
-        <Link
-          href="/login"
-          className="block w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-xl transition-colors shadow-lg shadow-red-600/20"
-        >
+        {/* CTA */}
+        <Link href="/login" className={styles.btn}>
           Sign In
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
         </Link>
       </div>
+
+      <p className={`${styles.footer} ${dmSans.className}`}>Air Care &amp; Mobile Care</p>
     </div>
-  );
+  )
 }
