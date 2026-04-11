@@ -11,7 +11,7 @@ import {
   CalloutBlockToolbarDropdown,
 } from '../../plugins/CalloutBlockPlugin'
 
-const CalloutBlockPluginComponent: FC<{ clientProps: undefined }> = () =>
+const CalloutBlockPluginComponent: FC = () =>
   createElement(CalloutBlockPlugin)
 
 export const CalloutBlockFeatureClient = createClientFeature(() => {

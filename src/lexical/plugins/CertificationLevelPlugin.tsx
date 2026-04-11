@@ -11,7 +11,6 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import * as React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { ToolbarGroupItem } from '@payloadcms/richtext-lexical'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAward } from '@fortawesome/free-solid-svg-icons'
 import { $createCertificationLevelNode } from '../nodes/CertificationLevelNode'
@@ -36,7 +35,6 @@ type ToolbarItemComponentProps = {
   anchorElem: HTMLElement
   editor: LexicalEditor
   enabled?: boolean
-  item: ToolbarGroupItem
 }
 
 const dropdownStyles: React.CSSProperties = {
