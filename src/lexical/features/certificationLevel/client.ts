@@ -13,6 +13,7 @@ import {
 const CertificationLevelPluginComponent: FC = () =>
   createElement(CertificationLevelPlugin)
 
+// @ts-expect-error – Payload 3.82.1 CreateClientFeatureArgs causes excessive TS stack depth; correct at runtime
 export const CertificationLevelFeatureClient = createClientFeature(() => {
   return {
     nodes: [CertificationLevelNode],
