@@ -1,4 +1,3 @@
-import { Banner } from '@payloadcms/ui/elements/Banner'
 import React from 'react'
 import Link from 'next/link'
 
