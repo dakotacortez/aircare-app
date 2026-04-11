@@ -2,18 +2,12 @@
 
 import React, { useEffect } from 'react'
 import Link from 'next/link'
-import { DM_Sans, DM_Serif_Display } from 'next/font/google'
+import { DM_Sans } from 'next/font/google'
 import styles from './LandingPage.module.css'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
   weight: ['300', '400', '500'],
-  display: 'swap',
-})
-
-const dmSerif = DM_Serif_Display({
-  subsets: ['latin'],
-  weight: ['400'],
   display: 'swap',
 })
 
@@ -45,7 +39,7 @@ export default function LandingPage() {
         </div>
 
         {/* Wordmark */}
-        <h1 className={`${styles.title} ${dmSerif.className}`}>ACMC</h1>
+        <h1 className={styles.title}>ACMC</h1>
         <p className={styles.tagline}>Clinical Reference Platform</p>
         <div className={styles.divider} />
 
@@ -59,7 +53,7 @@ export default function LandingPage() {
         </Link>
       </div>
 
-      <p className={`${styles.footer} ${dmSans.className}`}>Air Care &amp; Mobile Care</p>
+      <p className={styles.footer}>Air Care &amp; Mobile Care</p>
     </div>
   )
 }

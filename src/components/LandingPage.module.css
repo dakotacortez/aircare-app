@@ -105,8 +105,8 @@
 
 .title {
   font-size: clamp(30px, 5.5vw, 44px);
-  font-weight: 400;
-  letter-spacing: -0.02em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   line-height: 1.08;
   color: #f2f0ec;
   text-shadow: 0 0 55px rgba(200, 48, 42, 0.14);
