@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { User, Protocol } from '@/payload-types'
+import type { User } from '@/payload-types'
 import type { Where } from 'payload'
 import { checkProtocolAccess } from './checkProtocolAccess'
 
