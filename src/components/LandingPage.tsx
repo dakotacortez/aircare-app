@@ -1,9 +1,11 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { DM_Sans } from 'next/font/google'
 import styles from './LandingPage.module.css'
+import { getClientSideURL } from '@/utilities/getURL'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -12,13 +14,41 @@ const dmSans = DM_Sans({
 })
 
 export default function LandingPage() {
+  const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${getClientSideURL()}/api/users/me`, {
+          credentials: 'include',
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.user) {
+            router.replace('/protocols')
+            return
+          }
+        }
+      } catch {
+        // not authenticated, show landing page
+      }
+      setAuthChecked(true)
+    }
+    checkAuth()
+  }, [router])
+
   // prevent scroll-past to footer while splash is visible
   useEffect(() => {
+    if (!authChecked) return
     document.body.style.overflow = 'hidden'
     return () => {
       document.body.style.overflow = ''
     }
-  }, [])
+  }, [authChecked])
+
+  // Don't render until auth check is done (avoids flash of Sign In for authed users)
+  if (!authChecked) return null
 
   return (
     <div className={`${styles.page} ${dmSans.className}`}>
