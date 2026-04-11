@@ -14,6 +14,7 @@ import {
 const CalloutBlockPluginComponent: FC = () =>
   createElement(CalloutBlockPlugin)
 
+// @ts-expect-error – Payload 3.82.1 CreateClientFeatureArgs causes excessive TS stack depth; correct at runtime
 export const CalloutBlockFeatureClient = createClientFeature(() => {
   return {
     nodes: [CalloutBlockNode],
